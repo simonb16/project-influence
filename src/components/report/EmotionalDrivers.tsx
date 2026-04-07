@@ -3,6 +3,8 @@
 import { EmotionalDriver } from "@/types";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { scoreColor, emotionEmoji } from "@/lib/utils";
+import { InfoButton } from "@/components/ui/InfoButton";
+import { SECTION_INFO } from "@/lib/sectionInfo";
 
 const emotionLabels: Record<string, string> = {
   guilt: "Guilt",
@@ -26,6 +28,7 @@ export function EmotionalDrivers({ data }: { data: EmotionalDriver[] }) {
       <CardHeader>
         <span className="text-lg">◎</span>
         <CardTitle>Emotional Driver Dashboard</CardTitle>
+        <InfoButton info={SECTION_INFO.emotionalDrivers} />
       </CardHeader>
 
       {/* Dominant drivers highlight */}

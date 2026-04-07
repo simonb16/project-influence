@@ -1,6 +1,8 @@
 import { BehavioralSignal } from "@/types";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { cn } from "@/lib/utils";
+import { InfoButton } from "@/components/ui/InfoButton";
+import { SECTION_INFO } from "@/lib/sectionInfo";
 
 const categoryColors: Record<string, string> = {
   purchase: "text-violet-400 bg-violet-400/10 border-violet-400/20",
@@ -22,6 +24,7 @@ export function BehavioralSignals({ data }: { data: BehavioralSignal[] }) {
       <CardHeader>
         <span className="text-lg">△</span>
         <CardTitle>Behavioral Signals</CardTitle>
+        <InfoButton info={SECTION_INFO.behavioralSignals} />
       </CardHeader>
       <div className="space-y-2">
         {data.map((signal, i) => (

@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { ArchetypeReport, StreamChunk } from "@/types";
 import { InputForm } from "@/components/InputForm";
 import { LoadingState } from "@/components/LoadingState";
 import { ReportView } from "@/components/report/ReportView";
+import { PreviousReports } from "@/components/PreviousReports";
+import { getSavedReports, saveReport, deleteReport, SavedReport } from "@/lib/storage";
 
 type AppState = "input" | "loading" | "report" | "error";
 
@@ -14,6 +16,12 @@ export default function Home() {
   const [loadingStep, setLoadingStep] = useState(0);
   const [report, setReport] = useState<ArchetypeReport | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [savedReports, setSavedReports] = useState<SavedReport[]>([]);
+
+  // Load saved reports from localStorage on mount
+  useEffect(() => {
+    setSavedReports(getSavedReports());
+  }, []);
 
   const handleSubmit = useCallback(async (archetype: string, description: string) => {
     setAppState("loading");
@@ -36,33 +44,39 @@ export default function Home() {
       const decoder = new TextDecoder();
       let buffer = "";
 
+      const processLine = (line: string) => {
+        if (!line.trim()) return;
+        try {
+          const chunk: StreamChunk = JSON.parse(line);
+          if (chunk.type === "heartbeat") return;
+          if (chunk.type === "progress") {
+            setLoadingMessage(chunk.message ?? "Processing...");
+            setLoadingStep((s) => Math.min(s + 1, 8));
+          } else if (chunk.type === "report" && chunk.report) {
+            saveReport(chunk.report);
+            setSavedReports(getSavedReports());
+            setReport(chunk.report);
+            setAppState("report");
+          } else if (chunk.type === "error") {
+            throw new Error(chunk.error ?? "Unknown error");
+          }
+        } catch {
+          // Skip malformed chunks
+        }
+      };
+
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
+        buffer += decoder.decode(value ?? new Uint8Array(), { stream: !done });
         const lines = buffer.split("\n");
-        buffer = lines.pop() ?? "";
-
-        for (const line of lines) {
-          if (!line.trim()) continue;
-          try {
-            const chunk: StreamChunk = JSON.parse(line);
-            if (chunk.type === "heartbeat") continue;
-            if (chunk.type === "progress") {
-              setLoadingMessage(chunk.message ?? "Processing...");
-              setLoadingStep((s) => Math.min(s + 1, 8));
-            } else if (chunk.type === "report" && chunk.report) {
-              setReport(chunk.report);
-              setAppState("report");
-            } else if (chunk.type === "error") {
-              throw new Error(chunk.error ?? "Unknown error");
-            }
-          } catch {
-            // Skip malformed chunks
-          }
-        }
+        buffer = done ? "" : (lines.pop() ?? "");
+        lines.forEach(processLine);
+        if (done) break;
       }
+
+      // Flush any remaining buffer content after stream ends
+      if (buffer.trim()) processLine(buffer);
+
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
       setAppState("error");
@@ -76,6 +90,16 @@ export default function Home() {
     setLoadingStep(0);
   }, []);
 
+  const handleSelectReport = useCallback((selected: ArchetypeReport) => {
+    setReport(selected);
+    setAppState("report");
+  }, []);
+
+  const handleDeleteReport = useCallback((id: string) => {
+    deleteReport(id);
+    setSavedReports(getSavedReports());
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#080B0F]">
       {/* Top nav bar */}
@@ -83,7 +107,12 @@ export default function Home() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
             <span className="text-[#6366F1]">◈</span>
-            <span className="font-semibold tracking-tight text-[#E8EDF2]">Project Sway</span>
+            <button
+              onClick={handleReset}
+              className="font-semibold tracking-tight text-[#E8EDF2] hover:text-white"
+            >
+              Project Sway
+            </button>
             <span className="hidden rounded bg-[#1C2333] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#6E7681] sm:block">
               Alpha
             </span>
@@ -98,7 +127,14 @@ export default function Home() {
       {/* Main content */}
       <main className="mx-auto max-w-6xl px-6 py-12">
         {appState === "input" && (
-          <InputForm onSubmit={handleSubmit} isLoading={false} />
+          <>
+            <InputForm onSubmit={handleSubmit} isLoading={false} />
+            <PreviousReports
+              reports={savedReports}
+              onSelect={handleSelectReport}
+              onDelete={handleDeleteReport}
+            />
+          </>
         )}
 
         {appState === "loading" && (

@@ -2,6 +2,8 @@ import { Influencer } from "@/types";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { ScoreBar } from "@/components/ui/ScoreBar";
+import { InfoButton } from "@/components/ui/InfoButton";
+import { SECTION_INFO } from "@/lib/sectionInfo";
 
 export function InfluenceMap({ data }: { data: Influencer[] }) {
   return (
@@ -9,6 +11,7 @@ export function InfluenceMap({ data }: { data: Influencer[] }) {
       <CardHeader>
         <span className="text-lg">◈</span>
         <CardTitle>Influence Map</CardTitle>
+        <InfoButton info={SECTION_INFO.influenceMap} />
       </CardHeader>
       <div className="space-y-4">
         {data.map((influencer, i) => (

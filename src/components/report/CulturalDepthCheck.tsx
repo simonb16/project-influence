@@ -1,6 +1,8 @@
 import { CulturalSignal } from "@/types";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { InfoButton } from "@/components/ui/InfoButton";
+import { SECTION_INFO } from "@/lib/sectionInfo";
 
 export function CulturalDepthCheck({ data }: { data: CulturalSignal[] }) {
   return (
@@ -8,6 +10,7 @@ export function CulturalDepthCheck({ data }: { data: CulturalSignal[] }) {
       <CardHeader>
         <span className="text-lg">◇</span>
         <CardTitle>Cultural Depth Check</CardTitle>
+        <InfoButton info={SECTION_INFO.culturalDepthCheck} />
       </CardHeader>
       <p className="mb-4 text-xs text-[#6E7681]">
         Classifying each detected signal as a fleeting surface trend or an enduring structural force.

@@ -2,6 +2,8 @@ import { DigitalHabitat as DigitalHabitatType } from "@/types";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { ScoreBar } from "@/components/ui/ScoreBar";
 import { platformIcon } from "@/lib/utils";
+import { InfoButton } from "@/components/ui/InfoButton";
+import { SECTION_INFO } from "@/lib/sectionInfo";
 
 export function DigitalHabitat({ data }: { data: DigitalHabitatType[] }) {
   return (
@@ -9,6 +11,7 @@ export function DigitalHabitat({ data }: { data: DigitalHabitatType[] }) {
       <CardHeader>
         <span className="text-lg">◉</span>
         <CardTitle>Digital Habitat</CardTitle>
+        <InfoButton info={SECTION_INFO.digitalHabitat} />
       </CardHeader>
       <div className="grid gap-3 sm:grid-cols-2">
         {data.map((place, i) => (

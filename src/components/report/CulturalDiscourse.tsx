@@ -1,6 +1,8 @@
 import { DiscourseItem } from "@/types";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { cn } from "@/lib/utils";
+import { InfoButton } from "@/components/ui/InfoButton";
+import { SECTION_INFO } from "@/lib/sectionInfo";
 
 const sentimentStyles = {
   positive: "border-l-emerald-500 bg-emerald-500/5",
@@ -22,6 +24,7 @@ export function CulturalDiscourse({ data }: { data: DiscourseItem[] }) {
       <CardHeader>
         <span className="text-lg">◆</span>
         <CardTitle>Cultural Discourse</CardTitle>
+        <InfoButton info={SECTION_INFO.culturalDiscourse} />
       </CardHeader>
       <div className="space-y-3">
         {data.map((item, i) => (

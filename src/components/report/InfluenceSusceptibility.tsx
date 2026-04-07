@@ -2,6 +2,8 @@ import { ArchetypeReport } from "@/types";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { ScoreBar } from "@/components/ui/ScoreBar";
 import { scoreColor } from "@/lib/utils";
+import { InfoButton } from "@/components/ui/InfoButton";
+import { SECTION_INFO } from "@/lib/sectionInfo";
 
 const channelIcons: Record<string, string> = {
   peer: "○",
@@ -19,6 +21,7 @@ export function InfluenceSusceptibility({ data }: { data: ArchetypeReport["influ
       <CardHeader>
         <span className="text-lg">▼</span>
         <CardTitle>Influence Susceptibility</CardTitle>
+        <InfoButton info={SECTION_INFO.influenceSusceptibility} />
       </CardHeader>
 
       {/* Overall + Initiator/Imitator scores */}

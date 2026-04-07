@@ -53,16 +53,21 @@ export async function POST(request: Request) {
           });
         }
 
-        // Fan out all 6 agents in parallel
-        const [influence, habitat, discourse, emotionalBehavioral, susceptibility, culturalDepth] =
-          await Promise.all([
-            runInfluenceAgent(archetype, description).then((r) => { onAgentComplete("Influence Map"); return r; }),
-            runHabitatAgent(archetype, description).then((r) => { onAgentComplete("Digital Habitat"); return r; }),
-            runDiscourseAgent(archetype, description).then((r) => { onAgentComplete("Cultural Discourse"); return r; }),
-            runEmotionalBehavioralAgent(archetype, description).then((r) => { onAgentComplete("Emotional & Behavioral"); return r; }),
-            runSusceptibilityAgent(archetype, description).then((r) => { onAgentComplete("Influence Susceptibility"); return r; }),
-            runCulturalDepthAgent(archetype, description).then((r) => { onAgentComplete("Cultural Depth"); return r; }),
-          ]);
+        // Run agents in batches of 2 to stay under rate limits
+        const [influence, habitat] = await Promise.all([
+          runInfluenceAgent(archetype, description).then((r) => { onAgentComplete("Influence Map"); return r; }),
+          runHabitatAgent(archetype, description).then((r) => { onAgentComplete("Digital Habitat"); return r; }),
+        ]);
+
+        const [discourse, emotionalBehavioral] = await Promise.all([
+          runDiscourseAgent(archetype, description).then((r) => { onAgentComplete("Cultural Discourse"); return r; }),
+          runEmotionalBehavioralAgent(archetype, description).then((r) => { onAgentComplete("Emotional & Behavioral"); return r; }),
+        ]);
+
+        const [susceptibility, culturalDepth] = await Promise.all([
+          runSusceptibilityAgent(archetype, description).then((r) => { onAgentComplete("Influence Susceptibility"); return r; }),
+          runCulturalDepthAgent(archetype, description).then((r) => { onAgentComplete("Cultural Depth"); return r; }),
+        ]);
 
         const research: AllResearch = {
           influence,
