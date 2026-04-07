@@ -1,64 +1,126 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useCallback } from "react";
+import { ArchetypeReport, StreamChunk } from "@/types";
+import { InputForm } from "@/components/InputForm";
+import { LoadingState } from "@/components/LoadingState";
+import { ReportView } from "@/components/report/ReportView";
+
+type AppState = "input" | "loading" | "report" | "error";
 
 export default function Home() {
+  const [appState, setAppState] = useState<AppState>("input");
+  const [loadingMessage, setLoadingMessage] = useState("Initializing intelligence sweep...");
+  const [loadingStep, setLoadingStep] = useState(0);
+  const [report, setReport] = useState<ArchetypeReport | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = useCallback(async (archetype: string, description: string) => {
+    setAppState("loading");
+    setLoadingStep(0);
+    setLoadingMessage("Initializing intelligence sweep...");
+    setError(null);
+
+    try {
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ archetype, description }),
+      });
+
+      if (!res.ok || !res.body) {
+        throw new Error(`Server error: ${res.status}`);
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const chunk: StreamChunk = JSON.parse(line);
+            if (chunk.type === "progress") {
+              setLoadingMessage(chunk.message ?? "Processing...");
+              setLoadingStep((s) => Math.min(s + 1, 8));
+            } else if (chunk.type === "report" && chunk.report) {
+              setReport(chunk.report);
+              setAppState("report");
+            } else if (chunk.type === "error") {
+              throw new Error(chunk.error ?? "Unknown error");
+            }
+          } catch {
+            // Skip malformed chunks
+          }
+        }
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+      setAppState("error");
+    }
+  }, []);
+
+  const handleReset = useCallback(() => {
+    setAppState("input");
+    setReport(null);
+    setError(null);
+    setLoadingStep(0);
+  }, []);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-[#080B0F]">
+      {/* Top nav bar */}
+      <nav className="sticky top-0 z-10 border-b border-[#1C2333] bg-[#080B0F]/90 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-3">
+            <span className="text-[#6366F1]">◈</span>
+            <span className="font-semibold tracking-tight text-[#E8EDF2]">Project Sway</span>
+            <span className="hidden rounded bg-[#1C2333] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#6E7681] sm:block">
+              Alpha
+            </span>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-[#6E7681]">
+            <span className="hidden sm:block">by</span>
+            <span className="font-semibold text-[#8B949E]">Significant</span>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+      </nav>
+
+      {/* Main content */}
+      <main className="mx-auto max-w-6xl px-6 py-12">
+        {appState === "input" && (
+          <InputForm onSubmit={handleSubmit} isLoading={false} />
+        )}
+
+        {appState === "loading" && (
+          <LoadingState message={loadingMessage} step={loadingStep} />
+        )}
+
+        {appState === "report" && report && (
+          <ReportView report={report} onReset={handleReset} />
+        )}
+
+        {appState === "error" && (
+          <div className="flex min-h-[400px] flex-col items-center justify-center text-center">
+            <span className="mb-4 text-4xl text-red-500">✕</span>
+            <h2 className="mb-2 text-lg font-semibold text-[#E8EDF2]">Intelligence sweep failed</h2>
+            <p className="mb-6 max-w-md text-sm text-[#8B949E]">{error}</p>
+            <button
+              onClick={handleReset}
+              className="rounded-lg bg-[#6366F1] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#818CF8]"
+            >
+              Try Again
+            </button>
+          </div>
+        )}
       </main>
     </div>
   );
