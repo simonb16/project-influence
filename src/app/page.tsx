@@ -48,6 +48,7 @@ export default function Home() {
           if (!line.trim()) continue;
           try {
             const chunk: StreamChunk = JSON.parse(line);
+            if (chunk.type === "heartbeat") continue;
             if (chunk.type === "progress") {
               setLoadingMessage(chunk.message ?? "Processing...");
               setLoadingStep((s) => Math.min(s + 1, 8));

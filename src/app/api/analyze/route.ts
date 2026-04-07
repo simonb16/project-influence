@@ -34,6 +34,11 @@ export async function POST(request: Request) {
         controller.enqueue(encoder.encode(encode(chunk)));
       };
 
+      // Heartbeat every 5s to prevent Railway/proxy from closing idle stream
+      const heartbeat = setInterval(() => {
+        controller.enqueue(encoder.encode(JSON.stringify({ type: "heartbeat" }) + "\n"));
+      }, 5000);
+
       try {
         send({ type: "progress", message: "Deploying 6 research agents..." });
 
@@ -94,6 +99,7 @@ export async function POST(request: Request) {
           error: err instanceof Error ? err.message : "Unknown error occurred",
         });
       } finally {
+        clearInterval(heartbeat);
         controller.close();
       }
     },
@@ -103,7 +109,8 @@ export async function POST(request: Request) {
     headers: {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
-      Connection: "keep-alive",
+      "Connection": "keep-alive",
+      "X-Accel-Buffering": "no", // disable buffering on Railway/nginx
     },
   });
 }
