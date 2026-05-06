@@ -6,7 +6,9 @@ import {
   runSusceptibilityAgent,
   runCulturalDepthAgent,
   runSynthesisAgent,
+  runPeripheryAgent,
   aggregateResearchDepth,
+  aggregateSources,
   AllResearch,
 } from "@/lib/agents";
 import { ArchetypeReport } from "@/types";
@@ -40,10 +42,10 @@ export async function POST(request: Request) {
       }, 5000);
 
       try {
-        send({ type: "progress", message: "Deploying 6 research agents..." });
+        send({ type: "progress", message: "Deploying 7 research agents..." });
 
         let completed = 0;
-        const total = 6;
+        const total = 7;
 
         function onAgentComplete(name: string) {
           completed++;
@@ -82,18 +84,28 @@ export async function POST(request: Request) {
 
         const summary = await runSynthesisAgent(archetype, description, research);
 
+        send({ type: "progress", message: "Mapping periphery influence territories..." });
+
+        const periphery = await runPeripheryAgent(archetype, description, research, summary)
+          .then((r) => { onAgentComplete("Periphery Influence"); return r; });
+
         const report: ArchetypeReport = {
           archetype,
+          query: description,
           summary,
           generatedAt: new Date().toISOString(),
-          researchDepth: aggregateResearchDepth(research),
+          researchDepth: aggregateResearchDepth(research, periphery),
           influenceMap: influence.influenceMap,
+          entryPoints: influence.entryPoints,
           digitalHabitat: habitat.digitalHabitat,
+          rankedSources: habitat.rankedSources,
           culturalDiscourse: discourse.culturalDiscourse,
           emotionalDrivers: emotionalBehavioral.emotionalDrivers,
           behavioralSignals: emotionalBehavioral.behavioralSignals,
           influenceSusceptibility: susceptibility.influenceSusceptibility,
           culturalDepthCheck: culturalDepth.culturalDepthCheck,
+          sources: aggregateSources(research, periphery),
+          periphery: periphery.periphery,
         };
 
         send({ type: "report", report });

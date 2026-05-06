@@ -15,12 +15,36 @@ export function DigitalHabitat({ data }: { data: DigitalHabitatType[] }) {
       </CardHeader>
       <div className="grid gap-3 sm:grid-cols-2">
         {data.map((place, i) => (
-          <div key={i} className="rounded-lg border border-[#1C2333] bg-[#080B0F] p-3.5">
+          <div
+            key={i}
+            className={[
+              "rounded-lg border p-3.5",
+              place.unverified
+                ? "border-dashed border-[#2A3040] opacity-80"
+                : "border-[#1C2333]",
+            ].join(" ")}
+          >
             <div className="mb-2 flex items-start justify-between gap-2">
               <div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm text-[#6366F1]">{platformIcon(place.category)}</span>
                   <span className="font-medium text-sm text-[#E8EDF2]">{place.community}</span>
+                  {place.sourceUrl && (
+                    <a
+                      href={place.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] text-[#6366F1]/50 transition-colors hover:text-[#6366F1]"
+                      title="View source"
+                    >
+                      ↗
+                    </a>
+                  )}
+                  {place.unverified && (
+                    <span className="rounded border border-dashed border-[#3D444D] px-1 py-px text-[9px] text-[#6E7681]">
+                      unverified
+                    </span>
+                  )}
                 </div>
                 <span className="text-[11px] text-[#6E7681]">{place.platform}</span>
               </div>

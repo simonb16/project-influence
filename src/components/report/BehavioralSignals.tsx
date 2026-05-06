@@ -42,6 +42,9 @@ export function BehavioralSignals({ data }: { data: BehavioralSignal[] }) {
                 <span className="text-xs text-[#6E7681] capitalize">{signal.intensity}</span>
               </div>
               <p className="mt-0.5 text-xs text-[#6E7681]">{signal.detail}</p>
+              {signal.trigger && (
+                <p className="mt-1 text-[11px] text-[#6366F1]/70 italic">↳ triggered by: {signal.trigger}</p>
+              )}
             </div>
           </div>
         ))}

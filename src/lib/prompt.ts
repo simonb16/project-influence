@@ -97,6 +97,9 @@ After thorough research, produce a JSON report matching EXACTLY this TypeScript 
   ] (5-7 entries)
 }
 
+⚠ CRITICAL ACCURACY RULE — READ BEFORE SEARCHING:
+Never fabricate, guess, or approximate specific factual details. This includes: full names, subscriber/follower counts, view counts, dates, statistics, quotes, and any other specific data point. If you found the detail directly in a search result, include it. If you did not find it or are not certain, either omit it, use only what you're confident about (e.g. first name only), or mark it as "unverified." It is far better to write "YouTube creator with a large following" than to guess "2.3M subscribers" you didn't directly read. Never round, estimate, or reconstruct numbers not directly observed in search results.
+
 CRITICAL RULES — FOLLOW EXACTLY:
 - Your ENTIRE response must be a single valid JSON object. Nothing before it. Nothing after it.
 - Do NOT write "I'll research..." or any prose. Do NOT explain your process. Start your response with { and end with }.

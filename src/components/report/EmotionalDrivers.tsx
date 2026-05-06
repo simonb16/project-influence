@@ -65,7 +65,7 @@ export function EmotionalDrivers({ data }: { data: EmotionalDriver[] }) {
                   <span className="text-sm text-[#E8EDF2]">{emotionLabels[driver.emotion]}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-[#6E7681]">{driver.evidence.slice(0, 60)}{driver.evidence.length > 60 ? "…" : ""}</span>
+                  <span className="text-xs text-[#6E7681]">{driver.mechanism ? driver.mechanism.slice(0, 60) + (driver.mechanism.length > 60 ? "…" : "") : driver.evidence.slice(0, 60) + (driver.evidence.length > 60 ? "…" : "")}</span>
                   <span className="w-8 text-right font-mono text-sm font-semibold" style={{ color }}>{driver.score}</span>
                 </div>
               </div>

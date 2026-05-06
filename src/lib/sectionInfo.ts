@@ -66,6 +66,42 @@ export const SECTION_INFO: Record<string, SectionInfo> = {
       "Overall Susceptibility (1–100): how open this archetype is to external influence in general. High scores indicate they actively seek recommendations and trust outside voices. Low scores suggest a skeptical, self-directed audience that resists overt influence. Initiator Score (0–100): where this archetype sits on the trendsetter-to-follower spectrum. 70+ = early adopters and taste-makers. 40–69 = middle majority. Below 40 = late adopters who wait for full social proof. Channel scores (1–100) show which influence type lands hardest — peer recommendations, creator endorsements, brand messaging, or algorithmic discovery.",
   },
 
+  researchTrail: {
+    title: "Research Trail",
+    description:
+      "Shows the sources and communities the agents drew from when building this report. This is the methodology layer — transparency into how the intelligence was gathered, not what it found.",
+    methodology:
+      "Every source the agents consulted during their web research is logged here. Sources are grouped by platform type: community forums (Reddit, Discord) where people talk candidly, creator channels (YouTube, podcasts) where behavior is modeled, and institutional sources (publications, research) that add structural context. The source count and platform mix tell you how broad and balanced the research was for this specific archetype.",
+  },
+
+  sourceRanking: {
+    title: "Top Signal Sources",
+    description:
+      "Ranks the communities and channels that provided the most behavioral insight for this specific archetype. Signal strength reflects usefulness for understanding this audience — not size or popularity of the source in general.",
+    methodology:
+      "Signal strength is rated 1–100 based on how much actionable behavioral data the agent extracted from each source: frequency of relevant discussions, specificity of community vocabulary, evidence of decision-making and behavior change, and how central the community is to this archetype's identity. A niche subreddit with 10K members where people post weekly purchase decisions will rank higher than a 2M-member group with low-quality discourse.",
+    scoring:
+      "80–100 = primary signal source, central to understanding this archetype. 60–79 = strong secondary source with meaningful behavioral data. 40–59 = supplementary source, useful for context. Below 40 = limited signal, included for completeness.",
+  },
+
+  funnelView: {
+    title: "Purchase Funnel View",
+    description:
+      "Reorganizes the report's findings by where they apply in the decision journey. Instead of viewing influences, emotions, and behaviors separately, this view shows what forces are operating at each stage from first exposure to long-term retention.",
+    methodology:
+      "Each influencer, emotional driver, and behavioral signal in the report was tagged by which funnel stages it most powerfully activates. Tagging was done by the research agents based on behavioral evidence — not assumed from category. An item can appear in multiple stages if evidence supports it.",
+    scoring:
+      "Awareness: forces that create first exposure or recognition. Consideration: forces that drive evaluation and comparison. Conversion: forces that push from intent to action. Retention: forces that sustain loyalty and repeat behavior. Stages with more items represent where this archetype's decision-making is most complex or influenced.",
+  },
+
+  entryPoints: {
+    title: "Entry Points",
+    description:
+      "Identifies the specific doors people walk through when first entering this behavior or mindset space. These are the catalysts, media, communities, and experiences that initiate someone into this archetype's world — before they become a full member of it.",
+    methodology:
+      "Built by researching what people cite as their 'origin story' for adopting this lifestyle or mindset — the first YouTube video, subreddit, podcast, or product that kicked things off. We look for recurring entry patterns across community discussions, 'how I got into this' threads, and beginner recommendation posts.",
+  },
+
   culturalDepthCheck: {
     title: "Cultural Depth Check",
     description:
