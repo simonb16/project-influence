@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { PeripheryData, Adjacency } from "@/types";
+import type { NormalizedAdjacency, NormalizedPeriphery } from "@/lib/periphery";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { ScoreBar } from "@/components/ui/ScoreBar";
 
@@ -46,7 +46,7 @@ function truncate(s: string, max = 18) {
 }
 
 // Place N items radially stacked at midAngle — clean diagonal visual in each quadrant
-function getTextPositions(items: Adjacency[], r1: number, r2: number, midAngle: number) {
+function getTextPositions(items: NormalizedAdjacency[], r1: number, r2: number, midAngle: number) {
   const midR = (r1 + r2) / 2;
   const span = r2 - r1;
   const offsets =
@@ -65,16 +65,15 @@ function getTextPositions(items: Adjacency[], r1: number, r2: number, midAngle: 
 
 interface PeripheryMapProps {
   archetype: string;
-  summary: string;
-  data: PeripheryData;
+  data: NormalizedPeriphery;
 }
 
-export function PeripheryMap({ archetype, summary, data }: PeripheryMapProps) {
+export function PeripheryMap({ archetype, data }: PeripheryMapProps) {
   const [selected, setSelected] = useState<SegmentKey | null>(null);
 
   const selectedSegment = selected ? SEGMENT_MAP[selected] : null;
   const selectedAdjacencies = selected
-    ? [...(data[selected] ?? [])].sort((a, b) => b.overlapStrength - a.overlapStrength)
+    ? [...(data[selected] ?? [])].sort((a, b) => b.overlapPct - a.overlapPct)
     : [];
 
   // Wrap archetype name for center circle — split at ~16 chars
@@ -313,14 +312,15 @@ export function PeripheryMap({ archetype, summary, data }: PeripheryMapProps) {
                     </span>
                   </div>
                   <span className="shrink-0 font-mono text-xs font-semibold text-[#8B949E]">
-                    {adj.overlapStrength}%
+                    {adj.overlapLabel ?? `${adj.overlapPct}%`}
                   </span>
                 </div>
 
                 <div className="mb-3">
-                  <ScoreBar score={adj.overlapStrength} label="Overlap Strength" />
+                  <ScoreBar score={adj.overlapPct} label="Overlap Strength" />
                 </div>
 
+                {adj.description && <p className="mb-2 text-xs text-[#E8EDF2]">{adj.description}</p>}
                 <p className="mb-3 text-xs text-[#8B949E]">{adj.evidence}</p>
 
                 {adj.topInfluences && adj.topInfluences.length > 0 && (

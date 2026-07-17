@@ -23,7 +23,7 @@ export default function Home() {
     setSavedReports(getSavedReports());
   }, []);
 
-  const handleSubmit = useCallback(async (archetype: string, description: string) => {
+  const handleSubmit = useCallback(async (audience: string, brand: string, context: string) => {
     setAppState("loading");
     setLoadingStep(0);
     setLoadingMessage("Initializing intelligence sweep...");
@@ -33,7 +33,7 @@ export default function Home() {
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ archetype, description }),
+        body: JSON.stringify({ audience, brand, context }),
       });
 
       if (!res.ok || !res.body) {
@@ -51,7 +51,7 @@ export default function Home() {
           if (chunk.type === "heartbeat") return;
           if (chunk.type === "progress") {
             setLoadingMessage(chunk.message ?? "Processing...");
-            setLoadingStep((s) => Math.min(s + 1, 8));
+            setLoadingStep((s) => Math.min(s + 1, 9));
           } else if (chunk.type === "report" && chunk.report) {
             saveReport(chunk.report);
             setSavedReports(getSavedReports());

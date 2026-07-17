@@ -6,6 +6,14 @@ export interface SectionInfo {
 }
 
 export const SECTION_INFO: Record<string, SectionInfo> = {
+  influentialCore: {
+    title: "The Influential Core",
+    description:
+      "Defines the most socially active part of this audience — the people whose behaviors, opinions, and choices are visibly copied, discussed, and trusted by others. Most of an audience are tourists who pass through casually; the influential core are rooted. When they adopt something, others follow. When they reject something, it stalls.",
+    methodology:
+      "Synthesized from three independent research lenses — audience, brand, and market context — that each researched this audience separately, followed by a reconciliation step that identified where the lenses converged and conflicted about who the core is. Convergence across independent research paths is what gives this definition structural credibility.",
+  },
+
   influenceMap: {
     title: "Influence Map",
     description:
@@ -84,14 +92,22 @@ export const SECTION_INFO: Record<string, SectionInfo> = {
       "80–100 = primary signal source, central to understanding this archetype. 60–79 = strong secondary source with meaningful behavioral data. 40–59 = supplementary source, useful for context. Below 40 = limited signal, included for completeness.",
   },
 
-  funnelView: {
-    title: "Purchase Funnel View",
+  influenceQuadrant: {
+    title: "Influence Quadrant",
     description:
-      "Reorganizes the report's findings by where they apply in the decision journey. Instead of viewing influences, emotions, and behaviors separately, this view shows what forces are operating at each stage from first exposure to long-term retention.",
+      "Plots every influence in the map on two dimensions: how broadly known it is (reach) and how strong its scored influence is (composite score). The top-left zone — high influence, low reach — is the Hidden Core: the under-priced influences most brands miss because they optimize for reach.",
     methodology:
-      "Each influencer, emotional driver, and behavioral signal in the report was tagged by which funnel stages it most powerfully activates. Tagging was done by the research agents based on behavioral evidence — not assumed from category. An item can appear in multiple stages if evidence supports it.",
+      "Reach level is assessed categorically (micro → niche → significant → mainstream) from the reconciled lens evidence. The composite score comes from the reconciliation agent's six-dimension scoring model. Dot styling shows convergence: solid = found by multiple lenses independently, outlined = lenses disagreed, muted = single-lens finding.",
     scoring:
-      "Awareness: forces that create first exposure or recognition. Consideration: forces that drive evaluation and comparison. Conversion: forces that push from intent to action. Retention: forces that sustain loyalty and repeat behavior. Stages with more items represent where this archetype's decision-making is most complex or influenced.",
+      "The Obvious (high reach + high score): real influence everyone can see — expensive and crowded. The Hidden Core (low reach + high score): concentrated influence with low visibility — the highest-value engagement zone. The Noise (high reach + low score): visibility without behavioral influence. The Periphery (low reach + low score): weak signals worth monitoring.",
+  },
+
+  activationPlaybook: {
+    title: "Activation Playbook",
+    description:
+      "Concrete recommendations for how a brand should engage this audience's influential core — tone, formats, channels, and behaviors that build credibility rather than triggering rejection.",
+    methodology:
+      "Derived from the synthesis of all three research lenses: what the audience lens found about trust architecture, what the brand lens found about approaches that work and backfire, and what the context lens found about timing. Recommendations prioritize findings that converged across lenses.",
   },
 
   entryPoints: {

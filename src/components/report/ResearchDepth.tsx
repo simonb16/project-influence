@@ -3,18 +3,33 @@ import { ResearchDepth as ResearchDepthType } from "@/types";
 interface Metric {
   label: string;
   value: number | string;
-  unit?: string;
 }
 
 export function ResearchDepth({ data }: { data: ResearchDepthType }) {
-  const metrics: Metric[] = [
-    { label: "Sources Scanned", value: data.sourcesScanned },
-    { label: "Communities Analyzed", value: data.communitiesAnalyzed },
-    { label: "Conversations Sampled", value: data.conversationsSampled },
-    { label: "Unique Voices Detected", value: data.uniqueVoicesDetected },
-    { label: "Search Queries Run", value: data.searchQueriesRun },
-    { label: "Platforms Covered", value: data.platformsCovered.length },
-  ];
+  // Three-lens reports carry the new metrics; older saved reports carry the legacy ones.
+  const isThreeLens = data.totalSignalsScored != null;
+
+  const metrics: Metric[] = isThreeLens
+    ? [
+        { label: "Signals Scored", value: data.totalSignalsScored ?? 0 },
+        { label: "Converged", value: data.convergedFindings ?? 0 },
+        { label: "Conflicted", value: data.conflictedFindings ?? 0 },
+        { label: "Single-Lens", value: data.singleLensFindings ?? 0 },
+        { label: "High Confidence", value: data.highConfidenceFindings ?? 0 },
+        { label: "Avg Composite", value: (data.averageCompositeScore ?? 0).toFixed(1) },
+      ]
+    : [
+        { label: "Sources Scanned", value: data.sourcesScanned ?? 0 },
+        { label: "Communities Analyzed", value: data.communitiesAnalyzed ?? 0 },
+        { label: "Conversations Sampled", value: data.conversationsSampled ?? 0 },
+        { label: "Unique Voices Detected", value: data.uniqueVoicesDetected ?? 0 },
+        { label: "Search Queries Run", value: data.searchQueriesRun ?? 0 },
+        { label: "Platforms Covered", value: data.platformsCovered?.length ?? 0 },
+      ];
+
+  const headerNote = isThreeLens
+    ? `3 independent lenses · ${(data.lensesUsed ?? ["audience", "brand", "context"]).join(" · ")}`
+    : `Live intelligence sweep · ${data.platformsCovered?.join(" · ") ?? ""}`;
 
   return (
     <div className="mb-8 rounded-xl border border-[#1C2333] bg-[#0D1117] overflow-hidden">
@@ -24,9 +39,7 @@ export function ResearchDepth({ data }: { data: ResearchDepthType }) {
         <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6366F1]">
           Research Depth
         </span>
-        <span className="ml-auto text-[11px] text-[#6E7681]">
-          Live intelligence sweep · {data.platformsCovered.join(" · ")}
-        </span>
+        <span className="ml-auto text-[11px] text-[#6E7681]">{headerNote}</span>
       </div>
 
       {/* Metrics row */}

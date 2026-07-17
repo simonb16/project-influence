@@ -1,15 +1,12 @@
 import {
-  runInfluenceAgent,
-  runHabitatAgent,
-  runDiscourseAgent,
-  runEmotionalBehavioralAgent,
-  runSusceptibilityAgent,
-  runCulturalDepthAgent,
+  AgentInputs,
+  runAudienceLens,
+  runBrandLens,
+  runContextLens,
+  runReconciliationAgent,
   runSynthesisAgent,
   runPeripheryAgent,
-  aggregateResearchDepth,
-  aggregateSources,
-  AllResearch,
+  AllLensOutputs,
 } from "@/lib/agents";
 import { ArchetypeReport } from "@/types";
 
@@ -19,15 +16,27 @@ function encode(obj: object): string {
   return JSON.stringify(obj) + "\n";
 }
 
-export async function POST(request: Request) {
-  const { archetype, description } = await request.json();
+/** Short display title derived from the audience description. */
+function deriveTitle(audience: string): string {
+  const firstSegment = audience.split(/\s+—\s+|[.\n]/)[0].trim();
+  const title = firstSegment || audience.trim();
+  return title.length > 64 ? `${title.slice(0, 61).trimEnd()}…` : title;
+}
 
-  if (!archetype || !description) {
-    return new Response(JSON.stringify({ error: "Missing archetype or description" }), {
+export async function POST(request: Request) {
+  const body = await request.json();
+  const audience: string | undefined = body.audience;
+  const brand: string | undefined = body.brand || undefined;
+  const context: string | undefined = body.context || undefined;
+
+  if (!audience?.trim()) {
+    return new Response(JSON.stringify({ error: "Missing audience description" }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
   }
+
+  const inputs: AgentInputs = { audience: audience.trim(), brand, context };
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
@@ -42,70 +51,62 @@ export async function POST(request: Request) {
       }, 5000);
 
       try {
-        send({ type: "progress", message: "Deploying 7 research agents..." });
-
+        const totalAgents = 6;
         let completed = 0;
-        const total = 7;
 
         function onAgentComplete(name: string) {
           completed++;
           send({
             type: "progress",
-            message: `${name} complete — ${completed}/${total} agents done`,
+            message: `${name} complete — ${completed}/${totalAgents} agents done`,
           });
         }
 
-        // Run agents in batches of 2 to stay under rate limits
-        const [influence, habitat] = await Promise.all([
-          runInfluenceAgent(archetype, description).then((r) => { onAgentComplete("Influence Map"); return r; }),
-          runHabitatAgent(archetype, description).then((r) => { onAgentComplete("Digital Habitat"); return r; }),
+        // ── Batch 1: three independent lenses in parallel ──
+        send({
+          type: "progress",
+          message:
+            "Researching audience perspective, brand landscape, and market context — 3 independent lenses...",
+        });
+
+        const [audienceLens, brandLens, contextLens] = await Promise.all([
+          runAudienceLens(inputs).then((r) => { onAgentComplete("Audience Lens"); return r; }),
+          runBrandLens(inputs).then((r) => { onAgentComplete("Brand Lens"); return r; }),
+          runContextLens(inputs).then((r) => { onAgentComplete("Context Lens"); return r; }),
         ]);
 
-        const [discourse, emotionalBehavioral] = await Promise.all([
-          runDiscourseAgent(archetype, description).then((r) => { onAgentComplete("Cultural Discourse"); return r; }),
-          runEmotionalBehavioralAgent(archetype, description).then((r) => { onAgentComplete("Emotional & Behavioral"); return r; }),
+        const lenses: AllLensOutputs = { audience: audienceLens, brand: brandLens, context: contextLens };
+
+        // ── Batch 2: reconciliation & scoring ──
+        send({ type: "progress", message: "Reconciling findings across all three lenses & scoring signals..." });
+
+        const reconciliation = await runReconciliationAgent(inputs, lenses);
+        onAgentComplete("Reconciliation & Scoring");
+
+        // ── Batches 3 + 4: synthesis and periphery in parallel ──
+        // Both depend only on reconciliation. Periphery is non-fatal: if it
+        // fails even after retry, ship the report without it.
+        send({ type: "progress", message: "Synthesizing final report & mapping periphery territories..." });
+
+        const [synthesis, periphery] = await Promise.all([
+          runSynthesisAgent(inputs, reconciliation).then((r) => { onAgentComplete("Synthesis"); return r; }),
+          runPeripheryAgent(inputs, reconciliation)
+            .then((r) => { onAgentComplete("Periphery"); return r; })
+            .catch((err) => {
+              console.error("[analyze] Periphery agent failed, continuing without periphery:", err);
+              send({ type: "progress", message: "Periphery mapping unavailable — finishing report without it" });
+              return undefined;
+            }),
         ]);
-
-        const [susceptibility, culturalDepth] = await Promise.all([
-          runSusceptibilityAgent(archetype, description).then((r) => { onAgentComplete("Influence Susceptibility"); return r; }),
-          runCulturalDepthAgent(archetype, description).then((r) => { onAgentComplete("Cultural Depth"); return r; }),
-        ]);
-
-        const research: AllResearch = {
-          influence,
-          habitat,
-          discourse,
-          emotionalBehavioral,
-          susceptibility,
-          culturalDepth,
-        };
-
-        send({ type: "progress", message: "Synthesizing intelligence report..." });
-
-        const summary = await runSynthesisAgent(archetype, description, research);
-
-        send({ type: "progress", message: "Mapping periphery influence territories..." });
-
-        const periphery = await runPeripheryAgent(archetype, description, research, summary)
-          .then((r) => { onAgentComplete("Periphery Influence"); return r; });
 
         const report: ArchetypeReport = {
-          archetype,
-          query: description,
-          summary,
+          ...synthesis,
+          archetype: deriveTitle(inputs.audience),
+          audience: inputs.audience,
+          brand: inputs.brand,
+          context: inputs.context,
           generatedAt: new Date().toISOString(),
-          researchDepth: aggregateResearchDepth(research, periphery),
-          influenceMap: influence.influenceMap,
-          entryPoints: influence.entryPoints,
-          digitalHabitat: habitat.digitalHabitat,
-          rankedSources: habitat.rankedSources,
-          culturalDiscourse: discourse.culturalDiscourse,
-          emotionalDrivers: emotionalBehavioral.emotionalDrivers,
-          behavioralSignals: emotionalBehavioral.behavioralSignals,
-          influenceSusceptibility: susceptibility.influenceSusceptibility,
-          culturalDepthCheck: culturalDepth.culturalDepthCheck,
-          sources: aggregateSources(research, periphery),
-          periphery: periphery.periphery,
+          peripheryData: periphery,
         };
 
         send({ type: "report", report });
