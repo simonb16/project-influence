@@ -86,15 +86,15 @@ export async function POST(request: Request) {
         // ── Batches 3 + 4: synthesis and periphery in parallel ──
         // Both depend only on reconciliation. Periphery is non-fatal: if it
         // fails even after retry, ship the report without it.
-        send({ type: "progress", message: "Synthesizing final report & mapping periphery territories..." });
+        send({ type: "progress", message: "Synthesizing final report & mapping adjacencies..." });
 
         const [synthesis, periphery] = await Promise.all([
           runSynthesisAgent(inputs, reconciliation).then((r) => { onAgentComplete("Synthesis"); return r; }),
           runPeripheryAgent(inputs, reconciliation)
-            .then((r) => { onAgentComplete("Periphery"); return r; })
+            .then((r) => { onAgentComplete("Adjacency Mapping"); return r; })
             .catch((err) => {
               console.error("[analyze] Periphery agent failed, continuing without periphery:", err);
-              send({ type: "progress", message: "Periphery mapping unavailable — finishing report without it" });
+              send({ type: "progress", message: "Adjacency mapping unavailable — finishing report without it" });
               return undefined;
             }),
         ]);

@@ -9,7 +9,7 @@ export function ActivationPlaybook({ recommendations }: { recommendations: strin
     <Card glow>
       <CardHeader>
         <span className="text-lg">▶</span>
-        <CardTitle>Activation Playbook</CardTitle>
+        <CardTitle>Activation Recommendations</CardTitle>
         <InfoButton info={SECTION_INFO.activationPlaybook} />
       </CardHeader>
       <p className="mb-4 text-xs text-[#6E7681]">

@@ -15,7 +15,7 @@ const STEPS = [
   "Third lens complete",
   "Reconciling & scoring signals",
   "Reconciliation complete",
-  "Synthesis & periphery mapping",
+  "Synthesis & adjacency mapping",
   "First of two complete",
   "Finalizing report",
 ];

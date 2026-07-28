@@ -96,7 +96,7 @@ export function PeripheryMap({ archetype, data }: PeripheryMapProps) {
     <Card glow>
       <CardHeader>
         <span className="text-lg">◎</span>
-        <CardTitle>Periphery Influence Map</CardTitle>
+        <CardTitle>Adjacency Map</CardTitle>
       </CardHeader>
 
       <p className="mb-6 text-xs text-[#6E7681]">

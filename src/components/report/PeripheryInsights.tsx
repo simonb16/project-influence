@@ -27,7 +27,7 @@ export function PeripheryInsights({ insights }: { insights: PeripheryInsightsTyp
     <Card>
       <CardHeader>
         <span className="text-lg">⌘</span>
-        <CardTitle>Periphery Insights</CardTitle>
+        <CardTitle>Adjacency Insights</CardTitle>
       </CardHeader>
 
       <div className="grid gap-3 lg:grid-cols-2">

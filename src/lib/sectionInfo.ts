@@ -55,7 +55,7 @@ export const SECTION_INFO: Record<string, SectionInfo> = {
   },
 
   behavioralSignals: {
-    title: "Behavioral Signals",
+    title: "Behaviors and Triggers",
     description:
       "Documents what this archetype is actually doing — their purchasing patterns, content consumption habits, subscription behaviors, brand loyalties, and lifestyle practices. This is behavior, not attitude.",
     methodology:
@@ -103,7 +103,7 @@ export const SECTION_INFO: Record<string, SectionInfo> = {
   },
 
   activationPlaybook: {
-    title: "Activation Playbook",
+    title: "Activation Recommendations",
     description:
       "Concrete recommendations for how a brand should engage this audience's influential core — tone, formats, channels, and behaviors that build credibility rather than triggering rejection.",
     methodology:
