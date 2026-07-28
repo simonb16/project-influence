@@ -23,7 +23,7 @@ export function BehavioralSignals({ data }: { data: BehavioralSignal[] }) {
     <Card>
       <CardHeader>
         <span className="text-lg">△</span>
-        <CardTitle>Behavioral Signals</CardTitle>
+        <CardTitle>Behaviors and Triggers</CardTitle>
         <InfoButton info={SECTION_INFO.behavioralSignals} />
       </CardHeader>
       <div className="space-y-2">

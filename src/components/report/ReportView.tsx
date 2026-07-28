@@ -3,9 +3,12 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { ArchetypeReport } from "@/types";
 import { normalizePeriphery } from "@/lib/periphery";
+import { TabBar, ReportTab } from "./TabBar";
+import { ReportInputs } from "./ReportInputs";
+import { ResearchDepthSummary } from "./ResearchDepthSummary";
+import { InfluentialCoreDescription, CoreListCard } from "./InfluentialCore";
 import { InfluenceMap } from "./InfluenceMap";
 import { InfluenceQuadrant } from "./InfluenceQuadrant";
-import { InfluentialCore } from "./InfluentialCore";
 import { DigitalHabitat } from "./DigitalHabitat";
 import { CulturalDiscourse } from "./CulturalDiscourse";
 import { EmotionalDrivers } from "./EmotionalDrivers";
@@ -25,54 +28,53 @@ interface ReportViewProps {
   onReset: () => void;
 }
 
-type TabId = "influence" | "map" | "entry" | "periphery";
+// Signals-of-Influence layout: the Influential Core at the center, four
+// signal tabs (Social, Trust, Behavioral, Motivational), plus Cultural
+// forces and Adjacencies as outer layers.
+type TabId = "core" | "social" | "trust" | "behavioral" | "motivational" | "cultural" | "adjacencies";
 
-const TABS: Array<{ id: TabId; label: string; sub: string }> = [
-  { id: "influence", label: "Influence", sub: "Who matters?" },
-  { id: "map", label: "Influence Map", sub: "What moves them?" },
-  { id: "entry", label: "Entry Points", sub: "Where to show up" },
-  { id: "periphery", label: "Periphery", sub: "Who else are they?" },
+const TABS: Array<ReportTab<TabId>> = [
+  {
+    id: "core",
+    label: "The Influential Core",
+    sub: "The people within this audience who disproportionately influence what others believe, adopt and share.",
+  },
+  { id: "social", label: "Social", sub: "The communities and conversations they participate in" },
+  { id: "trust", label: "Trust", sub: "Where they look for validation" },
+  { id: "behavioral", label: "Behavioral", sub: "How they behave" },
+  { id: "motivational", label: "Motivational", sub: "What motivates them" },
+  { id: "cultural", label: "Cultural", sub: "The cultural discourse and forces informing them" },
+  { id: "adjacencies", label: "Adjacencies", sub: "Cultural adjacencies and overlaps" },
 ];
 
-function SectionHeader({ label }: { label: string }) {
+function EmptyTabNote({ message }: { message: string }) {
   return (
-    <div className="mt-2 flex items-center gap-3">
-      <span className="h-px w-8 bg-gradient-to-r from-[#6366F1] to-transparent" />
-      <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6366F1]">
-        {label}
-      </span>
-      <span className="h-px flex-1 bg-[#1C2333]" />
+    <div className="flex min-h-[240px] flex-col items-center justify-center text-center">
+      <span className="mb-3 text-2xl text-[#374151]">◎</span>
+      <p className="max-w-sm text-sm text-[#6E7681]">{message}</p>
     </div>
   );
 }
 
 export function ReportView({ report, onReset }: ReportViewProps) {
-  const [activeTab, setActiveTab] = useState<TabId>("influence");
+  const [activeTab, setActiveTab] = useState<TabId>("core");
   const [highlightItem, setHighlightItem] = useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const generatedDate = new Date(report.generatedAt).toLocaleString("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-
-  // Round 2 reports carry audience/brand/context; legacy reports carry query
-  const audienceText = report.audience ?? report.query ?? "";
+  const core = report.influentialCore;
   const normalizedPeriphery = normalizePeriphery(report);
-  const peripheryInsights = report.peripheryData?.insights;
+  const adjacencyInsights = report.peripheryData?.insights;
 
-  // Quadrant dot click → jump to the item in the Influence Map tab
+  // Quadrant dot click → highlight + scroll to the item (both live on Social)
   const handleQuadrantSelect = useCallback((name: string) => {
     setHighlightItem(name);
-    setActiveTab("map");
   }, []);
 
-  // Scroll content to top on tab change (unless jumping to a highlighted item)
+  // Scroll content to top on tab change
   useEffect(() => {
-    if (highlightItem && activeTab === "map") return;
     contentRef.current?.scrollTo({ top: 0 });
     window.scrollTo({ top: 0 });
-  }, [activeTab, highlightItem]);
+  }, [activeTab]);
 
   function handleTabChange(id: TabId) {
     setHighlightItem(null);
@@ -81,9 +83,9 @@ export function ReportView({ report, onReset }: ReportViewProps) {
 
   return (
     <div className="animate-fade-in-up">
-      {/* Top bar: New Analysis button */}
-      <div className="mb-4 flex items-center justify-between">
-        <div /> {/* spacer */}
+      {/* Top bar: report title + New Analysis button */}
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <h2 className="truncate text-xl font-bold text-[#E8EDF2]">{report.archetype}</h2>
         <button
           onClick={onReset}
           className="shrink-0 rounded-lg border border-[#1C2333] bg-[#0D1117] px-4 py-2 text-sm text-[#8B949E] transition-colors hover:border-[#6366F1]/50 hover:text-[#E8EDF2]"
@@ -92,95 +94,44 @@ export function ReportView({ report, onReset }: ReportViewProps) {
         </button>
       </div>
 
-      {/* Sticky tab bar — top-[57px] offsets past the 57px site nav */}
-      <div className="sticky top-[57px] z-20 -mx-4 mb-6 border-b border-[#1C2333] bg-[#080B0F]/95 px-4 backdrop-blur-sm sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-        <nav className="flex overflow-x-auto" aria-label="Report sections">
-          {TABS.map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => handleTabChange(tab.id)}
-                className={[
-                  "relative shrink-0 whitespace-nowrap px-4 py-2.5 text-left transition-colors focus:outline-none",
-                  isActive ? "text-[#E8EDF2]" : "text-[#6E7681] hover:text-[#8B949E]",
-                ].join(" ")}
-              >
-                <span className="block text-sm font-medium">{tab.label}</span>
-                <span className={`block text-[10px] ${isActive ? "text-[#6366F1]" : "text-[#374151]"}`}>
-                  {tab.sub}
-                </span>
-                {isActive && (
-                  <span className="absolute inset-x-0 bottom-0 h-[2px] rounded-t-sm bg-[#6366F1]" />
-                )}
-              </button>
-            );
-          })}
-        </nav>
-      </div>
+      <TabBar tabs={TABS} activeTab={activeTab} onChange={handleTabChange} />
 
-      {/* Tab content */}
       <div ref={contentRef}>
-        {/* ── Tab 1: Influence — who matters? ── */}
-        {activeTab === "influence" && (
+        {/* ── Tab 1: The Influential Core ── */}
+        {activeTab === "core" && (
           <div className="space-y-5">
-            {/* Report header */}
-            <div className="mb-2">
-              <div className="mb-1 flex items-center gap-2">
-                <span className="h-px max-w-[48px] flex-1 bg-gradient-to-r from-[#6366F1] to-transparent" />
-                <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6366F1]">
-                  Influence Report
-                </span>
-              </div>
-              <h2 className="text-2xl font-bold text-[#E8EDF2]">{report.archetype}</h2>
-              {audienceText && (
-                <blockquote className="mt-3 max-w-2xl border-l-2 border-[#6366F1]/40 pl-3 text-sm italic text-[#8B949E]">
-                  {audienceText}
-                </blockquote>
-              )}
-              {(report.brand || report.context) && (
-                <div className="mt-2 max-w-2xl space-y-1">
-                  {report.brand && (
-                    <p className="text-xs text-[#6E7681]">
-                      <span className="font-semibold uppercase tracking-wider text-[#374151]">Brand · </span>
-                      {report.brand}
-                    </p>
-                  )}
-                  {report.context && (
-                    <p className="text-xs text-[#6E7681]">
-                      <span className="font-semibold uppercase tracking-wider text-[#374151]">Context · </span>
-                      {report.context}
-                    </p>
-                  )}
-                </div>
-              )}
-              <p className="mt-3 max-w-2xl text-sm text-[#8B949E]">{report.summary}</p>
-              <p className="mt-2 text-[11px] text-[#6E7681]">Generated {generatedDate}</p>
-            </div>
-
+            <ReportInputs report={report} />
+            <ResearchDepthSummary report={report} />
+            {report.summary && (
+              <p className="max-w-2xl px-1 text-sm text-[#8B949E]">{report.summary}</p>
+            )}
             {report.researchDepth && <ResearchDepth data={report.researchDepth} />}
-            {report.influentialCore && <InfluentialCore data={report.influentialCore} />}
-            <InfluenceQuadrant items={report.influenceMap} onSelectItem={handleQuadrantSelect} />
+            {core ? (
+              <InfluentialCoreDescription data={core} />
+            ) : (
+              <EmptyTabNote message="This report predates the influential core analysis — run a new report to populate it." />
+            )}
+            {report.influenceSusceptibility && (
+              <InfluenceSusceptibility data={report.influenceSusceptibility} />
+            )}
+            {core?.activationRecommendations && (
+              <ActivationPlaybook recommendations={core.activationRecommendations} />
+            )}
           </div>
         )}
 
-        {/* ── Tab 2: Influence Map — what moves them? ── */}
-        {activeTab === "map" && (
+        {/* ── Tab 2: Social ── */}
+        {activeTab === "social" && (
           <div className="space-y-5">
+            <CoreListCard
+              title="Language Codes"
+              icon="❞"
+              intro="Language patterns that signal belonging to the influential core."
+              items={core?.languageCodes}
+            />
             <InfluenceMap data={report.influenceMap} highlightName={highlightItem} />
-
-            <SectionHeader label="Emotional Drivers" />
-            <EmotionalDrivers data={report.emotionalDrivers} />
-
-            <SectionHeader label="Digital Habitat" />
             <DigitalHabitat data={report.digitalHabitat} />
-
-            <SectionHeader label="Cultural Signals" />
-            <div className="grid gap-5 lg:grid-cols-2">
-              <CulturalDiscourse data={report.culturalDiscourse} />
-              <BehavioralSignals data={report.behavioralSignals} />
-            </div>
-            <CulturalDepthCheck data={report.culturalDepthCheck} />
+            <InfluenceQuadrant items={report.influenceMap} onSelectItem={handleQuadrantSelect} />
 
             {/* Collapsible research sources */}
             {(report.sources?.length || report.rankedSources?.length) ? (
@@ -198,45 +149,69 @@ export function ReportView({ report, onReset }: ReportViewProps) {
           </div>
         )}
 
-        {/* ── Tab 3: Entry Points — where to show up ── */}
-        {activeTab === "entry" && (
+        {/* ── Tab 3: Trust ── */}
+        {activeTab === "trust" && (
           <div className="space-y-5">
-            {report.entryPoints && report.entryPoints.length > 0 ? (
-              <EntryPoints data={report.entryPoints} />
+            {core?.trustSignals?.length ? (
+              <CoreListCard
+                title="Trust Signals"
+                icon="✓"
+                intro="What earns belief with the influential core — the voices, evidence, and experiences that carry weight."
+                items={core.trustSignals}
+              />
             ) : (
-              <p className="py-8 text-center text-sm text-[#6E7681]">
-                No entry point data in this report.
-              </p>
-            )}
-            {report.influentialCore?.activationRecommendations && (
-              <ActivationPlaybook recommendations={report.influentialCore.activationRecommendations} />
-            )}
-            {report.influenceSusceptibility && (
-              <>
-                <SectionHeader label="How This Audience Responds to Influence" />
-                <InfluenceSusceptibility data={report.influenceSusceptibility} />
-              </>
+              <EmptyTabNote message="No trust signal data in this report." />
             )}
           </div>
         )}
 
-        {/* ── Tab 4: Periphery — who else are they? ── */}
-        {activeTab === "periphery" && (
+        {/* ── Tab 4: Behavioral ── */}
+        {activeTab === "behavioral" && (
+          <div className="space-y-5">
+            {report.entryPoints && report.entryPoints.length > 0 && (
+              <EntryPoints data={report.entryPoints} />
+            )}
+            <BehavioralSignals data={report.behavioralSignals} />
+            <CoreListCard
+              title="Habitual Behaviors"
+              icon="↻"
+              intro="Behaviors that define membership in the influential core."
+              items={core?.keyBehaviors}
+            />
+          </div>
+        )}
+
+        {/* ── Tab 5: Motivational ── */}
+        {activeTab === "motivational" && (
+          <div className="space-y-5">
+            <EmotionalDrivers data={report.emotionalDrivers} />
+            <CoreListCard
+              title="Key Tensions"
+              icon="⇋"
+              intro="The tensions the influential core navigates — friction points that explain why they act."
+              items={core?.keyTensions}
+            />
+          </div>
+        )}
+
+        {/* ── Tab 6: Cultural ── */}
+        {activeTab === "cultural" && (
+          <div className="space-y-5">
+            <CulturalDiscourse data={report.culturalDiscourse} />
+            <CulturalDepthCheck data={report.culturalDepthCheck} />
+          </div>
+        )}
+
+        {/* ── Tab 7: Adjacencies ── */}
+        {activeTab === "adjacencies" && (
           <div className="space-y-5">
             {normalizedPeriphery ? (
               <>
                 <PeripheryMap archetype={report.archetype} data={normalizedPeriphery} />
-                {peripheryInsights && <PeripheryInsights insights={peripheryInsights} />}
+                {adjacencyInsights && <PeripheryInsights insights={adjacencyInsights} />}
               </>
             ) : (
-              <div className="flex min-h-[300px] flex-col items-center justify-center text-center">
-                <span className="mb-3 text-2xl text-[#374151]">◎</span>
-                <p className="text-sm font-medium text-[#8B949E]">No periphery data available</p>
-                <p className="mt-1 max-w-sm text-xs text-[#6E7681]">
-                  This report was generated before the Periphery agent was added. Run a new report to
-                  map adjacent audiences and interest overlaps.
-                </p>
-              </div>
+              <EmptyTabNote message="No adjacency data available — this report was generated before adjacency mapping was added. Run a new report to map adjacent audiences and overlaps." />
             )}
           </div>
         )}
