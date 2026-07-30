@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { ScoreBar } from "@/components/ui/ScoreBar";
 import { InfoButton } from "@/components/ui/InfoButton";
 import { SECTION_INFO } from "@/lib/sectionInfo";
+import { CoreVsBase } from "./CoreVsBase";
 
 function SourceLink({ url }: { url: string }) {
   return (
@@ -164,6 +165,7 @@ export function InfluenceMap({ data, highlightName }: InfluenceMapProps) {
                 ))}
               </div>
             )}
+            <CoreVsBase note={influencer.coreVsBase} />
           </div>
         ))}
       </div>

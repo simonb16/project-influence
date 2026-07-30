@@ -298,10 +298,13 @@ export async function runSynthesisAgent(
   reconciliation: ReconciliationResult
 ): Promise<SynthesisResult> {
   log(`Synthesis agent — started`);
+  // Round 4 added six structured sections to the synthesis output — give it
+  // extra output headroom so the report JSON can't truncate.
   const result = await withDeadline("Synthesis agent", REASONING_TIMEOUT_MS, (signal) =>
     runReasoningAgent<SynthesisResult>(
       buildSynthesisPrompt(inputs, JSON.stringify(reconciliation, null, 2)),
-      signal
+      signal,
+      48000
     )
   );
   log(`Synthesis agent — complete`);

@@ -68,7 +68,7 @@ export function InfluenceSusceptibility({ data }: { data: ArchetypeReport["influ
       </div>
 
       {/* Susceptibility profile (three-lens reports) */}
-      {(data.highSusceptibility?.length || data.lowSusceptibility?.length || data.trustTransferPaths?.length) ? (
+      {(data.highSusceptibility?.length || data.lowSusceptibility?.length) ? (
         <div className="mt-5 space-y-3 border-t border-[#1C2333] pt-5">
           <div className="grid gap-3 sm:grid-cols-2">
             {data.highSusceptibility && data.highSusceptibility.length > 0 && (
@@ -96,18 +96,7 @@ export function InfluenceSusceptibility({ data }: { data: ArchetypeReport["influ
               </div>
             )}
           </div>
-          {data.trustTransferPaths && data.trustTransferPaths.length > 0 && (
-            <div className="rounded-lg border border-[#1C2333] bg-[#080B0F] p-3">
-              <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[#6366F1]">
-                Trust Transfer Paths
-              </p>
-              <ul className="space-y-1">
-                {data.trustTransferPaths.map((path, i) => (
-                  <li key={i} className="font-mono text-xs text-[#8B949E]">{path}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {/* Trust Transfer Paths render on the Trust tab (TrustTransferPaths.tsx) */}
         </div>
       ) : null}
     </Card>

@@ -22,6 +22,13 @@ import { ResearchTrail } from "./ResearchTrail";
 import { SourceRanking } from "./SourceRanking";
 import { PeripheryMap } from "./PeripheryMap";
 import { PeripheryInsights } from "./PeripheryInsights";
+import { SignalsSnapshot, SignalTabTarget } from "./SignalsSnapshot";
+import { BarriersFrictions } from "./BarriersFrictions";
+import { FindabilitySection } from "./FindabilitySection";
+import { InMarketBehaviorSection } from "./InMarketBehaviorSection";
+import { TrustedVoices } from "./TrustedVoices";
+import { TrustTransferPaths } from "./TrustTransferPaths";
+import { RealWorldHabitat } from "./RealWorldHabitat";
 
 interface ReportViewProps {
   report: ArchetypeReport;
@@ -111,6 +118,12 @@ export function ReportView({ report, onReset }: ReportViewProps) {
             ) : (
               <EmptyTabNote message="This report predates the influential core analysis — run a new report to populate it." />
             )}
+            {report.signalsSnapshot && (
+              <SignalsSnapshot
+                data={report.signalsSnapshot}
+                onNavigate={(tab: SignalTabTarget) => handleTabChange(tab)}
+              />
+            )}
             {report.influenceSusceptibility && (
               <InfluenceSusceptibility data={report.influenceSusceptibility} />
             )}
@@ -131,6 +144,7 @@ export function ReportView({ report, onReset }: ReportViewProps) {
             />
             <InfluenceMap data={report.influenceMap} highlightName={highlightItem} />
             <DigitalHabitat data={report.digitalHabitat} />
+            {report.realWorldHabitat && <RealWorldHabitat data={report.realWorldHabitat} />}
             <InfluenceQuadrant items={report.influenceMap} onSelectItem={handleQuadrantSelect} />
 
             {/* Collapsible research sources */}
@@ -152,13 +166,17 @@ export function ReportView({ report, onReset }: ReportViewProps) {
         {/* ── Tab 3: Trust ── */}
         {activeTab === "trust" && (
           <div className="space-y-5">
-            {core?.trustSignals?.length ? (
-              <CoreListCard
-                title="Trust Signals"
-                icon="✓"
-                intro="What earns belief with the influential core — the voices, evidence, and experiences that carry weight."
-                items={core.trustSignals}
-              />
+            {core?.trustSignals?.length || report.trustedVoices?.length ? (
+              <>
+                <CoreListCard
+                  title="Trust Signals"
+                  icon="✓"
+                  intro="What earns belief with the influential core — the voices, evidence, and experiences that carry weight."
+                  items={core?.trustSignals}
+                />
+                {report.trustedVoices && <TrustedVoices data={report.trustedVoices} />}
+                <TrustTransferPaths paths={report.influenceSusceptibility?.trustTransferPaths} />
+              </>
             ) : (
               <EmptyTabNote message="No trust signal data in this report." />
             )}
@@ -171,6 +189,8 @@ export function ReportView({ report, onReset }: ReportViewProps) {
             {report.entryPoints && report.entryPoints.length > 0 && (
               <EntryPoints data={report.entryPoints} />
             )}
+            {report.findability && <FindabilitySection data={report.findability} />}
+            {report.inMarketBehavior && <InMarketBehaviorSection data={report.inMarketBehavior} />}
             <BehavioralSignals data={report.behavioralSignals} />
             <CoreListCard
               title="Habitual Behaviors"
@@ -191,6 +211,7 @@ export function ReportView({ report, onReset }: ReportViewProps) {
               intro="The tensions the influential core navigates — friction points that explain why they act."
               items={core?.keyTensions}
             />
+            {report.barriers && <BarriersFrictions data={report.barriers} />}
           </div>
         )}
 

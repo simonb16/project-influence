@@ -9,7 +9,7 @@ export const SECTION_INFO: Record<string, SectionInfo> = {
   influentialCore: {
     title: "The Influential Core",
     description:
-      "Defines the most socially active part of this audience — the people whose behaviors, opinions, and choices are visibly copied, discussed, and trusted by others. Most of an audience are tourists who pass through casually; the influential core are rooted. When they adopt something, others follow. When they reject something, it stalls.",
+      "The early adopters of a mindset or behavior — the real people within the audience who disproportionately influence what others believe, adopt, and share. They're not defined by follower counts or platform reach: they're early, trusted, esteemed through demonstrated experience, and open about what they do — which is what makes their behavior copyable. Their influence moves through networks and communities, not broadcast.",
     methodology:
       "Synthesized from three independent research lenses — audience, brand, and market context — that each researched this audience separately, followed by a reconciliation step that identified where the lenses converged and conflicted about who the core is. Convergence across independent research paths is what gives this definition structural credibility.",
   },
@@ -90,6 +90,60 @@ export const SECTION_INFO: Record<string, SectionInfo> = {
       "Signal strength is rated 1–100 based on how much actionable behavioral data the agent extracted from each source: frequency of relevant discussions, specificity of community vocabulary, evidence of decision-making and behavior change, and how central the community is to this archetype's identity. A niche subreddit with 10K members where people post weekly purchase decisions will rank higher than a 2M-member group with low-quality discourse.",
     scoring:
       "80–100 = primary signal source, central to understanding this archetype. 60–79 = strong secondary source with meaningful behavioral data. 40–59 = supplementary source, useful for context. Below 40 = limited signal, included for completeness.",
+  },
+
+  barriers: {
+    title: "Barriers & Frictions",
+    description:
+      "What prevents the influential core from acting — adopting, buying, participating, or advocating. The missing half of the motivational picture: emotional drivers explain why they act, barriers explain why they don't.",
+    methodology:
+      "Surfaced from community discussions, review patterns, and lens findings where core members describe hesitation, abandonment, or frustration. Each barrier is typed (practical, psychological, social, or trust) and paired with the evidence-based condition that would lower it — not a campaign idea.",
+    scoring:
+      "Blocking Intensity (0–100) reflects how strongly each barrier prevents action based on how frequently and emphatically it appears in the core's own discussions.",
+  },
+
+  findability: {
+    title: "Findability",
+    description:
+      "The targeting profile for the influential core — the practical parameters someone would use to find and reach them: ad-platform interest categories, the search terms they actually use, the specific platform corners they concentrate in, and non-obvious affinity overlaps.",
+    methodology:
+      "Every entry traces to lens evidence, expressed in the core's own vocabulary rather than marketing-speak. Insider search terms come from the language codes research; platform concentrations name specific spaces (subreddits, hashtags, forums), not generic platforms. These are findability parameters, not campaign recommendations.",
+  },
+
+  inMarketBehavior: {
+    title: "In-Market Behavior",
+    description:
+      "How the influential core behaves when actively considering a purchase or adoption decision: how they research, how they compare options, what tips them into acting, and what they do afterward — the post-purchase moment is where core members become transmission engines.",
+    methodology:
+      "Grounded in community discussions of purchase decisions, review behavior, and 'should I buy' threads read by the lens agents. Where in-market evidence was thin, the section says so rather than inventing a journey.",
+  },
+
+  trustedVoices: {
+    title: "Trusted Voices",
+    description:
+      "The voice archetypes the influential core actually believes, ranked by trust weight — with the trust mechanism behind each, the proof formats that land, and what would break the trust.",
+    methodology:
+      "Archetypes are derived from patterns in who the core defers to across community discussions. Named individuals appear only when the lenses found them cited repeatedly and specifically as peer-trusted — never because they're big. Fragility notes capture the conditions under which each voice's credibility would collapse.",
+    scoring:
+      "Trust Weight (0–100) reflects how consistently and strongly the core defers to this voice type in observed discussions.",
+  },
+
+  realWorldHabitat: {
+    title: "Real World Habitat",
+    description:
+      "The offline mirror of the digital habitat: the in-real-life places and gatherings where influence actually happens — shops, clubs, workplaces, classes, events. People reveal these contexts constantly in how they talk online ('my local shop recommended…', 'someone at craft night showed me…').",
+    methodology:
+      "Collected only from real dialogue patterns and documented behavior found by the lens agents — never guessed from plausibility. Offline evidence is rarer than digital evidence, so a short well-evidenced list beats a long speculative one; when offline evidence was thin, this section is deliberately short.",
+    scoring:
+      "Influence Strength (0–100) reflects how significant each context is for the core, based on how often and how centrally it appears in the evidence.",
+  },
+
+  signalsSnapshot: {
+    title: "Signals Snapshot",
+    description:
+      "The four Signals of Influence at a glance — the influential core at the center, surrounded by its top motivational, behavioral, trust, and social signals. Built for readers who won't go deep into the tabs.",
+    methodology:
+      "Every entry is derived, not invented: pulled from a scored section of the full report, carrying the same name and score. Motivational entries come from the Emotional Driver Dashboard, behavioral from Behaviors and Triggers, trust from Influence Susceptibility (one step deeper — the specific means of influence or type of trusted peer), and social from the Influence Map, Digital Habitat, and Real World Habitat together.",
   },
 
   influenceQuadrant: {
