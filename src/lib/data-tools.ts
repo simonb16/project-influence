@@ -8,9 +8,17 @@
 // activate automatically once their keys land in .env, no code changes.
 
 import googleTrends from "google-trends-api";
+import fs from "fs";
+import path from "path";
 
 export interface ToolError {
   error: string;
+  /** Infrastructure-level failure (timeout, block page, auth, quota) — the tool
+   * is dead for the rest of this run and gets deregistered by the agent loop.
+   * Query-level misses ("no data for X") do NOT set this. */
+  toolDead?: boolean;
+  /** SerpApi monthly quota is used up — surfaced distinctly in SSE + Signal Check. */
+  quotaExhausted?: boolean;
 }
 
 const TOOL_TIMEOUT_MS = 10_000;
@@ -18,20 +26,33 @@ const TOOL_TIMEOUT_MS = 10_000;
 /** Hard cap on reconciliation tool calls per run — enforced in the agent loop. */
 export const MAX_TOOL_CALLS = 8;
 
+// Same log file the agents write to — keeps the tool audit trail in one place.
+const LOG_FILE = path.join(process.cwd(), "agent.log");
+function log(message: string) {
+  const line = `[${new Date().toLocaleTimeString("en-US", { hour12: false })}] ${message}\n`;
+  try {
+    fs.appendFileSync(LOG_FILE, line);
+  } catch { /* logging must never break a tool call */ }
+}
+
 function isToolError(v: unknown): v is ToolError {
   return typeof v === "object" && v !== null && "error" in v;
 }
 
-/** Wrap any tool promise in a hard timeout so a hung API can't stall the pipeline. */
+/** Wrap any tool promise in a hard timeout so a hung API can't stall the pipeline.
+ * Timeouts and thrown errors are infrastructure failures → toolDead. */
 async function withTimeout<T>(work: Promise<T>, label: string): Promise<T | ToolError> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<ToolError>((resolve) => {
-    timer = setTimeout(() => resolve({ error: `${label} timed out after ${TOOL_TIMEOUT_MS / 1000}s` }), TOOL_TIMEOUT_MS);
+    timer = setTimeout(
+      () => resolve({ error: `${label} timed out after ${TOOL_TIMEOUT_MS / 1000}s`, toolDead: true }),
+      TOOL_TIMEOUT_MS
+    );
   });
   try {
     return await Promise.race([work, timeout]);
   } catch (err) {
-    return { error: `${label} failed: ${err instanceof Error ? err.message : String(err)}` };
+    return { error: `${label} failed: ${err instanceof Error ? err.message : String(err)}`, toolDead: true };
   } finally {
     clearTimeout(timer);
   }
@@ -42,11 +63,17 @@ function truncate(s: string | undefined | null, max: number): string {
   return s.length > max ? s.slice(0, max - 1) + "…" : s;
 }
 
-// ─── Google Trends (no key — unofficial endpoints via google-trends-api) ─────
+// ─── Google Trends — SerpApi primary, unofficial endpoint fallback ───────────
+// SerpApi (SERPAPI_KEY) is the reliable backend: official-grade JSON, works
+// from datacenter IPs. The unofficial google-trends-api package remains as
+// the automatic fallback when SERPAPI_KEY is absent (it gets bot-blocked
+// after ~10 calls and will be worse from Railway). The tool registers when
+// EITHER backend is available. Same GoogleTrendsResult shape from both.
 
 export interface GoogleTrendsResult {
   query: string;
   timeRange: string;
+  backend: "serpapi" | "unofficial";
   trendDirection: "rising" | "stable" | "declining" | "breakout";
   percentChange: string; // e.g. "+103%" comparing start vs end of window
   interestOverTime: Array<{ period: string; value: number }>; // downsampled
@@ -57,7 +84,131 @@ export interface GoogleTrendsResult {
 
 const TIME_RANGE_MONTHS: Record<string, number> = { "3m": 3, "6m": 6, "12m": 12 };
 
-async function googleTrendsInner(query: string, timeRange = "12m"): Promise<GoogleTrendsResult | ToolError> {
+/** Shared trend math for both backends — identical classification either way. */
+function classifyTimeline(values: number[]): { percentChange: string; trendDirection: GoogleTrendsResult["trendDirection"] } {
+  const head = values.slice(0, Math.max(4, Math.floor(values.length / 6)));
+  const tail = values.slice(-Math.max(4, Math.floor(values.length / 6)));
+  const avg = (arr: number[]) => arr.reduce((s, v) => s + v, 0) / Math.max(arr.length, 1);
+  const headAvg = avg(head);
+  const tailAvg = avg(tail);
+
+  if (headAvg === 0 && tailAvg > 0) {
+    return { percentChange: "breakout (from zero baseline)", trendDirection: "breakout" };
+  }
+  const pct = headAvg === 0 ? 0 : Math.round(((tailAvg - headAvg) / headAvg) * 100);
+  return {
+    percentChange: `${pct >= 0 ? "+" : ""}${pct}%`,
+    trendDirection: pct > 400 ? "breakout" : pct > 15 ? "rising" : pct < -15 ? "declining" : "stable",
+  };
+}
+
+function downsample(points: Array<{ period: string; value: number }>): Array<{ period: string; value: number }> {
+  const step = Math.max(1, Math.floor(points.length / 12));
+  return points.filter((_, i) => i % step === 0);
+}
+
+// ── SerpApi backend ──
+
+const SERPAPI_QUOTA_RE = /out of searches|no( more)? searches left|run out of searches/i;
+
+function serpApiDateParam(timeRange: string): string {
+  if (timeRange === "3m") return "today 3-m";
+  if (timeRange === "6m") {
+    const fmt = (d: Date) => d.toISOString().slice(0, 10);
+    const end = new Date();
+    const start = new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000);
+    return `${fmt(start)} ${fmt(end)}`;
+  }
+  return "today 12-m";
+}
+
+async function serpApiFetch(params: Record<string, string>): Promise<Record<string, unknown> | ToolError> {
+  const qs = new URLSearchParams({ ...params, api_key: process.env.SERPAPI_KEY! }).toString();
+  const res = await fetch(`https://serpapi.com/search.json?${qs}`);
+  let json: Record<string, unknown>;
+  try {
+    json = await res.json();
+  } catch {
+    return { error: `serpapi returned a non-JSON response (${res.status})`, toolDead: true };
+  }
+  const apiError = typeof json.error === "string" ? json.error : undefined;
+  if (apiError) {
+    if (SERPAPI_QUOTA_RE.test(apiError)) {
+      return {
+        error:
+          "google_trends unavailable: SerpApi monthly quota exhausted. List this source as 'Google Trends (SerpApi quota exhausted)' in unavailableSources.",
+        toolDead: true,
+        quotaExhausted: true,
+      };
+    }
+    return { error: `serpapi error: ${truncate(apiError, 200)}`, toolDead: !res.ok };
+  }
+  if (!res.ok) return { error: `serpapi request failed (${res.status})`, toolDead: true };
+  return json;
+}
+
+/** Best-effort quota logging (free endpoint, doesn't count as a search). */
+async function logSerpApiQuota(): Promise<void> {
+  try {
+    const res = await fetch(`https://serpapi.com/account.json?api_key=${process.env.SERPAPI_KEY}`);
+    if (!res.ok) return;
+    const json = await res.json();
+    if (typeof json.plan_searches_left === "number") {
+      log(`serpapi quota: ${json.plan_searches_left} searches left this month (used ${json.this_month_usage ?? "?"})`);
+    }
+  } catch { /* best-effort */ }
+}
+
+async function serpApiTrendsInner(query: string, timeRange = "12m"): Promise<GoogleTrendsResult | ToolError> {
+  const date = serpApiDateParam(timeRange);
+
+  const series = await serpApiFetch({ engine: "google_trends", q: query, data_type: "TIMESERIES", date });
+  if (isToolError(series)) return series;
+
+  const timelineData = ((series.interest_over_time as { timeline_data?: unknown[] } | undefined)?.timeline_data ??
+    []) as Array<{ date?: string; values?: Array<{ extracted_value?: number; value?: string }> }>;
+  if (timelineData.length === 0) {
+    return { error: `google_trends returned no data for "${query}" — the term may be too niche for Trends` };
+  }
+
+  const points = timelineData.map((t) => ({
+    period: t.date ?? "",
+    value: t.values?.[0]?.extracted_value ?? Number(t.values?.[0]?.value ?? 0),
+  }));
+  const { percentChange, trendDirection } = classifyTimeline(points.map((p) => p.value));
+
+  // Related queries: second SerpApi search (quota-aware: TIMESERIES + RELATED_QUERIES
+  // = 2 searches per tool call). Regions intentionally skipped on this backend to
+  // conserve quota. Best-effort — a failure here doesn't sink the call.
+  let relatedQueriesTop: string[] = [];
+  let relatedQueriesRising: string[] = [];
+  try {
+    const rel = await serpApiFetch({ engine: "google_trends", q: query, data_type: "RELATED_QUERIES", date });
+    if (!isToolError(rel)) {
+      const rq = rel.related_queries as { top?: Array<{ query?: string }>; rising?: Array<{ query?: string }> } | undefined;
+      relatedQueriesTop = (rq?.top ?? []).slice(0, 5).map((k) => k.query ?? "").filter(Boolean);
+      relatedQueriesRising = (rq?.rising ?? []).slice(0, 5).map((k) => k.query ?? "").filter(Boolean);
+    }
+  } catch { /* best-effort */ }
+
+  void logSerpApiQuota();
+
+  return {
+    query,
+    timeRange,
+    backend: "serpapi",
+    trendDirection,
+    percentChange,
+    interestOverTime: downsample(points),
+    relatedQueriesTop,
+    relatedQueriesRising,
+    topRegions: [], // not fetched on serpapi backend (quota economy)
+  };
+}
+
+// ── Unofficial backend (fallback when SERPAPI_KEY is absent) ──
+
+async function unofficialTrendsInner(query: string, timeRange = "12m"): Promise<GoogleTrendsResult | ToolError> {
   const months = TIME_RANGE_MONTHS[timeRange] ?? 12;
   const startTime = new Date(Date.now() - months * 30 * 24 * 60 * 60 * 1000);
 
@@ -67,8 +218,11 @@ async function googleTrendsInner(query: string, timeRange = "12m"): Promise<Goog
     parsed = JSON.parse(raw);
   } catch {
     // Google returns an HTML block page instead of JSON when the unofficial
-    // endpoint is throttled or has moved — surface that clearly.
-    return { error: "google_trends returned a non-JSON response (unofficial endpoint throttled or unavailable) — do not retry this tool" };
+    // endpoint is bot-blocked or throttled.
+    return {
+      error: "google_trends returned a non-JSON response (unofficial endpoint bot-blocked or throttled)",
+      toolDead: true,
+    };
   }
 
   const timeline = parsed.default?.timelineData ?? [];
@@ -76,29 +230,11 @@ async function googleTrendsInner(query: string, timeRange = "12m"): Promise<Goog
     return { error: `google_trends returned no data for "${query}" — the term may be too niche for Trends` };
   }
 
-  const values = timeline.map((t) => t.value?.[0] ?? 0);
-  const head = values.slice(0, Math.max(4, Math.floor(values.length / 6)));
-  const tail = values.slice(-Math.max(4, Math.floor(values.length / 6)));
-  const avg = (arr: number[]) => arr.reduce((s, v) => s + v, 0) / Math.max(arr.length, 1);
-  const headAvg = avg(head);
-  const tailAvg = avg(tail);
-
-  let percentChange: string;
-  let trendDirection: GoogleTrendsResult["trendDirection"];
-  if (headAvg === 0 && tailAvg > 0) {
-    percentChange = "breakout (from zero baseline)";
-    trendDirection = "breakout";
-  } else {
-    const pct = headAvg === 0 ? 0 : Math.round(((tailAvg - headAvg) / headAvg) * 100);
-    percentChange = `${pct >= 0 ? "+" : ""}${pct}%`;
-    trendDirection = pct > 400 ? "breakout" : pct > 15 ? "rising" : pct < -15 ? "declining" : "stable";
-  }
-
-  // Downsample the timeline to ~12 points to respect the token cap
-  const step = Math.max(1, Math.floor(timeline.length / 12));
-  const interestOverTime = timeline
-    .filter((_, i) => i % step === 0)
-    .map((t) => ({ period: t.formattedAxisTime ?? t.formattedTime ?? "", value: t.value?.[0] ?? 0 }));
+  const points = timeline.map((t) => ({
+    period: t.formattedAxisTime ?? t.formattedTime ?? "",
+    value: t.value?.[0] ?? 0,
+  }));
+  const { percentChange, trendDirection } = classifyTimeline(points.map((p) => p.value));
 
   // Related queries + regions are best-effort — partial failure is fine
   let relatedQueriesTop: string[] = [];
@@ -124,9 +260,10 @@ async function googleTrendsInner(query: string, timeRange = "12m"): Promise<Goog
   return {
     query,
     timeRange,
+    backend: "unofficial",
     trendDirection,
     percentChange,
-    interestOverTime,
+    interestOverTime: downsample(points),
     relatedQueriesTop,
     relatedQueriesRising,
     topRegions,
@@ -134,7 +271,17 @@ async function googleTrendsInner(query: string, timeRange = "12m"): Promise<Goog
 }
 
 export async function searchGoogleTrends(query: string, timeRange?: string): Promise<GoogleTrendsResult | ToolError> {
-  return withTimeout(googleTrendsInner(query, timeRange), "google_trends");
+  const backend = process.env.SERPAPI_KEY ? "serpapi" : "unofficial";
+  const result = await withTimeout(
+    backend === "serpapi" ? serpApiTrendsInner(query, timeRange) : unofficialTrendsInner(query, timeRange),
+    "google_trends"
+  );
+  if (isToolError(result)) {
+    log(`google_trends("${query}") via ${backend} → FAILED: ${result.quotaExhausted ? "QUOTA EXHAUSTED — SerpApi monthly searches used up" : result.error}`);
+  } else {
+    log(`google_trends("${query}") served by ${backend} (${result.percentChange}, ${result.trendDirection})`);
+  }
+  return result;
 }
 
 // ─── Reddit (OAuth2 app-only) ────────────────────────────────────────────────
@@ -196,7 +343,7 @@ async function redditInner(query: string, subreddit?: string): Promise<RedditRes
     ? `https://oauth.reddit.com/r/${encodeURIComponent(subreddit.replace(/^r\//, ""))}/search?q=${encodeURIComponent(query)}&restrict_sr=1&sort=top&t=year&limit=5`
     : `https://oauth.reddit.com/search?q=${encodeURIComponent(query)}&sort=top&t=year&limit=5`;
   const postRes = await fetch(searchUrl, { headers });
-  if (!postRes.ok) return { error: `reddit search failed (${postRes.status})` };
+  if (!postRes.ok) return { error: `reddit search failed (${postRes.status})`, toolDead: true };
   const postJson = await postRes.json();
   const rawPosts = (postJson.data?.children ?? []) as Array<{
     data: { title: string; subreddit_name_prefixed: string; score: number; num_comments: number; permalink: string };
@@ -233,7 +380,7 @@ async function redditInner(query: string, subreddit?: string): Promise<RedditRes
 
 export async function searchReddit(query: string, subreddit?: string): Promise<RedditResult | ToolError> {
   if (!process.env.REDDIT_CLIENT_ID || !process.env.REDDIT_CLIENT_SECRET) {
-    return { error: "reddit is not configured (REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET missing) — do not retry this tool" };
+    return { error: "reddit is not configured (REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET missing) — do not retry this tool", toolDead: true };
   }
   return withTimeout(redditInner(query, subreddit), "reddit");
 }
@@ -262,7 +409,7 @@ async function youtubeInner(query: string, maxResults = 5): Promise<YouTubeResul
   );
   if (!searchRes.ok) {
     const body = await searchRes.text();
-    return { error: `youtube search failed (${searchRes.status}): ${truncate(body, 200)}` };
+    return { error: `youtube search failed (${searchRes.status}): ${truncate(body, 200)}`, toolDead: true };
   }
   const searchJson = await searchRes.json();
   const items = (searchJson.items ?? []) as Array<{
@@ -314,7 +461,7 @@ async function youtubeInner(query: string, maxResults = 5): Promise<YouTubeResul
 
 export async function searchYouTube(query: string, maxResults?: number): Promise<YouTubeResult | ToolError> {
   if (!process.env.YOUTUBE_API_KEY) {
-    return { error: "youtube is not configured (YOUTUBE_API_KEY missing) — do not retry this tool" };
+    return { error: "youtube is not configured (YOUTUBE_API_KEY missing) — do not retry this tool", toolDead: true };
   }
   return withTimeout(youtubeInner(query, maxResults), "youtube");
 }
@@ -334,7 +481,7 @@ async function pinterestInner(query: string): Promise<PinterestResult | ToolErro
   );
   if (!res.ok) {
     const body = await res.text();
-    return { error: `pinterest search failed (${res.status}): ${truncate(body, 200)}` };
+    return { error: `pinterest search failed (${res.status}): ${truncate(body, 200)}`, toolDead: true };
   }
   const json = await res.json();
   // Note: Pinterest v5 does not expose public save counts on searched pins;
@@ -352,7 +499,7 @@ async function pinterestInner(query: string): Promise<PinterestResult | ToolErro
 
 export async function searchPinterest(query: string): Promise<PinterestResult | ToolError> {
   if (!process.env.PINTEREST_ACCESS_TOKEN) {
-    return { error: "pinterest is not configured (PINTEREST_ACCESS_TOKEN missing) — do not retry this tool" };
+    return { error: "pinterest is not configured (PINTEREST_ACCESS_TOKEN missing) — do not retry this tool", toolDead: true };
   }
   return withTimeout(pinterestInner(query), "pinterest");
 }

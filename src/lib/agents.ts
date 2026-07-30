@@ -188,11 +188,15 @@ async function runReasoningToolLoop<T>(
   tools: DataToolSchema[],
   onToolCall?: (message: string) => void,
   maxTokens = 32000
-): Promise<{ result: T; toolCallsUsed: number }> {
+): Promise<{ result: T; toolCallsUsed: number; quotaExhaustedTools: string[] }> {
   const messages: Array<{ role: "user" | "assistant"; content: unknown }> = [
     { role: "user", content: prompt },
   ];
   let toolCallCount = 0;
+  // Sticky failure: after a tool's first hard failure this run, further requests
+  // for it are declined without burning budget.
+  const deadTools = new Set<string>();
+  const quotaExhaustedTools = new Set<string>();
   // Each iteration is one model turn; a turn can batch several tool calls.
   // Budget-exhausted turns terminate quickly, so cap iterations generously.
   const maxTurns = MAX_TOOL_CALLS + 4;
@@ -228,6 +232,19 @@ async function runReasoningToolLoop<T>(
       const results: Array<{ type: "tool_result"; tool_use_id: string; content: string }> = [];
 
       for (const tu of toolUses) {
+        const shortName = tu.name.replace("search_", "");
+
+        // Dead tool: decline without burning budget
+        if (deadTools.has(tu.name)) {
+          log(`Sticky failure — declined ${tu.name}("${String(tu.input?.query ?? "")}") without burning budget`);
+          results.push({
+            type: "tool_result",
+            tool_use_id: tu.id,
+            content: `${shortName} is unavailable for the rest of this analysis. Do not request it again.`,
+          });
+          continue;
+        }
+
         if (toolCallCount >= MAX_TOOL_CALLS) {
           log(`Tool budget exhausted — declined ${tu.name}("${String(tu.input?.query ?? "")}") request`);
           results.push({
@@ -237,11 +254,32 @@ async function runReasoningToolLoop<T>(
           });
           continue;
         }
+
         toolCallCount++;
         const queryLabel = String(tu.input?.query ?? "");
-        onToolCall?.(`Checking ${tu.name.replace("search_", "")}: "${queryLabel}" (${toolCallCount}/${MAX_TOOL_CALLS})`);
-        const result = await executeDataTool(tu.name, tu.input ?? {});
-        const resultJson = JSON.stringify(result);
+        onToolCall?.(`Checking ${shortName}: "${queryLabel}" (${toolCallCount}/${MAX_TOOL_CALLS})`);
+        const result = (await executeDataTool(tu.name, tu.input ?? {})) as {
+          error?: string;
+          toolDead?: boolean;
+          quotaExhausted?: boolean;
+        };
+
+        // Hard failure → deregister the tool for the rest of this run
+        if (result.error && result.toolDead) {
+          deadTools.add(tu.name);
+          if (result.quotaExhausted) {
+            quotaExhaustedTools.add(tu.name);
+            log(`QUOTA EXHAUSTED — ${tu.name}: SerpApi monthly searches used up`);
+            onToolCall?.("Google Trends unavailable: SerpApi monthly quota used up");
+          } else {
+            log(`Hard failure — ${tu.name} deregistered for the rest of this run`);
+          }
+        }
+
+        const payload = result.error && result.toolDead
+          ? { ...result, note: `${shortName} is unavailable for the rest of this analysis — do not request it again.` }
+          : result;
+        const resultJson = JSON.stringify(payload);
         // Log the full-ish result so cited numbers can be audited against reality
         log(`Tool call ${toolCallCount}/${MAX_TOOL_CALLS} — ${tu.name}("${queryLabel}") → ${resultJson.slice(0, 1500)}`);
         results.push({ type: "tool_result", tool_use_id: tu.id, content: resultJson });
@@ -255,6 +293,7 @@ async function runReasoningToolLoop<T>(
     return {
       result: JSON.parse(extractJSON(textFromContent(message.content))) as T,
       toolCallsUsed: toolCallCount,
+      quotaExhaustedTools: [...quotaExhaustedTools],
     };
   }
   throw new Error(`tool-use loop did not finish within ${maxTurns} turns`);
@@ -350,7 +389,7 @@ export async function runReconciliationAgent(
 ): Promise<ReconciliationResult> {
   const tools = getAvailableTools();
   log(`Reconciliation agent — started (${tools.length} data tools: ${tools.map((t) => t.name).join(", ") || "none"})`);
-  const { result, toolCallsUsed } = await withDeadline(
+  const { result, toolCallsUsed, quotaExhaustedTools } = await withDeadline(
     "Reconciliation agent",
     RECONCILIATION_TIMEOUT_MS,
     (signal) =>
@@ -367,6 +406,17 @@ export async function runReconciliationAgent(
         onProgress
       )
   );
+
+  // Deterministic quota footnote: don't rely on the model to phrase it — if
+  // SerpApi quota died mid-run, rewrite the unavailable-sources entry directly.
+  if (quotaExhaustedTools.includes("search_google_trends") && result.dataSignals) {
+    const label = "Google Trends (SerpApi quota exhausted)";
+    const others = (result.dataSignals.unavailableSources ?? []).filter(
+      (s) => !/google[\s_]?trends/i.test(s)
+    );
+    result.dataSignals.unavailableSources = [label, ...others];
+  }
+
   log(
     `Reconciliation agent — complete (${result.reconciledSignals?.length ?? 0} signals scored, ${toolCallsUsed}/${MAX_TOOL_CALLS} platform lookups)`
   );

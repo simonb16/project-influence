@@ -46,9 +46,13 @@ automatically when their keys are added; no code changes needed.
 # .env.local (local) / Railway service environment (production)
 ANTHROPIC_API_KEY=        # required — powers all agents
 YOUTUBE_API_KEY=          # YouTube Data API v3 (Google Cloud Console)
+SERPAPI_KEY=              # SerpApi — primary Google Trends backend (250 free searches/mo)
 REDDIT_CLIENT_ID=         # Reddit script app (reddit.com/prefs/apps)
 REDDIT_CLIENT_SECRET=
 PINTEREST_ACCESS_TOKEN=   # Pinterest API v5 (business account)
-# Google Trends needs no key (unofficial endpoints — may throttle)
+# Google Trends: uses SerpApi when SERPAPI_KEY is set (reliable, ~2 searches
+# per Trends lookup); falls back to unofficial endpoints when absent (gets
+# bot-blocked after ~10 calls, worse from datacenter IPs). Production Trends
+# reliability depends on SERPAPI_KEY being set in Railway.
 DISABLE_DATA_TOOLS=       # set to 1 to disable ALL data tools (incl. Trends)
 ```
