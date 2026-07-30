@@ -229,6 +229,7 @@ async function runReasoningToolLoop<T>(
 
       for (const tu of toolUses) {
         if (toolCallCount >= MAX_TOOL_CALLS) {
+          log(`Tool budget exhausted — declined ${tu.name}("${String(tu.input?.query ?? "")}") request`);
           results.push({
             type: "tool_result",
             tool_use_id: tu.id,
