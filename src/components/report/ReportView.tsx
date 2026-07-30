@@ -29,6 +29,8 @@ import { InMarketBehaviorSection } from "./InMarketBehaviorSection";
 import { TrustedVoices } from "./TrustedVoices";
 import { TrustTransferPaths } from "./TrustTransferPaths";
 import { RealWorldHabitat } from "./RealWorldHabitat";
+import { SignalCheck } from "./SignalCheck";
+import { CulturalConnectors } from "./CulturalConnectors";
 
 interface ReportViewProps {
   report: ArchetypeReport;
@@ -124,6 +126,7 @@ export function ReportView({ report, onReset }: ReportViewProps) {
                 onNavigate={(tab: SignalTabTarget) => handleTabChange(tab)}
               />
             )}
+            {report.dataSignals && <SignalCheck data={report.dataSignals} />}
             {report.influenceSusceptibility && (
               <InfluenceSusceptibility data={report.influenceSusceptibility} />
             )}
@@ -230,6 +233,9 @@ export function ReportView({ report, onReset }: ReportViewProps) {
               <>
                 <PeripheryMap archetype={report.archetype} data={normalizedPeriphery} />
                 {adjacencyInsights && <PeripheryInsights insights={adjacencyInsights} />}
+                {report.peripheryData?.culturalConnectors && (
+                  <CulturalConnectors data={report.peripheryData.culturalConnectors} />
+                )}
               </>
             ) : (
               <EmptyTabNote message="No adjacency data available — this report was generated before adjacency mapping was added. Run a new report to map adjacent audiences and overlaps." />

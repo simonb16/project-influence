@@ -146,6 +146,24 @@ export const SECTION_INFO: Record<string, SectionInfo> = {
       "Every entry is derived, not invented: pulled from a scored section of the full report, carrying the same name and score. Motivational entries come from the Emotional Driver Dashboard, behavioral from Behaviors and Triggers, trust from Influence Susceptibility (one step deeper — the specific means of influence or type of trusted peer), and social from the Influence Map, Digital Habitat, and Real World Habitat together.",
   },
 
+  signalCheck: {
+    title: "Signal Check",
+    description:
+      "Quantitative validation of the report's findings using live platform data — Google Trends, Reddit, YouTube, and Pinterest. The reconciliation agent reads the three lens analyses, identifies the claims that most need quantitative backing, and makes targeted API lookups (up to 8 per report).",
+    methodology:
+      "Every number shown is exactly what the platform API returned — never estimated or extrapolated. Each signal is tagged with the Signal of Influence it validates and names the specific lens claim it confirms or challenges. Calls are prioritized toward claims where lenses disagreed, quantifiable claims (community size, trend direction, creator reach), and claims central to the influential core.",
+  },
+
+  culturalConnectors: {
+    title: "Cultural Connectors",
+    description:
+      "The bridges that carry influence between the influential core and adjacent communities or broader culture — the voices, spaces, formats, and moments through which ideas actually cross the boundaries the Adjacency Map draws.",
+    methodology:
+      "Observed bridges only, not suggested partners: each connector is backed by lens findings, adjacency research, or documented behavior, drawing on the reconciled bridge-potential scores and trust transfer paths. Named individuals appear only with repeated, specific evidence — archetypes are usually the right level.",
+    scoring:
+      "Bridge Strength (0–100) reflects how much influence actually travels across this bridge based on the observed evidence.",
+  },
+
   influenceQuadrant: {
     title: "Influence Quadrant",
     description:

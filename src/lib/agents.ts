@@ -10,7 +10,8 @@ import {
   buildReconciliationPrompt,
   buildSynthesisPrompt,
 } from "@/lib/prompt";
-import { ArchetypeReport, PeripheryData } from "@/types";
+import { ArchetypeReport, DataSignalsSynthesis, PeripheryData } from "@/types";
+import { getAvailableTools, executeDataTool, MAX_TOOL_CALLS, DataToolSchema } from "@/lib/data-tools";
 
 export type { AgentInputs };
 
@@ -162,28 +163,100 @@ async function runLensAgent<T>(
 }
 
 /**
- * Reasoning agents (reconciliation, synthesis): Fable 5, analysis only — no tools.
+ * Reasoning agents (reconciliation, synthesis): Fable 5.
  * Fable API rules: thinking is always on (no `thinking` param), no sampling params,
  * and safety classifiers can decline with stop_reason "refusal" — so we opt into a
  * server-side fallback to Opus 4.8 and still guard the stop_reason.
  */
 async function runReasoningAgent<T>(prompt: string, signal: AbortSignal, maxTokens = 32000): Promise<T> {
-  const stream = client.beta.messages.stream(
-    {
-      model: REASONING_MODEL,
-      max_tokens: maxTokens,
-      betas: ["server-side-fallback-2026-06-01"],
-      // `fallbacks` postdates SDK 0.78.0's types; the SDK forwards it to the API as-is.
-      fallbacks: [{ model: FALLBACK_MODEL }],
-      messages: [{ role: "user", content: prompt }],
-    } as unknown as Parameters<typeof client.beta.messages.stream>[0],
-    { signal }
-  );
-  const message = await stream.finalMessage();
-  if (message.stop_reason === "refusal") {
-    throw new Error("The reasoning model declined this request (stop_reason: refusal), including after fallback.");
+  const { result } = await runReasoningToolLoop<T>(prompt, signal, [], undefined, maxTokens);
+  return result;
+}
+
+/**
+ * Round 5: Fable 5 with client-side data tools (reconciliation only).
+ * Runs the tool-use loop: the model requests platform lookups, we execute them
+ * against the wrappers in data-tools.ts, and feed results back until it writes
+ * its final analysis. The MAX_TOOL_CALLS cap is enforced here in code — the
+ * model can request more, but every request past the cap gets a budget-exhausted
+ * result instead of data. Batched tool calls in one turn are all executed and
+ * each counts against the budget.
+ */
+async function runReasoningToolLoop<T>(
+  prompt: string,
+  signal: AbortSignal,
+  tools: DataToolSchema[],
+  onToolCall?: (message: string) => void,
+  maxTokens = 32000
+): Promise<{ result: T; toolCallsUsed: number }> {
+  const messages: Array<{ role: "user" | "assistant"; content: unknown }> = [
+    { role: "user", content: prompt },
+  ];
+  let toolCallCount = 0;
+  // Each iteration is one model turn; a turn can batch several tool calls.
+  // Budget-exhausted turns terminate quickly, so cap iterations generously.
+  const maxTurns = MAX_TOOL_CALLS + 4;
+
+  for (let turn = 0; turn < maxTurns; turn++) {
+    const stream = client.beta.messages.stream(
+      {
+        model: REASONING_MODEL,
+        max_tokens: maxTokens,
+        betas: ["server-side-fallback-2026-06-01"],
+        // `fallbacks` postdates SDK 0.78.0's types; the SDK forwards it to the API as-is.
+        fallbacks: [{ model: FALLBACK_MODEL }],
+        ...(tools.length > 0 ? { tools } : {}),
+        messages,
+      } as unknown as Parameters<typeof client.beta.messages.stream>[0],
+      { signal }
+    );
+    const message = await stream.finalMessage();
+
+    if (message.stop_reason === "refusal") {
+      throw new Error("The reasoning model declined this request (stop_reason: refusal), including after fallback.");
+    }
+
+    if (message.stop_reason === "tool_use") {
+      // Echo the full assistant content back (thinking blocks included — Fable
+      // requires them unmodified on the same model).
+      messages.push({ role: "assistant", content: message.content });
+
+      const toolUses = message.content.filter(
+        (b): b is { type: "tool_use"; id: string; name: string; input: Record<string, unknown> } =>
+          b.type === "tool_use"
+      );
+      const results: Array<{ type: "tool_result"; tool_use_id: string; content: string }> = [];
+
+      for (const tu of toolUses) {
+        if (toolCallCount >= MAX_TOOL_CALLS) {
+          results.push({
+            type: "tool_result",
+            tool_use_id: tu.id,
+            content: "TOOL BUDGET EXHAUSTED. Write your final reconciled analysis now with the data you have.",
+          });
+          continue;
+        }
+        toolCallCount++;
+        const queryLabel = String(tu.input?.query ?? "");
+        onToolCall?.(`Checking ${tu.name.replace("search_", "")}: "${queryLabel}" (${toolCallCount}/${MAX_TOOL_CALLS})`);
+        const result = await executeDataTool(tu.name, tu.input ?? {});
+        const resultJson = JSON.stringify(result);
+        // Log the full-ish result so cited numbers can be audited against reality
+        log(`Tool call ${toolCallCount}/${MAX_TOOL_CALLS} — ${tu.name}("${queryLabel}") → ${resultJson.slice(0, 1500)}`);
+        results.push({ type: "tool_result", tool_use_id: tu.id, content: resultJson });
+      }
+
+      messages.push({ role: "user", content: results });
+      continue;
+    }
+
+    // end_turn (or max_tokens, which extractJSON/parse will surface as an error)
+    return {
+      result: JSON.parse(extractJSON(textFromContent(message.content))) as T,
+      toolCallsUsed: toolCallCount,
+    };
   }
-  return JSON.parse(extractJSON(textFromContent(message.content))) as T;
+  throw new Error(`tool-use loop did not finish within ${maxTurns} turns`);
 }
 
 // ─── Batch 1: Lens agents ────────────────────────────────────────────────────
@@ -262,25 +335,41 @@ export interface ReconciliationResult {
   keyConvergences?: string[];
   keyConflicts?: string[];
   keyGaps?: string[];
+  dataSignals?: DataSignalsSynthesis; // Round 5 — present only when tools ran usefully
 }
+
+// Tool turns add wall-clock time (up to 8 API calls + extra inference turns),
+// so reconciliation gets a longer deadline than the single-shot agents.
+const RECONCILIATION_TIMEOUT_MS = 25 * 60 * 1000;
 
 export async function runReconciliationAgent(
   inputs: AgentInputs,
-  lenses: AllLensOutputs
+  lenses: AllLensOutputs,
+  onProgress?: (message: string) => void
 ): Promise<ReconciliationResult> {
-  log(`Reconciliation agent — started`);
-  const result = await withDeadline("Reconciliation agent", REASONING_TIMEOUT_MS, (signal) =>
-    runReasoningAgent<ReconciliationResult>(
-      buildReconciliationPrompt(
-        inputs,
-        JSON.stringify(lenses.audience, null, 2),
-        JSON.stringify(lenses.brand, null, 2),
-        JSON.stringify(lenses.context, null, 2)
-      ),
-      signal
-    )
+  const tools = getAvailableTools();
+  log(`Reconciliation agent — started (${tools.length} data tools: ${tools.map((t) => t.name).join(", ") || "none"})`);
+  const { result, toolCallsUsed } = await withDeadline(
+    "Reconciliation agent",
+    RECONCILIATION_TIMEOUT_MS,
+    (signal) =>
+      runReasoningToolLoop<ReconciliationResult>(
+        buildReconciliationPrompt(
+          inputs,
+          JSON.stringify(lenses.audience, null, 2),
+          JSON.stringify(lenses.brand, null, 2),
+          JSON.stringify(lenses.context, null, 2),
+          tools.map((t) => t.name)
+        ),
+        signal,
+        tools,
+        onProgress
+      )
   );
-  log(`Reconciliation agent — complete (${result.reconciledSignals?.length ?? 0} signals scored)`);
+  log(
+    `Reconciliation agent — complete (${result.reconciledSignals?.length ?? 0} signals scored, ${toolCallsUsed}/${MAX_TOOL_CALLS} platform lookups)`
+  );
+  onProgress?.(`Reconciliation complete — used ${toolCallsUsed}/${MAX_TOOL_CALLS} platform lookups`);
   return result;
 }
 

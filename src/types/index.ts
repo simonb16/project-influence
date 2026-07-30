@@ -196,6 +196,8 @@ export interface ArchetypeReport {
   trustedVoices?: TrustedVoice[];
   realWorldHabitat?: RealWorldHabitatItem[];
   signalsSnapshot?: SignalsSnapshot;
+  // Round 5: validated platform data from the reconciliation agent's tool calls
+  dataSignals?: DataSignalsSynthesis;
 }
 
 // ─── Periphery types (Round 2 Periphery agent) ───────────────────────────────
@@ -227,6 +229,7 @@ export interface PeripheryData {
     outerRing: PeripheryItem[];
   };
   insights: PeripheryInsights;
+  culturalConnectors?: CulturalConnector[]; // Round 5 — absent on older reports
 }
 
 // ─── Legacy periphery types (pre-Round 2 saved reports) ─────────────────────
@@ -310,6 +313,34 @@ export interface SignalsSnapshot {
   behavioral: SnapshotEntry[];
   trust: SnapshotEntry[];
   social: SnapshotEntry[];
+}
+
+// ─── Round 5: Data signals (reconciliation tool-use) + cultural connectors ───
+
+export interface DataSignal {
+  source: "google_trends" | "reddit" | "youtube" | "pinterest";
+  signalType: "motivational" | "behavioral" | "trust" | "social";
+  metric: string; // headline number: "+103% YoY", "452K subscribers"
+  subject: string; // what it's about: "'craft night' searches", "r/knitting"
+  finding: string; // what the data showed (1 sentence)
+  significance: string; // why it matters (2-3 sentences, WITH comparisons/context)
+  validates: string; // which lens claim or report item this confirms/challenges
+}
+
+export interface DataSignalsSynthesis {
+  signals: DataSignal[]; // 3-6, ordered by strategic importance
+  collectiveFinding: string; // 3-5 sentence synthesis — what the data collectively reveals
+  dataSources: string[]; // APIs successfully queried
+  unavailableSources: string[]; // APIs not configured or failed
+}
+
+export interface CulturalConnector {
+  connector: string; // the archetype, space, format, or moment
+  type: "voice" | "space" | "format" | "moment";
+  bridges: string; // what it connects — "from → to"
+  mechanism: string; // how influence travels across this bridge
+  evidence: string;
+  bridgeStrength: number; // 0-100
 }
 
 export interface AnalyzeRequest {

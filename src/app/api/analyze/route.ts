@@ -77,10 +77,12 @@ export async function POST(request: Request) {
 
         const lenses: AllLensOutputs = { audience: audienceLens, brand: brandLens, context: contextLens };
 
-        // ── Batch 2: reconciliation & scoring ──
+        // ── Batch 2: reconciliation & scoring (with platform data tools) ──
         send({ type: "progress", message: "Reconciling findings across all three lenses & scoring signals..." });
 
-        const reconciliation = await runReconciliationAgent(inputs, lenses);
+        const reconciliation = await runReconciliationAgent(inputs, lenses, (message) =>
+          send({ type: "progress", message })
+        );
         onAgentComplete("Reconciliation & Scoring");
 
         // ── Batches 3 + 4: synthesis and periphery in parallel ──
@@ -107,6 +109,9 @@ export async function POST(request: Request) {
           context: inputs.context,
           generatedAt: new Date().toISOString(),
           peripheryData: periphery,
+          // Signal Check data comes from reconciliation, not synthesis — attach
+          // it directly so the numbers are exactly what the tools returned.
+          dataSignals: reconciliation.dataSignals,
         };
 
         send({ type: "report", report });

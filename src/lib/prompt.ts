@@ -59,6 +59,8 @@ The broader audience is context, not subject. Use it in two ways only:
 
 If evidence only supports a claim about the broader audience and you cannot tell whether it holds for the core specifically, either omit it or label it: "broad-audience signal, core-specific evidence not found."`;
 
+const SEARCH_SPECIFICITY = `SEARCH STRATEGY: Avoid generic searches like "crafting community" or "fitness influencers". Search for specific signals: "Power Zone Pack Facebook group", "r/knitting stash guilt thread 2026", "LYS day event". Specific queries find real evidence; generic queries find marketing copy.`;
+
 const REAL_WORLD_CONTEXTS_INSTRUCTION = `REAL WORLD INFLUENCE CONTEXTS:
 As you read community discussions, actively collect evidence of WHERE influence happens offline. People reveal this in passing: "my local yarn store recommended", "someone at the meetup showed me", "my sister-in-law got me into", "the guy at the shop said". Note:
 - The physical/social context (shop, club, workplace, event, family gathering, class)
@@ -97,6 +99,8 @@ RESEARCH STRATEGY (use up to 15 web searches):
 6. Identify emotional drivers — what they care about, fear, aspire to, resent
 7. Find tensions — where the audience is conflicted, frustrated, or seeking resolution
 8. Look for trust signals — what makes something credible to this audience, what endorsement carries weight
+
+${SEARCH_SPECIFICITY}
 
 ${REAL_WORLD_CONTEXTS_INSTRUCTION}
 
@@ -202,6 +206,8 @@ RESEARCH STRATEGY (use up to 15 web searches):
 7. Identify brand behaviors this audience punishes (inauthenticity, hard selling, co-opting language poorly)
 8. Search for creator/brand partnerships and sponsorships that resonated or backfired with this audience
 
+${SEARCH_SPECIFICITY}
+
 ${REAL_WORLD_CONTEXTS_INSTRUCTION}
 
 OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with {):
@@ -294,6 +300,8 @@ RESEARCH STRATEGY (use up to 15 web searches):
 7. Identify regulatory, economic, or social forces creating new constraints or opportunities
 8. Search for emerging behaviors — things this audience is starting to do that they weren't doing a year ago
 
+${SEARCH_SPECIFICITY}
+
 ${REAL_WORLD_CONTEXTS_INSTRUCTION}
 
 OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with {):
@@ -367,12 +375,85 @@ CRITICAL RULES:
 
 // ─── Reconciliation + Scoring ─────────────────────────────────────────────────
 
+const QUANT_VALIDATION_BLOCK = `QUANTITATIVE VALIDATION — THE FOUR SIGNALS:
+You have platform API tools to validate and quantify the lens findings. Each platform is evidence for specific Signals of Influence:
+
+- MOTIVATIONAL signals (why they care): Reddit is your primary source — first-person explanations, identity statements, values and tensions in real posts.
+- BEHAVIORAL signals (what they do): Google Trends (action-oriented queries, interest growth, seasonality, purchase intent), YouTube (tutorials, routines, adoption reports), Pinterest (planned purchases, saved ideas).
+- TRUST signals (what earns belief): YouTube (creators repeatedly relied on for advice, engagement relative to channel size, "I bought this because of you"), Google Trends ("best"/"recommended" searches), Reddit (recommendations with evidence cited, visible persuasion).
+- SOCIAL signals (where they gather): Reddit (subreddit size and concentration, recurring contributors, cross-posts), Pinterest (co-occurring interests).
+
+TOOL USE BUDGET: Maximum 8 calls. Use them strategically:
+- Prioritize claims where lenses DISAGREE — data can break the tie
+- Prioritize claims about community size, creator reach, or trend direction — easily quantifiable
+- Prioritize claims central to the influential core definition and the top-scored influence items
+- Real-world habitat claims can often be validated digitally (e.g., "craft night" search growth, meetup-related subreddit activity)
+- Don't spend calls on claims all three lenses agree on with strong evidence, or on subjective interpretations data can't resolve
+
+After each result, reassess before calling again. Stop when you have enough for confident conclusions.
+
+When you have data, weave it into your analysis with the same anti-confabulation discipline as everything else: report what the API returned, never extrapolate beyond it. If a call fails or returns nothing useful, note it and move on — do not retry, do not estimate what the data "probably" shows.
+
+SCORING WITH PLATFORM DATA:
+When you have tool-call data, ground your scores in it:
+- Credibility: Reddit comment scores and community standing
+- Transmission Power: YouTube view counts and Google Trends growth
+- Participation Quality: Reddit engagement ratios (comments per post, thread depth)
+- Bridge Potential: cross-subreddit activity, Google Trends related queries, Pinterest co-occurring interests
+
+When platform data contradicts web-search findings, flag it explicitly. Data is not automatically more trustworthy than qualitative evidence — but the disagreement is strategically interesting.
+
+DATA SIGNALS OUTPUT:
+After your tool calls, structure the 3-6 most strategically significant findings into a "dataSignals" field in your output JSON. This is displayed prominently — it's intelligence, not an appendix.
+
+- Tag each signal with the signalType it validates (motivational/behavioral/trust/social)
+- Each significance MUST include context that makes the number meaningful. "452K subscribers" means nothing alone. "452K subscribers — 3x the next-largest fiber community, with 2.4x the average engagement ratio" tells a story.
+- Frame significance as opportunity or risk, not observation
+- The validates field names the specific lens claim or report item this data confirms or challenges
+- collectiveFinding must say something the individual signals don't say alone
+- If no tool call produced useful data, omit dataSignals entirely. NEVER generate estimated or plausible data.
+
+Examples of GOOD significance:
+- "'Craft night' searches up 103% YoY while 'craft business' queries are flat — the gathering behavior is growing but the monetization conversation isn't, confirming the anti-hustle finding with independent search data."
+- "r/knitting's 2.4M subscribers dwarf r/craftbusiness's 40K — a 60:1 ratio. The community's center of gravity is overwhelmingly hobbyist, and commercial framings address a rounding error of the audience."
+
+Examples of BAD significance (do not do this):
+- "This subreddit has many subscribers, showing a significant community." (No comparison, no meaning)
+- "Search interest is growing." (How fast? Against what baseline? So what?)
+
+Add to your output JSON (alongside the existing fields):
+  "dataSignals": {
+    "signals": [
+      {
+        "source": "google_trends" | "reddit" | "youtube" | "pinterest",
+        "signalType": "motivational" | "behavioral" | "trust" | "social",
+        "metric": "headline number, e.g. '+103% YoY', '452K subscribers'",
+        "subject": "what it's about, e.g. \\"'craft night' searches\\", 'r/knitting'",
+        "finding": "what the data showed (1 sentence)",
+        "significance": "why it matters (2-3 sentences, WITH comparisons/context)",
+        "validates": "which lens claim or report item this confirms or challenges"
+      }
+    ],
+    "collectiveFinding": "3-5 sentence synthesis — what the data collectively reveals",
+    "dataSources": ["APIs that returned useful data"],
+    "unavailableSources": ["APIs not configured or that failed"]
+  }`;
+
 export function buildReconciliationPrompt(
   inputs: AgentInputs,
   audienceLensOutput: string,
   brandLensOutput: string,
-  contextLensOutput: string
+  contextLensOutput: string,
+  availableToolNames: string[] = []
 ): string {
+  const hasTools = availableToolNames.length > 0;
+  const toolBlock = hasTools
+    ? `
+
+${QUANT_VALIDATION_BLOCK}
+
+AVAILABLE TOOLS THIS RUN: ${availableToolNames.join(", ")}. Platforms not in this list are unavailable for this analysis — do not attempt them, and list them in unavailableSources.`
+    : "";
   return `You are the Reconciliation Agent. You have received research from three independent agents who each analyzed the same audience from a different perspective:
 
 1. The Audience Lens — researched from the audience's internal perspective (who they are, what moves them, who they trust)
@@ -399,13 +480,20 @@ ${contextLensOutput}
 YOUR MISSION:
 1. RECONCILE — Find where the three lenses converge (strong signals), conflict (interesting tensions), and have gaps (blind spots)
 2. TAG — Tag every signal for emotion, intent, and behavioral dynamics
-3. SCORE — Score every signal across 6 influence dimensions
+3. SCORE — Score every signal across 6 influence dimensions${toolBlock}
 
 STEP 1: RECONCILIATION
 
 For each significant finding, determine:
 - CONVERGENCE: Did multiple lenses independently find the same thing? If yes, this is a high-confidence signal. Note which lenses converged.
 - CONFLICT: Did lenses find contradictory signals? If yes, don't discard either — the tension is valuable strategic insight. Note the contradiction.
+
+When flagging a conflict between lenses, explain it specifically:
+- What does each lens claim?
+- Why might they disagree? (different sources, different framing of the same evidence, genuinely contradictory signals)
+- What would resolve it? (more data — and you may be able to GET that data via your tools — or is this a genuine tension the audience lives with?)
+
+"Lenses disagree" is not useful. "The audience lens sees X as core identity while the brand lens sees it as declining trend, because they're looking at community behavior vs. market data" is strategically valuable.
 - GAP: Did one lens find something important that the others missed entirely? Flag it — it may be a niche signal or a blind spot.
 
 STEP 2: TAGGING
@@ -595,7 +683,7 @@ OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with
       "description": "what this influence is and why it matters — 1-2 sentences",
       "behavioralRole": "the psychological mechanism — how this influence moves the audience",
       "reach": "reach descriptor ONLY if present in the reconciled evidence — otherwise omit",
-      "reachLevel": "mainstream" | "significant" | "niche" | "micro" (categorical reach — how broadly known this influence is beyond the core),
+      "reachLevel": "micro" (known only within a tight niche, <10K people aware) | "niche" (recognized within the audience but not beyond, 10K-100K) | "significant" (crosses into adjacent audiences, 100K-1M) | "mainstream" (broadly known, >1M, shows up in mainstream media) — base this on lens evidence, not assumption; if reach can't be determined, default to "niche" rather than guessing high,
       "scores": {
         "composite": 1-10,
         "credibility": 1-10,
@@ -616,7 +704,7 @@ OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with
 
   "entryPoints": [
     {
-      "type": "entry point name — the on-ramp (community | channel | context | moment | voice)",
+      "type": "one of: community (a specific group, forum, or community space to engage with) | channel (a distribution channel, content format, or media type) | voice (a specific type of person, creator, or voice to partner with or amplify) | moment (a temporal trigger, cultural moment, or life event to show up during) | context (a situational or environmental context where the audience is receptive) | ritual (a recurring behavior or routine to embed within)",
       "description": "what this entry point is and why it's recommended",
       "rationale": "which scored signals support this recommendation",
       "approach": "what a brand should do here — tone, format, content type",
@@ -833,6 +921,23 @@ Use web search to investigate:
 
 Search for correlations, not assumptions. Look for actual evidence of overlap — shared community membership, cross-posting behavior, co-occurring interests in profiles and bios, audience overlap data from creators who span multiple niches.
 
+CULTURAL CONNECTORS:
+From your adjacency research and the reconciled data, identify 3-6 connectors — the specific voices, spaces, formats, or moments that carry influence between the influential core and adjacent communities or broader culture. A connector is an observed bridge, not a suggested partner.
+
+For each:
+- connector: the archetype, space, format, or moment ("the multi-craftual crafter who brings knitters into quilting", "handmade gifts entering non-crafting households", "craft-night formats adopted by non-craft social groups")
+- type: "voice" | "space" | "format" | "moment"
+- bridges: what it connects — from where, to where ("core fiber-craft community → adjacent home/DIY audiences")
+- mechanism: how influence actually travels across this bridge (1-2 sentences)
+- evidence: what supports this — lens findings, adjacency research, documented behavior
+- bridgeStrength: 0-100
+
+Rules:
+- Evidence-side only. These are observed bridges, NOT partnership or campaign recommendations.
+- Anti-confabulation applies fully: named individuals only with repeated, specific evidence. Archetypes are usually the right level.
+- Draw on the reconciled bridge-potential scores and trust transfer paths where they support a connector.
+- If bridge evidence is thin, output fewer items and say so — do not pad.
+
 ANTI-CONFABULATION RULES:
 - Never fabricate overlap percentages. Use qualitative strength indicators (near-universal, strong, moderate, emerging) unless you find actual data.
 - Never invent specific community names or creator names. Only cite what you find in search results.
@@ -876,7 +981,17 @@ OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with
         "risk": "string — what could go wrong (authenticity, dilution, etc.)"
       }
     ]
-  }
+  },
+  "culturalConnectors": [
+    {
+      "connector": "string — the archetype, space, format, or moment",
+      "type": "voice | space | format | moment",
+      "bridges": "string — from where → to where",
+      "mechanism": "string — how influence travels across this bridge (1-2 sentences)",
+      "evidence": "string — what supports this",
+      "bridgeStrength": number 0-100
+    }
+  ]
 }
 
 Aim for 4-6 items in the inner ring and 6-10 in the outer ring. Quality over quantity — each item should be evidence-backed. Spread items across all four segments (mindset, lifestyle, interest, entertainment) where the evidence supports it.`;
