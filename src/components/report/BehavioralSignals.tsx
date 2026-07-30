@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { cn } from "@/lib/utils";
 import { InfoButton } from "@/components/ui/InfoButton";
 import { SECTION_INFO } from "@/lib/sectionInfo";
+import { CoreVsBase } from "./CoreVsBase";
 
 const categoryColors: Record<string, string> = {
   purchase: "text-violet-400 bg-violet-400/10 border-violet-400/20",
@@ -45,6 +46,7 @@ export function BehavioralSignals({ data }: { data: BehavioralSignal[] }) {
               {signal.trigger && (
                 <p className="mt-1 text-[11px] text-[#6366F1]/70 italic">↳ triggered by: {signal.trigger}</p>
               )}
+              <CoreVsBase note={signal.coreVsBase} />
             </div>
           </div>
         ))}

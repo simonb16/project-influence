@@ -23,6 +23,13 @@ export interface InfluentialCore {
   activationRecommendations: string[];
 }
 
+/** Explicit core-vs-base contrast on an item — only present when the lenses
+ * found real evidence of a difference. */
+export interface CoreVsBaseNote {
+  core: string; // what's true of the influential core
+  base: string; // what's true of the broader audience
+}
+
 export type ReachLevel = "mainstream" | "significant" | "niche" | "micro";
 
 export interface Influencer {
@@ -41,6 +48,7 @@ export interface Influencer {
   convergenceStatus?: ConvergenceStatus; // did multiple lenses find this independently
   conflictNotes?: string; // if conflicted, what the lenses disagreed about
   confidence?: ConfidenceLevel;
+  coreVsBase?: CoreVsBaseNote;
 }
 
 export interface DigitalHabitat {
@@ -74,6 +82,7 @@ export interface EmotionalDriver {
   mechanism?: string; // how this emotion functions to drive behavior
   funnelStage?: string[]; // "awareness" | "consideration" | "conversion" | "retention"
   convergenceStatus?: ConvergenceStatus;
+  coreVsBase?: CoreVsBaseNote;
 }
 
 export interface BehavioralSignal {
@@ -84,6 +93,7 @@ export interface BehavioralSignal {
   trigger?: string; // what causes this behavior to happen
   funnelStage?: string[]; // "awareness" | "consideration" | "conversion" | "retention"
   convergenceStatus?: ConvergenceStatus;
+  coreVsBase?: CoreVsBaseNote;
 }
 
 export interface InfluenceChannel {
@@ -179,6 +189,13 @@ export interface ArchetypeReport {
   periphery?: LegacyPeripheryData; // legacy periphery shape (pre-Round 2 saved reports)
   peripheryData?: PeripheryData; // Round 2+: dedicated Periphery agent output
   influentialCore?: InfluentialCore; // three-lens synthesis: who the influential core is
+  // Round 4 signal depth (all optional — absent on older reports)
+  barriers?: Barrier[];
+  findability?: Findability;
+  inMarketBehavior?: InMarketBehavior;
+  trustedVoices?: TrustedVoice[];
+  realWorldHabitat?: RealWorldHabitatItem[];
+  signalsSnapshot?: SignalsSnapshot;
 }
 
 // ─── Periphery types (Round 2 Periphery agent) ───────────────────────────────
@@ -236,6 +253,63 @@ export interface LegacyPeripheryData {
   lifestyle: Adjacency[];
   interest: Adjacency[];
   entertainment: Adjacency[];
+}
+
+// ─── Round 4: Signal depth types ─────────────────────────────────────────────
+
+export interface Barrier {
+  name: string;
+  type: "practical" | "psychological" | "social" | "trust";
+  description: string;
+  evidence: string;
+  intensity: number; // 0-100
+  implication: string; // what would lower this barrier — evidence-based, not a campaign idea
+}
+
+export interface Findability {
+  targetableInterests: string[];
+  searchBehaviors: string[];
+  platformConcentrations: Array<{ platform: string; spaces: string[]; note: string }>;
+  affinityAdjacencies: Array<{ interest: string; rationale: string }>;
+}
+
+export interface InMarketBehavior {
+  researchPattern: string;
+  comparisonBehavior: string;
+  decisionTriggers: string[];
+  postPurchaseBehavior: string;
+  coreVsBase?: CoreVsBaseNote;
+}
+
+export interface TrustedVoice {
+  voice: string; // archetype, or a named example only when lens evidence specifically supports it
+  whyTrusted: string;
+  proofFormats: string[];
+  trustWeight: number; // 0-100
+  fragility: string; // what would break this trust
+}
+
+export interface RealWorldHabitatItem {
+  context: string; // the place/setting
+  influenceType: "discovery" | "recommendation" | "demonstration" | "validation" | "gathering";
+  description: string;
+  evidence: string;
+  strength: number; // 0-100
+}
+
+export interface SnapshotEntry {
+  label: string;
+  detail?: string; // the one-step-deeper specific
+  score?: number;
+  rating?: string; // e.g. "HIGH" where the source uses ratings
+}
+
+export interface SignalsSnapshot {
+  coreLabel: string; // must match the archetype name in the influential core description
+  motivational: SnapshotEntry[];
+  behavioral: SnapshotEntry[];
+  trust: SnapshotEntry[];
+  social: SnapshotEntry[];
 }
 
 export interface AnalyzeRequest {

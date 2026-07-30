@@ -27,6 +27,55 @@ CONTEXT:
 ${context?.trim() || CONTEXT_FALLBACK}`;
 }
 
+// ─── Canonical influential core definition (Round 4) ─────────────────────────
+// The single source of truth for what "influential core" means. The research
+// implication paragraph is appended for the three lens agents only.
+
+const CORE_DEFINITION = `THE INFLUENTIAL CORE — CANONICAL DEFINITION:
+The influential core are the early adopters of a mindset or behavior — the real people within the audience who disproportionately influence what others believe, adopt, and share.
+
+They are NOT defined by follower counts, content creation, or platform reach. A person with 200 followers who their knitting circle, subreddit, or friend group actually consults before buying is core. A creator with 500K followers whose endorsements are viewed as sponsored noise is not.
+
+What defines them:
+1. EARLY — they try, adopt, and form opinions before the rest of the audience
+2. TRUSTED — others in their networks and communities actively seek and follow their judgment
+3. ESTEEMED — they hold standing earned through demonstrated experience, not self-promotion
+4. OPEN — they are visible and candid about what they do, use, and think, which is what makes their behavior copyable
+
+Their influence operates through networks and communities — neighbors, co-workers, forum regulars, group members — not through broadcast. Creators and influencers CAN belong to the core, but only when the evidence shows they are trusted as peers rather than followed as media.`;
+
+const CORE_RESEARCH_IMPLICATION = `RESEARCH IMPLICATION: The core is harder to find via web search than influencers are, because influencers optimize for visibility and the core doesn't. Look for them in the places influence actually shows up: highly-upvoted community answers, "who do you ask before buying" threads, repeated peer references to the same kind of person, comment sections where someone's judgment is deferred to. Do not default to creator round-ups and follower metrics.`;
+
+const CORE_DEFINITION_FOR_LENSES = `${CORE_DEFINITION}
+
+${CORE_RESEARCH_IMPLICATION}`;
+
+const CORE_FOCUS = `INFLUENTIAL CORE FOCUS:
+Once the influential core has been defined, every output you produce describes the INFLUENTIAL CORE — not the broader growth audience. Trust signals are what the CORE trusts. Emotional drivers are what drives the CORE. Entry points are where to reach the CORE. Behaviors are what the CORE does.
+
+The broader audience is context, not subject. Use it in two ways only:
+1. To explain how the core differs from the base — these contrasts are strategically valuable. When you know a core-vs-base difference, state it explicitly ("the core buys premium indie by default while the base is coupon-literate").
+2. To describe how influence flows FROM the core TO the base (transmission, copying, trust transfer).
+
+If evidence only supports a claim about the broader audience and you cannot tell whether it holds for the core specifically, either omit it or label it: "broad-audience signal, core-specific evidence not found."`;
+
+const REAL_WORLD_CONTEXTS_INSTRUCTION = `REAL WORLD INFLUENCE CONTEXTS:
+As you read community discussions, actively collect evidence of WHERE influence happens offline. People reveal this in passing: "my local yarn store recommended", "someone at the meetup showed me", "my sister-in-law got me into", "the guy at the shop said". Note:
+- The physical/social context (shop, club, workplace, event, family gathering, class)
+- What kind of influence happens there (discovery, recommendation, demonstration, validation)
+- The evidence — the actual dialogue patterns that revealed it
+
+Do not guess at plausible offline contexts. Only report contexts that appear in real dialogue or documented behavior. Offline influence evidence is rarer than digital evidence — a few well-evidenced contexts beat a long speculative list.`;
+
+const REAL_WORLD_CONTEXTS_SCHEMA = `  "realWorldContexts": [
+    {
+      "context": "the physical/social setting (shop, club, workplace, event, class)",
+      "influenceType": "discovery | recommendation | demonstration | validation | gathering",
+      "evidence": "the actual dialogue patterns that revealed this context",
+      "sourceUrl": "URL if available"
+    }
+  ],`;
+
 // ─── Lens 1: Audience ─────────────────────────────────────────────────────────
 
 export function buildAudienceLensPrompt(inputs: AgentInputs): string {
@@ -37,7 +86,7 @@ ${inputBlock(inputs)}
 YOUR MISSION:
 Research this audience to answer: Who is the influential core within this audience, and what moves them?
 
-The "influential core" is the most socially active part of this audience — the people whose behaviors, opinions, and choices are visibly copied, discussed, and trusted by others. Most of the audience are tourists who pass through casually. The influential core are rooted. When they adopt something, others follow. When they reject something, it stalls.
+${CORE_DEFINITION_FOR_LENSES}
 
 RESEARCH STRATEGY (use up to 15 web searches):
 1. Find communities where this audience gathers — subreddits, forums, Facebook groups, Discord servers, niche platforms, comment sections
@@ -48,6 +97,8 @@ RESEARCH STRATEGY (use up to 15 web searches):
 6. Identify emotional drivers — what they care about, fear, aspire to, resent
 7. Find tensions — where the audience is conflicted, frustrated, or seeking resolution
 8. Look for trust signals — what makes something credible to this audience, what endorsement carries weight
+
+${REAL_WORLD_CONTEXTS_INSTRUCTION}
 
 OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with {):
 {
@@ -114,7 +165,8 @@ OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with
     "whatMakesThingsCredible": "description of what this audience considers trustworthy",
     "whatDestroysCredibility": "description of what makes this audience skeptical",
     "proofFormats": ["types of proof they respond to — e.g., before/after, data, personal testimony"]
-  }
+  },
+${REAL_WORLD_CONTEXTS_SCHEMA.replace(/,$/, "")}
 }
 
 CRITICAL RULES:
@@ -136,6 +188,10 @@ ${inputBlock(inputs)}
 YOUR MISSION:
 Research how brands, products, and commercial forces currently operate within this audience's influence landscape. Who has credibility? Who doesn't? Where is there white space? What does this audience reward and punish from brands? If a specific brand is provided above, anchor the analysis around that brand's position in this landscape; otherwise analyze at the category level.
 
+Pay particular attention to how the influential core relates to brands — they are the audience members whose brand judgments others copy.
+
+${CORE_DEFINITION_FOR_LENSES}
+
 RESEARCH STRATEGY (use up to 15 web searches):
 1. Find how this audience talks about brands and products in their space — reviews, recommendations, complaints, comparisons
 2. Identify which brands have genuine cultural credibility with this audience (not just awareness — actual trust and influence)
@@ -146,9 +202,12 @@ RESEARCH STRATEGY (use up to 15 web searches):
 7. Identify brand behaviors this audience punishes (inauthenticity, hard selling, co-opting language poorly)
 8. Search for creator/brand partnerships and sponsorships that resonated or backfired with this audience
 
+${REAL_WORLD_CONTEXTS_INSTRUCTION}
+
 OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with {):
 {
   "lens": "brand",
+${REAL_WORLD_CONTEXTS_SCHEMA}
   "brandLandscape": {
     "summary": "2-3 paragraph overview of how brands currently operate in this audience's world"
   },
@@ -221,6 +280,10 @@ ${inputBlock(inputs)}
 YOUR MISSION:
 Research the external forces shaping this audience right now. What cultural trends, market shifts, platform changes, competitive dynamics, and macro forces are creating new openings or closing old ones? What's accelerating, what's emerging, what's fading? If a specific strategic context is provided above, weight your research toward the forces most relevant to it.
 
+Pay particular attention to forces affecting the influential core — the early adopters within this audience are usually where trend shifts show up first.
+
+${CORE_DEFINITION_FOR_LENSES}
+
 RESEARCH STRATEGY (use up to 15 web searches):
 1. Search for macro trends affecting this audience's space — cultural shifts, behavioral changes, technology adoption
 2. Identify what's accelerating vs. fading in the categories and interests relevant to this audience
@@ -231,9 +294,12 @@ RESEARCH STRATEGY (use up to 15 web searches):
 7. Identify regulatory, economic, or social forces creating new constraints or opportunities
 8. Search for emerging behaviors — things this audience is starting to do that they weren't doing a year ago
 
+${REAL_WORLD_CONTEXTS_INSTRUCTION}
+
 OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with {):
 {
   "lens": "context",
+${REAL_WORLD_CONTEXTS_SCHEMA}
   "contextOverview": {
     "summary": "2-3 paragraph overview of the forces shaping this audience's world right now"
   },
@@ -315,6 +381,10 @@ export function buildReconciliationPrompt(
 
 These three agents worked independently. They did not see each other's work. Your job is to reconcile their findings.
 
+${CORE_DEFINITION}
+
+${CORE_FOCUS}
+
 ${inputBlock(inputs)}
 
 AUDIENCE LENS FINDINGS:
@@ -366,7 +436,7 @@ OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with
   "reconciledSignals": [
     {
       "signal": "description of the finding",
-      "type": "influence_space | trusted_voice | emotional_driver | behavioral_signal | community | cultural_tension | brand_dynamic | trend | entry_point",
+      "type": "influence_space | trusted_voice | emotional_driver | behavioral_signal | community | cultural_tension | brand_dynamic | trend | entry_point | real_world_context | barrier",
       "convergenceStatus": "converged | conflicted | single-lens",
       "lensesFound": ["audience", "brand", "context"],
       "conflictNotes": "if conflicted, describe the tension (null if not conflicted)",
@@ -423,6 +493,10 @@ export function buildSynthesisPrompt(
 ): string {
   return `You are the Synthesis Agent. You receive a reconciled, tagged, and scored dataset produced by three independent research lenses and a reconciliation agent. Your job is to produce the final SWAY report.
 
+${CORE_DEFINITION}
+
+${CORE_FOCUS}
+
 ${inputBlock(inputs)}
 
 RECONCILED DATA:
@@ -435,6 +509,68 @@ Produce the complete SWAY report. Transform the scored, reconciled dataset into 
 3. Where should a brand show up? (Entry points)
 
 The output must match the existing report schema EXACTLY so the current UI can render it. Populate ALL of the following sections using ONLY the reconciled data.
+
+CORE-VS-BASE CONTRASTS:
+Where the lenses surfaced a meaningful difference between the influential core and the broader audience on an item, populate coreVsBase ({ "core": "...", "base": "..." }). Only include it when there's real evidence of a difference — do not manufacture contrasts.
+
+BARRIERS & FRICTIONS:
+Identify 4-8 barriers that prevent the influential core from acting — adopting, buying, participating, advocating. For each:
+- name: short label
+- type: one of "practical" (cost, time, access), "psychological" (fear, identity conflict, imposter feelings), "social" (community norms, judgment risk), "trust" (skepticism, past burns, credibility gaps)
+- description: what the barrier is and how it shows up (1-2 sentences)
+- evidence: where this was observed (community discussions, review patterns, lens findings)
+- intensity: 0-100, how strongly this blocks action
+- implication: what would lower this barrier (evidence-based, not a campaign idea)
+
+FINDABILITY:
+Produce the targeting profile for the influential core — the practical parameters someone would use to find and reach them:
+- targetableInterests: 5-10 interest/affinity categories as they'd appear in ad platforms (e.g., "indie yarn dyeing", "visible mending", "cosy gaming")
+- searchBehaviors: 5-10 search terms/patterns the core actually uses (draw from language codes and lens evidence — insider vocabulary is targeting gold)
+- platformConcentrations: where the core over-indexes, with the specific spaces (subreddits, hashtags, forum names, YouTube niches) — not just "Instagram" but the specific corners
+- affinityAdjacencies: 3-6 non-obvious interest overlaps usable for lookalike or affinity targeting (draw from the reconciled adjacency-relevant findings)
+
+Rules: every entry must trace to lens evidence. These are findability parameters, not campaign recommendations. Use the core's own vocabulary, not marketing-speak.
+
+IN-MARKET BEHAVIOR:
+Describe how the influential core behaves when actively considering a purchase or adoption decision in this category:
+- researchPattern: how they research (sources consulted, in what order, how long)
+- comparisonBehavior: how they compare options (criteria that matter, criteria they ignore, dealbreakers)
+- decisionTriggers: what tips them from considering to acting
+- postPurchaseBehavior: what they do after (review, share, advocate, gift, teach) — this is where core members become transmission engines
+- Where the core's in-market behavior differs from the base's, use coreVsBase.
+
+Ground every claim in lens evidence (community discussions of purchase decisions, review behavior, "should I buy" threads). If in-market evidence is thin, say so rather than inventing a journey.
+
+TRUSTED VOICES:
+Identify 4-8 voice archetypes the influential core actually trusts, ranked by trust weight. These are archetypes or named examples where evidence supports them (never invent named people):
+- voice: the archetype ("the multi-year community regular with no commercial stake", "the local shop owner") or a named example if lens evidence specifically supports it
+- whyTrusted: the trust mechanism — what earns this voice its credibility (2-3 sentences, evidence-based)
+- proofFormats: what evidence formats this voice uses that land with the core (WIP posts, failure shares, granular product testimony, side-by-side comparisons)
+- trustWeight: 0-100
+- fragility: what would break this trust (1 sentence — e.g., "visible sponsorship without disclosure history")
+Anti-confabulation applies fully: named individuals only when the lenses found them repeatedly and specifically.
+
+REAL WORLD HABITAT:
+From the lens evidence (realWorldContexts and reconciled real_world_context signals), describe where the influential core is influenced in real life — the offline mirror of the digital habitat. For each context:
+- context: the place/setting ("local yarn stores", "craft nights", "workplace break rooms")
+- influenceType: what happens there — "discovery" | "recommendation" | "demonstration" | "validation" | "gathering"
+- description: how influence operates in this context (1-2 sentences)
+- evidence: the dialogue patterns or findings that support it
+- strength: 0-100, how significant this context is for the core
+
+Only include contexts with real evidence. If offline evidence is thin, output fewer items and note it — do not pad with plausible-sounding contexts.
+
+SIGNALS SNAPSHOT:
+Produce an at-a-glance summary of the four Signals of Influence for the influential core. This is a DERIVED summary — every entry must be pulled from a scored section of your output, not newly written:
+
+- motivational: from your emotional drivers — take the high scorers. label = driver name, detail = 2-6 word distillation of that driver's description, score = the driver's score
+- behavioral: from your behavioral signals — take those rated high. label = short behavior phrase, rating = "HIGH"
+- trust: from your influence susceptibility analysis — take the high-scoring subsets, and go one step deeper: name the specific means of influence ("failure sharing, zero-commercial-stake recommendations") or the specific type of trusted peer ("trusted bartenders"). label = channel, detail = the deeper specific, score included
+- social: from your influence map, digital habitat, and real world habitat — take the top-scoring specific spaces, digital and offline together. label = the space, score included
+
+3-5 entries per signal, ordered by score descending. Every entry must trace to an item in the full report — same name, same score. If a signal has fewer than 3 high-scoring items, show fewer rather than padding with low scorers. Include at least one real-world context in social when the real world habitat has a well-evidenced entry.
+
+Also produce coreLabel: the name of the influential core archetype. This must be THE SAME archetype name used in your influential core definition/description (e.g., if the description says the core is "the multicraftual dabbler with established taste", coreLabel is exactly that). Do not write a new or alternative label — the snapshot and the Influential Core section must refer to the core by the same name.
 
 OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with {):
 {
@@ -473,7 +609,8 @@ OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with
       "conflictNotes": "if conflicted, what the lenses disagreed about (omit if not conflicted)",
       "confidence": "high" | "medium" | "directional" | "flagged",
       "sourceUrl": "URL if available",
-      "unverified": false
+      "unverified": false,
+      "coreVsBase": { "core": "what's true of the core", "base": "what's true of the base" } (ONLY when evidenced — omit otherwise)
     }
   ],
 
@@ -528,7 +665,8 @@ OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with
       "score": number 1-100,
       "evidence": "the reconciled evidence for this emotion",
       "mechanism": "how this emotion drives behavior",
-      "convergenceStatus": "converged" | "conflicted" | "single-lens"
+      "convergenceStatus": "converged" | "conflicted" | "single-lens",
+      "coreVsBase": { "core": "...", "base": "..." } (ONLY when evidenced — omit otherwise)
     }
   ],
 
@@ -539,7 +677,8 @@ OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with
       "intensity": "high" | "medium" | "low",
       "detail": "specific detail from the reconciled data",
       "trigger": "what causes this behavior",
-      "convergenceStatus": "converged" | "conflicted" | "single-lens"
+      "convergenceStatus": "converged" | "conflicted" | "single-lens",
+      "coreVsBase": { "core": "...", "base": "..." } (ONLY when evidenced — omit otherwise)
     }
   ],
 
@@ -566,6 +705,64 @@ OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with
       "timeframe": "projected lifespan if the reconciled data supports one"
     }
   ],
+
+  "barriers": [
+    {
+      "name": "short label",
+      "type": "practical" | "psychological" | "social" | "trust",
+      "description": "what the barrier is and how it shows up (1-2 sentences)",
+      "evidence": "where this was observed",
+      "intensity": number 0-100,
+      "implication": "what would lower this barrier (evidence-based, not a campaign idea)"
+    }
+  ],
+
+  "findability": {
+    "targetableInterests": ["5-10 interest/affinity categories in ad-platform terms"],
+    "searchBehaviors": ["5-10 search terms/patterns the core actually uses"],
+    "platformConcentrations": [
+      { "platform": "platform name", "spaces": ["specific subreddits/hashtags/forums/niches"], "note": "how the core shows up here" }
+    ],
+    "affinityAdjacencies": [
+      { "interest": "non-obvious overlap", "rationale": "the evidence for this affinity" }
+    ]
+  },
+
+  "inMarketBehavior": {
+    "researchPattern": "how the core researches — sources, order, duration",
+    "comparisonBehavior": "how they compare — criteria that matter, criteria ignored, dealbreakers",
+    "decisionTriggers": ["what tips them from considering to acting"],
+    "postPurchaseBehavior": "what they do after — review, share, advocate, gift, teach",
+    "coreVsBase": { "core": "...", "base": "..." } (ONLY when evidenced — omit otherwise)
+  },
+
+  "trustedVoices": [
+    {
+      "voice": "the archetype, or a named example ONLY when lens evidence specifically supports it",
+      "whyTrusted": "the trust mechanism (2-3 sentences, evidence-based)",
+      "proofFormats": ["evidence formats this voice uses that land with the core"],
+      "trustWeight": number 0-100,
+      "fragility": "what would break this trust (1 sentence)"
+    }
+  ],
+
+  "realWorldHabitat": [
+    {
+      "context": "the place/setting",
+      "influenceType": "discovery" | "recommendation" | "demonstration" | "validation" | "gathering",
+      "description": "how influence operates in this context (1-2 sentences)",
+      "evidence": "the dialogue patterns or findings that support it",
+      "strength": number 0-100
+    }
+  ],
+
+  "signalsSnapshot": {
+    "coreLabel": "the EXACT archetype name used in influentialCore — not a paraphrase",
+    "motivational": [{ "label": "driver name", "detail": "2-6 word distillation", "score": number }],
+    "behavioral": [{ "label": "short behavior phrase", "rating": "HIGH" }],
+    "trust": [{ "label": "channel", "detail": "the one-step-deeper specific", "score": number }],
+    "social": [{ "label": "the specific space", "score": number }]
+  },
 
   "researchDepth": {
     "totalSignalsScored": number (count of reconciledSignals),
@@ -611,6 +808,13 @@ You receive the reconciled output from the three independent lens agents (Audien
 Your task: research what OTHER worlds these people inhabit beyond the primary interest being studied. What else do they care about? What adjacent communities do they participate in? What unexpected overlaps exist?
 
 IMPORTANT: You are mapping adjacencies for the ENTIRE AUDIENCE — not just the influential core. The influential core is a subset that drives influence dynamics. The periphery map is about the broader audience's adjacent interests and overlapping identities.
+
+For context, this is what "influential core" means wherever the reconciled data refers to it:
+
+${CORE_DEFINITION}
+
+INFLUENTIAL CORE FOCUS (adapted for adjacency mapping):
+Your subject is the whole audience, but core-vs-base texture is valuable here too: where the evidence shows an adjacency belongs specifically to the influential core (early-adopter overlaps the base hasn't picked up yet) or specifically to the base (mainstream overlaps the core has moved past), say so in that adjacency's description or evidence. Do not manufacture the distinction where the evidence doesn't show it.
 
 INPUTS:
 ${inputBlock(inputs)}

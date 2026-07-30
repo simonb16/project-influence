@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { scoreColor, emotionEmoji } from "@/lib/utils";
 import { InfoButton } from "@/components/ui/InfoButton";
 import { SECTION_INFO } from "@/lib/sectionInfo";
+import { CoreVsBase } from "./CoreVsBase";
 
 const emotionLabels: Record<string, string> = {
   guilt: "Guilt",
@@ -79,6 +80,7 @@ export function EmotionalDrivers({ data }: { data: EmotionalDriver[] }) {
                   }}
                 />
               </div>
+              <CoreVsBase note={driver.coreVsBase} />
             </div>
           );
         })}
