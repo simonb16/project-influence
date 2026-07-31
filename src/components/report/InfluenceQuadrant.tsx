@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Influencer, ReachLevel } from "@/types";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { InfoButton } from "@/components/ui/InfoButton";
@@ -59,16 +60,13 @@ function dotStyle(item: Influencer): { fill: string; fillOpacity: number; stroke
   return { fill: "#6E7681", fillOpacity: 0.55, stroke: "#6E7681", strokeWidth: 0 };
 }
 
-function truncate(s: string, max = 20) {
-  return s.length > max ? s.slice(0, max - 1) + "…" : s;
-}
-
 interface InfluenceQuadrantProps {
   items: Influencer[];
   onSelectItem?: (name: string) => void;
 }
 
 export function InfluenceQuadrant({ items, onSelectItem }: InfluenceQuadrantProps) {
+  const [hovered, setHovered] = useState<number | null>(null);
   const plotted = plot(items);
   if (plotted.length === 0) return null;
 
@@ -84,7 +82,7 @@ export function InfluenceQuadrant({ items, onSelectItem }: InfluenceQuadrantProp
         under-priced influence lives. Click a dot to jump to that item in the Influence Map tab.
       </p>
 
-      <div className="overflow-x-auto">
+      <div className="relative overflow-x-auto">
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ minWidth: 480 }}>
           {/* Hidden Core zone highlight (top-left) */}
           <rect
@@ -163,34 +161,58 @@ export function InfluenceQuadrant({ items, onSelectItem }: InfluenceQuadrantProp
             COMPOSITE SCORE →
           </text>
 
-          {/* Dots */}
+          {/* Dots — labels are hover-only (HTML tooltip overlay below) */}
           {plotted.map(({ item, x, y }, i) => {
             const style = dotStyle(item);
-            const labelAbove = y - 10 > PAD.top + 20;
+            const isHovered = hovered === i;
             return (
-              <g
+              <circle
                 key={i}
-                style={{ cursor: onSelectItem ? "pointer" : "default" }}
+                cx={x}
+                cy={y}
+                r={isHovered ? 8 : 6}
+                {...style}
+                style={{ cursor: onSelectItem ? "pointer" : "default", transition: "r 120ms" }}
                 onClick={() => onSelectItem?.(item.name)}
-              >
-                <title>
-                  {item.name} — composite {item.scores?.composite.toFixed(1)}, {item.reachLevel} reach
-                  {item.convergenceStatus ? ` (${item.convergenceStatus})` : ""}
-                </title>
-                <circle cx={x} cy={y} r={6} {...style} />
-                <text
-                  x={x}
-                  y={labelAbove ? y - 10 : y + 18}
-                  fill="#8B949E"
-                  fontSize="8.5"
-                  textAnchor="middle"
-                >
-                  {truncate(item.name)}
-                </text>
-              </g>
+                onMouseEnter={() => setHovered(i)}
+                onMouseLeave={() => setHovered(null)}
+              />
             );
           })}
         </svg>
+
+        {/* Hover tooltip — positioned as % of the viewBox so it tracks the scaled SVG */}
+        {hovered !== null && plotted[hovered] && (() => {
+          const { item, x, y } = plotted[hovered];
+          const preferAbove = y > H * 0.3;
+          const nearRight = x > W * 0.72;
+          const nearLeft = x < W * 0.28;
+          return (
+            <div
+              className="pointer-events-none absolute z-10 w-56 rounded-lg border border-[#1C2333] bg-[#0D1117] p-3 shadow-xl"
+              style={{
+                left: `${(x / W) * 100}%`,
+                top: `${(y / H) * 100}%`,
+                transform: `translate(${nearRight ? "-100%" : nearLeft ? "0%" : "-50%"}, ${preferAbove ? "calc(-100% - 12px)" : "12px"})`,
+              }}
+            >
+              <p className="text-xs font-semibold text-[#E8EDF2]">{item.name}</p>
+              <p className="mt-1 font-mono text-[11px] text-[#818CF8]">
+                composite {item.scores?.composite.toFixed(1)} · {item.reachLevel} reach
+              </p>
+              {item.convergenceStatus && (
+                <p className="mt-0.5 text-[10px] uppercase tracking-wider text-[#6E7681]">
+                  {item.convergenceStatus}
+                </p>
+              )}
+              {item.behavioralRole && (
+                <p className="mt-1.5 text-[11px] italic leading-snug text-[#8B949E]">
+                  ↳ {item.behavioralRole}
+                </p>
+              )}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Legend */}
