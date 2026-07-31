@@ -193,10 +193,13 @@ async function runReasoningToolLoop<T>(
     { role: "user", content: prompt },
   ];
   let toolCallCount = 0;
-  // Sticky failure: after a tool's first hard failure this run, further requests
-  // for it are declined without burning budget.
+  // Sticky failure: a hard failure deregisters a tool for the rest of the run,
+  // and further requests for it are declined without burning budget. Timeouts
+  // get one strike of grace (a single timeout can be transient); block pages,
+  // auth errors, and quota exhaustion kill the tool on first occurrence.
   const deadTools = new Set<string>();
   const quotaExhaustedTools = new Set<string>();
+  const timeoutStrikes = new Map<string, number>();
   // Each iteration is one model turn; a turn can batch several tool calls.
   // Budget-exhausted turns terminate quickly, so cap iterations generously.
   const maxTurns = MAX_TOOL_CALLS + 4;
@@ -262,23 +265,42 @@ async function runReasoningToolLoop<T>(
           error?: string;
           toolDead?: boolean;
           quotaExhausted?: boolean;
+          timedOut?: boolean;
         };
 
-        // Hard failure → deregister the tool for the rest of this run
+        // Hard failure handling: timeouts get one retry before deregistration;
+        // everything else (block page, auth, quota) kills the tool immediately.
+        let deregistered = false;
+        let timeoutGrace = false;
         if (result.error && result.toolDead) {
-          deadTools.add(tu.name);
-          if (result.quotaExhausted) {
-            quotaExhaustedTools.add(tu.name);
-            log(`QUOTA EXHAUSTED — ${tu.name}: SerpApi monthly searches used up`);
-            onToolCall?.("Google Trends unavailable: SerpApi monthly quota used up");
+          if (result.timedOut) {
+            const strikes = (timeoutStrikes.get(tu.name) ?? 0) + 1;
+            timeoutStrikes.set(tu.name, strikes);
+            if (strikes >= 2) {
+              deregistered = true;
+              log(`Second timeout — ${tu.name} deregistered for the rest of this run`);
+            } else {
+              timeoutGrace = true;
+              log(`Timeout strike 1/2 for ${tu.name} — allowing one retry before deregistering`);
+            }
           } else {
-            log(`Hard failure — ${tu.name} deregistered for the rest of this run`);
+            deregistered = true;
+            if (result.quotaExhausted) {
+              quotaExhaustedTools.add(tu.name);
+              log(`QUOTA EXHAUSTED — ${tu.name}: SerpApi monthly searches used up`);
+              onToolCall?.("Google Trends unavailable: SerpApi monthly quota used up");
+            } else {
+              log(`Hard failure — ${tu.name} deregistered for the rest of this run`);
+            }
           }
+          if (deregistered) deadTools.add(tu.name);
         }
 
-        const payload = result.error && result.toolDead
+        const payload = deregistered
           ? { ...result, note: `${shortName} is unavailable for the rest of this analysis — do not request it again.` }
-          : result;
+          : timeoutGrace
+            ? { ...result, note: `${shortName} timed out — you may retry once; a second timeout will make it unavailable for the rest of this analysis.` }
+            : result;
         const resultJson = JSON.stringify(payload);
         // Log the full-ish result so cited numbers can be audited against reality
         log(`Tool call ${toolCallCount}/${MAX_TOOL_CALLS} — ${tu.name}("${queryLabel}") → ${resultJson.slice(0, 1500)}`);

@@ -19,9 +19,14 @@ export interface ToolError {
   toolDead?: boolean;
   /** SerpApi monthly quota is used up — surfaced distinctly in SSE + Signal Check. */
   quotaExhausted?: boolean;
+  /** The failure was a timeout specifically — the agent loop allows one retry
+   * before deregistering, since a single timeout can be transient. Block pages,
+   * auth errors, and quota exhaustion kill the tool on first occurrence. */
+  timedOut?: boolean;
 }
 
-const TOOL_TIMEOUT_MS = 10_000;
+// Env-overridable for testing the timeout paths (DATA_TOOL_TIMEOUT_MS=50).
+const TOOL_TIMEOUT_MS = Number(process.env.DATA_TOOL_TIMEOUT_MS ?? 10_000);
 
 /** Hard cap on reconciliation tool calls per run — enforced in the agent loop. */
 export const MAX_TOOL_CALLS = 8;
@@ -45,7 +50,7 @@ async function withTimeout<T>(work: Promise<T>, label: string): Promise<T | Tool
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<ToolError>((resolve) => {
     timer = setTimeout(
-      () => resolve({ error: `${label} timed out after ${TOOL_TIMEOUT_MS / 1000}s`, toolDead: true }),
+      () => resolve({ error: `${label} timed out after ${TOOL_TIMEOUT_MS / 1000}s`, toolDead: true, timedOut: true }),
       TOOL_TIMEOUT_MS
     );
   });
