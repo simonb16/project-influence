@@ -21,6 +21,10 @@ export interface InfluentialCore {
   languageCodes: string[];
   trustSignals: string[];
   activationRecommendations: string[];
+  // Round 6a — optional; old reports fall back to signalsSnapshot.coreLabel
+  coreName?: string; // memorable title, ≤4 words ("The Pre-Whole-Foods Adopter")
+  coreTagline?: string; // one-sentence completion ("The one others text before buying a bottle.")
+  coreSizeEstimate?: string; // e.g. "8–15% of audience" — from lens estimatedProportion when evidenced
 }
 
 /** Explicit core-vs-base contrast on an item — only present when the lenses
