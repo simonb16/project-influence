@@ -660,11 +660,20 @@ Produce an at-a-glance summary of the four Signals of Influence for the influent
 
 Also produce coreLabel: the name of the influential core archetype. This must be THE SAME archetype name used in your influential core definition/description (e.g., if the description says the core is "the multicraftual dabbler with established taste", coreLabel is exactly that). Do not write a new or alternative label — the snapshot and the Influential Core section must refer to the core by the same name.
 
+CORE NAME:
+Produce two fields inside influentialCore:
+- coreName: a memorable NAME, 4 words maximum. It should feel like a title, not a description — interesting and actionable beats exhaustively correct. "The Pre-Whole-Foods Adopter" not "the experienced multi-craft peer who refuses to monetize". Capitalize as a title.
+- coreTagline: one short sentence that completes the picture ("The one others text before buying a bottle.")
+The existing coreLabel field continues to be produced for compatibility. The Signals Snapshot center circle now uses coreName.
+
 OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with {):
 {
   "summary": "2-3 sharp sentences on what moves this audience — the core behavioral truth and the lever, written for a strategist",
 
   "influentialCore": {
+    "coreName": "a memorable NAME for the core, 4 words maximum — a title, not a description; interesting and actionable beats exhaustively correct ('The Pre-Whole-Foods Adopter', not 'the experienced multi-craft peer who refuses to monetize'). Capitalize as a title.",
+    "coreTagline": "one short sentence that completes the picture ('The one others text before buying a bottle.')",
+    "coreSizeEstimate": "the core's share of the audience as a short range ('8–15% of audience') ONLY when the reconciled data carries an estimatedProportion or equivalent evidence — omit otherwise",
     "definition": "narrative definition of the influential core for this audience",
     "profile": "psychographic detail on who the core is and how they differ from the broader audience",
     "keyBehaviors": ["behaviors that define the core"],

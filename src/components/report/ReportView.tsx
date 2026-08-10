@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ArchetypeReport } from "@/types";
 import { normalizePeriphery } from "@/lib/periphery";
 import { TabBar, ReportTab } from "./TabBar";
-import { ReportInputs } from "./ReportInputs";
+import { InputsModal } from "./InputsModal";
+import { CoreHero } from "./CoreHero";
 import { ResearchDepthSummary } from "./ResearchDepthSummary";
 import { InfluentialCoreDescription, CoreListCard } from "./InfluentialCore";
 import { InfluenceMap } from "./InfluenceMap";
 import { InfluenceQuadrant } from "./InfluenceQuadrant";
-import { DigitalHabitat } from "./DigitalHabitat";
+import { SocialSignals } from "./SocialSignals";
 import { CulturalDiscourse } from "./CulturalDiscourse";
 import { EmotionalDrivers } from "./EmotionalDrivers";
 import { BehavioralSignals } from "./BehavioralSignals";
@@ -37,10 +38,18 @@ interface ReportViewProps {
   onReset: () => void;
 }
 
-// Signals-of-Influence layout: the Influential Core at the center, four
-// signal tabs (Social, Trust, Behavioral, Motivational), plus Cultural
-// forces and Adjacencies as outer layers.
-type TabId = "core" | "social" | "trust" | "behavioral" | "motivational" | "cultural" | "adjacencies";
+// Round 6a: 9 tabs — the four signals around the core, plus Cultural,
+// Activation, Adjacencies, and the muted Graveyard for retired sections.
+type TabId =
+  | "core"
+  | "social"
+  | "trust"
+  | "behavioral"
+  | "motivational"
+  | "cultural"
+  | "activation"
+  | "adjacencies"
+  | "graveyard";
 
 const TABS: Array<ReportTab<TabId>> = [
   {
@@ -53,7 +62,9 @@ const TABS: Array<ReportTab<TabId>> = [
   { id: "behavioral", label: "Behavioral", sub: "How they behave" },
   { id: "motivational", label: "Motivational", sub: "What motivates them" },
   { id: "cultural", label: "Cultural", sub: "The cultural discourse and forces informing them" },
+  { id: "activation", label: "Activation", sub: "Plays for engaging the core" },
   { id: "adjacencies", label: "Adjacencies", sub: "Cultural adjacencies and overlaps" },
+  { id: "graveyard", label: "Graveyard", sub: "Retired sections — kept for reference.", muted: true },
 ];
 
 function EmptyTabNote({ message }: { message: string }) {
@@ -65,21 +76,26 @@ function EmptyTabNote({ message }: { message: string }) {
   );
 }
 
+/** Muted wrapper for retired Graveyard sections, tagged with former home. */
+function GraveyardPlot({ formerly, children }: { formerly: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-xl border border-white/[0.05] p-4 opacity-60 transition-opacity hover:opacity-90">
+      <p className="eyebrow mb-3 !text-[9px]">formerly: {formerly}</p>
+      {children}
+    </div>
+  );
+}
+
 export function ReportView({ report, onReset }: ReportViewProps) {
   const [activeTab, setActiveTab] = useState<TabId>("core");
   const [highlightItem, setHighlightItem] = useState<string | null>(null);
+  const [inputsOpen, setInputsOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const core = report.influentialCore;
   const normalizedPeriphery = normalizePeriphery(report);
   const adjacencyInsights = report.peripheryData?.insights;
 
-  // Quadrant dot click → highlight + scroll to the item (both live on Social)
-  const handleQuadrantSelect = useCallback((name: string) => {
-    setHighlightItem(name);
-  }, []);
-
-  // Scroll content to top on tab change
   useEffect(() => {
     contentRef.current?.scrollTo({ top: 0 });
     window.scrollTo({ top: 0 });
@@ -92,68 +108,104 @@ export function ReportView({ report, onReset }: ReportViewProps) {
 
   return (
     <div className="animate-fade-in-up">
-      {/* Top bar: report title + New Analysis button */}
-      <div className="mb-4 flex items-center justify-between gap-4">
-        <h2 className="truncate text-xl font-bold text-[#E8EDF2]">{report.archetype}</h2>
-        <button
-          onClick={onReset}
-          className="shrink-0 rounded-lg border border-[#1C2333] bg-[#0D1117] px-4 py-2 text-sm text-[#8B949E] transition-colors hover:border-[#6366F1]/50 hover:text-[#E8EDF2]"
-        >
-          ← New Analysis
-        </button>
+      {/* Header block: title left, Inputs + New Analysis right */}
+      <div className="mb-4 flex items-end justify-between gap-6">
+        <div className="min-w-0">
+          <p className="eyebrow mb-2.5">Audience Report</p>
+          <h1 className="truncate text-[27px] font-semibold tracking-[-0.02em] text-[#E8EDF2]">
+            {report.archetype}
+          </h1>
+        </div>
+        <div className="flex flex-none gap-2">
+          <button
+            onClick={() => setInputsOpen(true)}
+            className="rounded-md border border-white/[0.12] bg-transparent px-3.5 py-2 text-[12.5px] text-[#E8EDF2]/70 transition-colors hover:border-white/[0.28] hover:text-[#E8EDF2]"
+          >
+            Inputs
+          </button>
+          <button
+            onClick={onReset}
+            className="rounded-md border border-white/[0.12] bg-transparent px-3.5 py-2 text-[12.5px] text-[#E8EDF2]/70 transition-colors hover:border-white/[0.28] hover:text-[#E8EDF2]"
+          >
+            ← New Analysis
+          </button>
+        </div>
       </div>
+
+      <InputsModal report={report} open={inputsOpen} onClose={() => setInputsOpen(false)} />
 
       <TabBar tabs={TABS} activeTab={activeTab} onChange={handleTabChange} />
 
       <div ref={contentRef}>
         {/* ── Tab 1: The Influential Core ── */}
         {activeTab === "core" && (
-          <div className="space-y-5">
-            <ReportInputs report={report} />
-            <ResearchDepthSummary report={report} />
+          <div className="space-y-8">
+            <CoreHero report={report} />
+
             {report.summary && (
-              <p className="max-w-2xl px-1 text-sm text-[#8B949E]">{report.summary}</p>
+              <div>
+                <p className="eyebrow mb-3.5">The Story</p>
+                <p className="max-w-3xl text-[17.5px] leading-[1.6] text-[#E8EDF2]/84">
+                  {report.summary}
+                </p>
+              </div>
             )}
-            {report.researchDepth && <ResearchDepth data={report.researchDepth} />}
+
             {core ? (
               <InfluentialCoreDescription data={core} />
             ) : (
               <EmptyTabNote message="This report predates the influential core analysis — run a new report to populate it." />
             )}
+
             {report.signalsSnapshot && (
               <SignalsSnapshot
                 data={report.signalsSnapshot}
+                coreNameOverride={core?.coreName}
                 onNavigate={(tab: SignalTabTarget) => handleTabChange(tab)}
               />
             )}
-            {report.dataSignals && <SignalCheck data={report.dataSignals} />}
-            {report.influenceSusceptibility && (
-              <InfluenceSusceptibility data={report.influenceSusceptibility} />
+
+            {/* Activation link card — the list itself lives on the Activation tab */}
+            {core?.activationRecommendations && core.activationRecommendations.length > 0 && (
+              <div className="flex items-center justify-between gap-5 border-t border-white/[0.07] pt-5">
+                <div>
+                  <p className="mb-1 text-[14.5px] font-medium text-[#E8EDF2]">
+                    Activation Recommendations
+                  </p>
+                  <p className="text-[13px] text-[#E8EDF2]/45">
+                    {core.activationRecommendations.length} plays for engaging the core — now its own
+                    section.
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleTabChange("activation")}
+                  className="flex-none rounded-md border border-white/[0.14] px-3.5 py-2.5 font-mono text-xs font-medium tracking-[0.06em] text-[#E8EDF2]/80 transition-colors hover:border-white/[0.3] hover:text-[#E8EDF2]"
+                >
+                  OPEN →
+                </button>
+              </div>
             )}
-            {core?.activationRecommendations && (
-              <ActivationPlaybook recommendations={core.activationRecommendations} />
-            )}
+
+            <ResearchDepthSummary report={report} />
           </div>
         )}
 
-        {/* ── Tab 2: Social ── */}
+        {/* ── Tab 2: Social — Signal Map + unified signal cards ── */}
         {activeTab === "social" && (
           <div className="space-y-5">
+            <SocialSignals report={report} />
+
+            {/* Language Codes at the bottom (moved from top) */}
             <CoreListCard
               title="Language Codes"
               icon="❞"
-              intro="Language patterns that signal belonging to the influential core."
+              intro="Common themes in the language this audience uses."
               items={core?.languageCodes}
             />
-            <InfluenceMap data={report.influenceMap} highlightName={highlightItem} />
-            <DigitalHabitat data={report.digitalHabitat} />
-            {report.realWorldHabitat && <RealWorldHabitat data={report.realWorldHabitat} />}
-            <InfluenceQuadrant items={report.influenceMap} onSelectItem={handleQuadrantSelect} />
 
-            {/* Collapsible research sources */}
             {(report.sources?.length || report.rankedSources?.length) ? (
               <details className="group rounded-xl border border-[#1C2333] bg-[#0D1117]">
-                <summary className="cursor-pointer select-none px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6E7681] transition-colors hover:text-[#8B949E]">
+                <summary className="cursor-pointer select-none px-5 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6E7681] transition-colors hover:text-[#8B949E]">
                   <span className="mr-2 inline-block transition-transform group-open:rotate-90">▸</span>
                   Research Sources
                 </summary>
@@ -226,7 +278,18 @@ export function ReportView({ report, onReset }: ReportViewProps) {
           </div>
         )}
 
-        {/* ── Tab 7: Adjacencies ── */}
+        {/* ── Tab 7: Activation ── */}
+        {activeTab === "activation" && (
+          <div className="space-y-5">
+            {core?.activationRecommendations && core.activationRecommendations.length > 0 ? (
+              <ActivationPlaybook recommendations={core.activationRecommendations} />
+            ) : (
+              <EmptyTabNote message="No activation recommendations in this report." />
+            )}
+          </div>
+        )}
+
+        {/* ── Tab 8: Adjacencies ── */}
         {activeTab === "adjacencies" && (
           <div className="space-y-5">
             {normalizedPeriphery ? (
@@ -240,6 +303,44 @@ export function ReportView({ report, onReset }: ReportViewProps) {
             ) : (
               <EmptyTabNote message="No adjacency data available — this report was generated before adjacency mapping was added. Run a new report to map adjacent audiences and overlaps." />
             )}
+          </div>
+        )}
+
+        {/* ── Tab 9: Graveyard — retired sections, kept renderable ── */}
+        {activeTab === "graveyard" && (
+          <div className="space-y-5">
+            <div>
+              <p className="eyebrow mb-1.5">Graveyard</p>
+              <p className="text-sm text-[#E8EDF2]/45">Retired sections — kept for reference.</p>
+            </div>
+            {report.researchDepth && (
+              <GraveyardPlot formerly="The Influential Core tab">
+                <ResearchDepth data={report.researchDepth} />
+              </GraveyardPlot>
+            )}
+            {report.influenceSusceptibility && (
+              <GraveyardPlot formerly="The Influential Core tab">
+                <InfluenceSusceptibility data={report.influenceSusceptibility} />
+              </GraveyardPlot>
+            )}
+            {report.dataSignals && (
+              <GraveyardPlot formerly="The Influential Core tab">
+                <SignalCheck data={report.dataSignals} />
+              </GraveyardPlot>
+            )}
+            <GraveyardPlot formerly="Social tab">
+              <InfluenceQuadrant
+                items={report.influenceMap}
+                onSelectItem={(name) => setHighlightItem(name)}
+              />
+            </GraveyardPlot>
+            {/* Influence Map cards — superseded on Social by the unified signal
+                cards, parked here so the quadrant click-through still works and
+                the per-item detail (convergence, sources, coreVsBase) stays
+                reachable. */}
+            <GraveyardPlot formerly="Social tab">
+              <InfluenceMap data={report.influenceMap} highlightName={highlightItem} />
+            </GraveyardPlot>
           </div>
         )}
       </div>

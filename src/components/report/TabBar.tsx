@@ -4,6 +4,8 @@ export interface ReportTab<T extends string> {
   id: T;
   label: string;
   sub: string;
+  /** Visually dimmed tab (Graveyard). */
+  muted?: boolean;
 }
 
 interface TabBarProps<T extends string> {
@@ -25,7 +27,11 @@ export function TabBar<T extends string>({ tabs, activeTab, onChange }: TabBarPr
               title={tab.sub}
               className={[
                 "relative shrink-0 whitespace-nowrap px-3.5 py-2.5 text-left transition-colors focus:outline-none",
-                isActive ? "text-[#E8EDF2]" : "text-[#6E7681] hover:text-[#8B949E]",
+                isActive
+                  ? "text-[#E8EDF2]"
+                  : tab.muted
+                    ? "text-[#3D444D] hover:text-[#6E7681]"
+                    : "text-[#6E7681] hover:text-[#8B949E]",
               ].join(" ")}
             >
               <span className="block text-sm font-medium">{tab.label}</span>

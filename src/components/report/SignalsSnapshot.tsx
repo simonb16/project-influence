@@ -15,6 +15,8 @@ export type SignalTabTarget = "motivational" | "behavioral" | "trust" | "social"
 interface SignalsSnapshotProps {
   data: SignalsSnapshotType;
   onNavigate?: (tab: SignalTabTarget) => void;
+  /** Round 6a: the memorable core name supersedes coreLabel when present. */
+  coreNameOverride?: string;
 }
 
 function EntryLine({ entry }: { entry: SnapshotEntry }) {
@@ -64,7 +66,8 @@ function SignalBox({
   );
 }
 
-export function SignalsSnapshot({ data, onNavigate }: SignalsSnapshotProps) {
+export function SignalsSnapshot({ data, onNavigate, coreNameOverride }: SignalsSnapshotProps) {
+  const centerName = coreNameOverride ?? data.coreLabel;
   return (
     <Card glow>
       <CardHeader>
@@ -92,7 +95,7 @@ export function SignalsSnapshot({ data, onNavigate }: SignalsSnapshotProps) {
                 Influential Core
               </span>
               <span className="mt-1 px-3 text-xs font-semibold leading-snug text-[#E8EDF2]">
-                {data.coreLabel}
+                {centerName}
               </span>
             </div>
           </div>

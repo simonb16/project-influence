@@ -18,8 +18,8 @@
   --color-card-border: var(--card-border);
   --color-accent: var(--accent);
   --color-muted: var(--muted);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-instrument-sans);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 * {
@@ -61,6 +61,17 @@ body {
 
 .animate-fade-in-up {
   animation: fadeInUp 0.5s ease forwards;
+}
+
+/* Round 6a: mono letterspaced small-caps eyebrow label (mockup convention) */
+.eyebrow {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(232, 237, 242, 0.38);
 }
 
 .animate-pulse-glow {
