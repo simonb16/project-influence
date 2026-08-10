@@ -27,12 +27,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${instrumentSans.variable} ${jetbrainsMono.variable} antialiased`}
-      >
-        {children}
-      </body>
+    <html lang="en" className={`${instrumentSans.variable} ${jetbrainsMono.variable}`}>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }
