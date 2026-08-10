@@ -104,6 +104,14 @@ export function mapReportToSignals(report: ArchetypeReport): SocialSignalCard[] 
     });
   });
 
+  // Suppress WHERE when it just repeats the card title (common for physical
+  // contexts, where the place IS the title)
+  for (const card of cards) {
+    if (card.where && card.where.trim().toLowerCase() === card.title.trim().toLowerCase()) {
+      card.where = undefined;
+    }
+  }
+
   return cards.sort((a, b) => b.strength - a.strength);
 }
 

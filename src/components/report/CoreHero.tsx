@@ -4,10 +4,26 @@ import { ArchetypeReport } from "@/types";
 // compact susceptibility/initiator scores panel. Matches Maria's
 // `Influential Core.html` mockup, built on our tokens.
 
+const PERCENT_RANGE_RE = /(\d+(?:\s*[–-]\s*\d+)?)\s*%/;
+
 function parseCorePercent(estimate?: string): string | null {
   if (!estimate) return null;
-  const m = estimate.match(/(\d+(?:\s*[–-]\s*\d+)?)\s*%/);
+  const m = estimate.match(PERCENT_RANGE_RE);
   return m ? `${m[1].replace(/\s/g, "")}%` : null;
+}
+
+/** Core-size text for the chip: the explicit coreSizeEstimate field when present,
+ * else a percent range parsed from the core narrative ("roughly 5–10% of the
+ * audience" → "5–10% of audience"). Null when neither yields a range. */
+function deriveCoreSize(core?: {
+  coreSizeEstimate?: string;
+  definition?: string;
+  profile?: string;
+}): string | null {
+  if (core?.coreSizeEstimate) return core.coreSizeEstimate;
+  const narrative = `${core?.definition ?? ""} ${core?.profile ?? ""}`;
+  const m = narrative.match(PERCENT_RANGE_RE);
+  return m ? `${m[1].replace(/\s/g, "")}% of audience` : null;
 }
 
 function susceptibilityTier(score: number): string {
@@ -102,7 +118,8 @@ function ScorePanel({
 export function CoreHero({ report }: { report: ArchetypeReport }) {
   const core = report.influentialCore;
   const name = core?.coreName ?? report.signalsSnapshot?.coreLabel ?? "The Influential Core";
-  const corePercent = parseCorePercent(core?.coreSizeEstimate);
+  const coreSize = deriveCoreSize(core);
+  const corePercent = parseCorePercent(coreSize ?? undefined);
   const sus = report.influenceSusceptibility;
   const generatedDate = new Date(report.generatedAt).toLocaleDateString("en-US", {
     dateStyle: "medium",
@@ -127,9 +144,9 @@ export function CoreHero({ report }: { report: ArchetypeReport }) {
           </p>
         )}
         <div className="flex flex-wrap gap-1.5">
-          {core?.coreSizeEstimate && (
+          {coreSize && (
             <span className="rounded-[5px] border border-white/[0.08] bg-white/[0.045] px-2 py-1.5 font-mono text-[11px] font-medium text-[#E8EDF2]/60">
-              {core.coreSizeEstimate}
+              {coreSize}
             </span>
           )}
           <span className="rounded-[5px] border border-white/[0.06] px-2 py-1.5 font-mono text-[11px] font-medium text-[#E8EDF2]/40">
