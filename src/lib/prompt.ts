@@ -78,6 +78,10 @@ const REAL_WORLD_CONTEXTS_SCHEMA = `  "realWorldContexts": [
     }
   ],`;
 
+const CORE_SIZE_EVIDENCE_INSTRUCTION = `CORE SIZE EVIDENCE: Collect any evidence that indicates what fraction of this audience is the influential core: published community statistics (active-contributor ratios, paid-subscriber counts vs audience size), engagement pyramids (what % post vs lurk), category research on enthusiast-to-casual ratios. Report numbers with sources. Do not force an estimate — absence of evidence is a valid finding.`;
+
+const CORE_SIZE_EVIDENCE_SCHEMA = `  "coreSizeEvidence": ["evidence strings about the core's share of the audience, each with its number and source — empty array when none found"],`;
+
 // ─── Lens 1: Audience ─────────────────────────────────────────────────────────
 
 export function buildAudienceLensPrompt(inputs: AgentInputs): string {
@@ -103,6 +107,8 @@ RESEARCH STRATEGY (use up to 15 web searches):
 ${SEARCH_SPECIFICITY}
 
 ${REAL_WORLD_CONTEXTS_INSTRUCTION}
+
+${CORE_SIZE_EVIDENCE_INSTRUCTION}
 
 OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with {):
 {
@@ -170,7 +176,8 @@ OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with
     "whatDestroysCredibility": "description of what makes this audience skeptical",
     "proofFormats": ["types of proof they respond to — e.g., before/after, data, personal testimony"]
   },
-${REAL_WORLD_CONTEXTS_SCHEMA.replace(/,$/, "")}
+${REAL_WORLD_CONTEXTS_SCHEMA}
+${CORE_SIZE_EVIDENCE_SCHEMA.replace(/,$/, "")}
 }
 
 CRITICAL RULES:
@@ -210,10 +217,13 @@ ${SEARCH_SPECIFICITY}
 
 ${REAL_WORLD_CONTEXTS_INSTRUCTION}
 
+${CORE_SIZE_EVIDENCE_INSTRUCTION}
+
 OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with {):
 {
   "lens": "brand",
 ${REAL_WORLD_CONTEXTS_SCHEMA}
+${CORE_SIZE_EVIDENCE_SCHEMA}
   "brandLandscape": {
     "summary": "2-3 paragraph overview of how brands currently operate in this audience's world"
   },
@@ -304,10 +314,13 @@ ${SEARCH_SPECIFICITY}
 
 ${REAL_WORLD_CONTEXTS_INSTRUCTION}
 
+${CORE_SIZE_EVIDENCE_INSTRUCTION}
+
 OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with {):
 {
   "lens": "context",
 ${REAL_WORLD_CONTEXTS_SCHEMA}
+${CORE_SIZE_EVIDENCE_SCHEMA}
   "contextOverview": {
     "summary": "2-3 paragraph overview of the forces shaping this audience's world right now"
   },
@@ -387,6 +400,8 @@ TOOL USE BUDGET: Maximum 8 calls. Use them strategically:
 - Prioritize claims where lenses DISAGREE — data can break the tie
 - Prioritize claims about community size, creator reach, or trend direction — easily quantifiable
 - Prioritize claims central to the influential core definition and the top-scored influence items
+- Resolving a social signal's map placement is a valid use of a tool call, ranked alongside resolving lens conflicts ("is r/crochet niche or significant? — check subscriber count"; "is the craft-night format growing? — check search trend"). Placement-critical signals — the ones that will read as Concentrated Conviction vs Scaled Momentum — deserve quant more than obvious ones.
+- A targeted lookup that grounds the core-size estimate (e.g., a subreddit's active-poster statistics vs subscriber count) is also a valid spend
 - Real-world habitat claims can often be validated digitally (e.g., "craft night" search growth, meetup-related subreddit activity)
 - Don't spend calls on claims all three lenses agree on with strong evidence, or on subjective interpretations data can't resolve
 
@@ -425,6 +440,7 @@ Add to your output JSON (alongside the existing fields):
   "dataSignals": {
     "signals": [
       {
+        "id": "stable id for cross-referencing: 'ds1', 'ds2', ...",
         "source": "google_trends" | "reddit" | "youtube" | "pinterest",
         "signalType": "motivational" | "behavioral" | "trust" | "social",
         "metric": "headline number, e.g. '+103% YoY', '452K subscribers'",
@@ -519,8 +535,59 @@ Score each signal on 6 dimensions (1-10 scale):
 
 Composite score = (Credibility × 0.20) + (Copyability × 0.20) + (Participation × 0.20) + (Transmission × 0.15) + (Bridge × 0.15) + (Desire × 0.10)
 
+SOCIAL SIGNALS — YOU OWN SELECTION, TYPING, SCORING, AND PLACEMENT:
+From your reconciled view of the three lenses, produce the socialSignals list — the unified picture of where and how influence moves socially for the influential core. This is an extension of your scoring role: signal selection and placement are judgment calls that belong with you, because you have the lens evidence and — when available — the platform tools to quantify uncertain placements before you commit to them.
+
+Each social signal is one of three types:
+- "content" — a content genre, format, tonal code, or proof format that carries influence ("producer-story specificity as proof format", "the anti-snob tonal code")
+- "digital" — a digital space or platform community where the core participates ("Substack newsletter ecosystem", "expert-peer Instagram accounts")
+- "physical" — a real-world space or gathering where influence moves ("independent bottle shops", "dinner parties", "fairs and salons")
+
+Produce 8-14 signals total with a mix of all three types. Consolidate from your influence map, digital habitat, and real world habitat analyses — one signal per distinct influence mechanism, not one per data source. The same community must not appear as multiple signals. WHERE and WHO are required on every signal: where it happens, and who the specific voices/actors are (named entities only with evidence; archetypes otherwise).
+
+STRENGTH (0-100): how forcefully this signal shapes what the core believes, adopts, and shares.
+Two components, weighed together:
+- MOMENTUM: is this signal growing? Grounded in trend data where available (search growth %, new-format emergence, fresh upload/post activity) or documented growth evidence from the lenses.
+- CONCENTRATION: how dense is the conviction? Engagement ratios (comments per view, thread depth), trust density (named referrals, direct conversion evidence), participation quality.
+High strength = growing AND dense ("craft night searches +103%, show-and-tell rituals at every gathering").
+State the basis in strengthBasis — one sentence, citing the actual numbers used.
+
+SCALE: how many people this signal touches. Use the quant when you have it:
+- micro: <10K (a niche newsletter, a single city's shops, ~2,000 fair attendees)
+- niche: 10K-100K
+- significant: 100K-1M
+- mainstream: >1M (a 65M-user platform, a mainstream content genre)
+Put the number that drove the classification in scaleBasis. When no quant exists (dinner parties, word of mouth), classify from evidence-based reasoning and say so in scaleBasis ("no direct measure — classified niche from prevalence in community discussion"). Default to the smaller bucket when uncertain.
+The four corners this creates: CONCENTRATED CONVICTION (high strength, small scale — where the core actually lives), SCALED MOMENTUM (high strength, big scale — what's breaking out), BACKGROUND ACTIVITY (low strength, small scale), WIDESPREAD INTEREST (low strength, big scale — the base, not the core).
+
+The hard rule is unchanged: only actual tool results and lens-sourced numbers ever appear as quant in strengthBasis/scaleBasis — never estimates dressed as data.
+
+VALIDATION LINKS: where a dataSignal you produced grounds a social signal, list that dataSignal's id in the signal's validatedBy array. You created both in the same pass — link them.
+
+Leave targetableSignals as an empty array on every signal — the synthesis agent fills it during enrichment.
+
+CORE SIZE: Reconcile the lenses' coreSizeEvidence into coreSize: { "estimate": "8-15%", "basis": <what the evidence is>, "confidence": "grounded" | "directional" | "speculative" }. If evidence is thin, say "directional" — never present a guess as grounded. If there is no evidence at all, still produce the field with confidence "speculative" and a basis explaining the reasoning, or omit it entirely rather than inventing statistics.
+
 OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with {):
 {
+  "socialSignals": [
+    {
+      "id": "sig1",
+      "type": "content" | "digital" | "physical",
+      "signal": "title — the influence mechanism",
+      "where": "platform/context",
+      "who": "the specific voices/actors (named only with evidence; archetypes otherwise)",
+      "body": "1-3 sentences: what this signal is and how influence moves through it",
+      "strength": number 0-100,
+      "strengthBasis": "one sentence citing the actual momentum/concentration numbers used",
+      "scale": "micro" | "niche" | "significant" | "mainstream",
+      "scaleBasis": "the quant that drove the classification, or explicit evidence-classified note",
+      "targetableSignals": [],
+      "validatedBy": ["ds1"] (dataSignal ids that ground this signal — omit or empty when none),
+      "evidence": "key supporting evidence"
+    }
+  ],
+  "coreSize": { "estimate": "8-15%", "basis": "what the evidence is", "confidence": "grounded" | "directional" | "speculative" },
   "reconciledSignals": [
     {
       "signal": "description of the finding",
@@ -659,6 +726,12 @@ Produce an at-a-glance summary of the four Signals of Influence for the influent
 3-5 entries per signal, ordered by score descending. Every entry must trace to an item in the full report — same name, same score. If a signal has fewer than 3 high-scoring items, show fewer rather than padding with low scorers. Include at least one real-world context in social when the real world habitat has a well-evidenced entry.
 
 Also produce coreLabel: the name of the influential core archetype. This must be THE SAME archetype name used in your influential core definition/description (e.g., if the description says the core is "the multicraftual dabbler with established taste", coreLabel is exactly that). Do not write a new or alternative label — the snapshot and the Influential Core section must refer to the core by the same name.
+
+SOCIAL SIGNALS — ENRICHMENT ONLY:
+The reconciled data may contain a socialSignals list. If it does, reproduce it in your output. Do not re-score, re-place, add, or remove signals — the reconciliation agent owns selection, typing, scoring, and placement, and its ids, types, strength, strengthBasis, scale, scaleBasis, validatedBy, and evidence fields must pass through UNCHANGED. Your job is enrichment only:
+- For each signal, fill targetableSignals with 2-4 entries: platform → the specific parameter someone would use to find or track this signal ("YouTube — trending interests, channel subscribers", "Google — trending keywords", "Reddit — subreddits, leading community voices", "Instagram — saves and sends, follower overlap"). Draw from your findability analysis and the signal's own evidence. These are findability parameters, not campaign recommendations. Only name platforms where this signal actually lives.
+- You may lightly polish the body copy for report tone — meaning must not change.
+If the reconciled data has no socialSignals, omit the field entirely.
 
 CORE NAME:
 Produce two fields inside influentialCore:
@@ -860,6 +933,18 @@ OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with
     "trust": [{ "label": "channel", "detail": "the one-step-deeper specific", "score": number }],
     "social": [{ "label": "the specific space", "score": number }]
   },
+
+  "socialSignals": [ (ONLY when the reconciled data contains socialSignals — reproduce each signal with all reconciliation fields UNCHANGED, filling only targetableSignals and optionally polishing body)
+    {
+      "id": "unchanged from reconciliation",
+      "type": "unchanged", "signal": "unchanged", "where": "unchanged", "who": "unchanged",
+      "body": "reconciliation's body, optionally polished for tone (meaning unchanged)",
+      "strength": unchanged, "strengthBasis": "unchanged",
+      "scale": "unchanged", "scaleBasis": "unchanged",
+      "targetableSignals": [{ "platform": "platform this signal actually lives on", "detail": "the specific findability parameter" }],
+      "validatedBy": unchanged, "evidence": "unchanged"
+    }
+  ],
 
   "researchDepth": {
     "totalSignalsScored": number (count of reconciledSignals),

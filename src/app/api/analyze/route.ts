@@ -6,6 +6,7 @@ import {
   runReconciliationAgent,
   runSynthesisAgent,
   runPeripheryAgent,
+  mergeSocialSignals,
   AllLensOutputs,
 } from "@/lib/agents";
 import { ArchetypeReport } from "@/types";
@@ -112,6 +113,10 @@ export async function POST(request: Request) {
           // Signal Check data comes from reconciliation, not synthesis — attach
           // it directly so the numbers are exactly what the tools returned.
           dataSignals: reconciliation.dataSignals,
+          // Round 6b: reconciliation owns the signals; synthesis only enriches.
+          // The merge enforces that boundary in code (drift is logged + overridden).
+          socialSignals: mergeSocialSignals(reconciliation.socialSignals, synthesis.socialSignals),
+          coreSize: reconciliation.coreSize,
         };
 
         send({ type: "report", report });
