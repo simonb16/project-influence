@@ -7,6 +7,7 @@ import {
   runSynthesisAgent,
   runPeripheryAgent,
   mergeSocialSignals,
+  log,
   AllLensOutputs,
 } from "@/lib/agents";
 import { ArchetypeReport } from "@/types";
@@ -122,6 +123,7 @@ export async function POST(request: Request) {
         send({ type: "report", report });
       } catch (err) {
         console.error("[analyze] Error:", err);
+        log(`RUN FAILED: ${err instanceof Error ? `${err.message}${err.stack ? ` | ${err.stack.split("\n")[1]?.trim()}` : ""}` : String(err)}`);
         send({
           type: "error",
           error: err instanceof Error ? err.message : "Unknown error occurred",

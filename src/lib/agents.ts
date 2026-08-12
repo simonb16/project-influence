@@ -19,8 +19,10 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const LOG_FILE = path.join(process.cwd(), "agent.log");
 
-function log(message: string) {
+export function log(message: string) {
   const line = `[${new Date().toLocaleTimeString("en-US", { hour12: false })}] ${message}\n`;
+  // Mirror to stdout so hosted log viewers (Railway) capture the full trail
+  console.log(`[sway] ${line.trimEnd()}`);
   fs.appendFileSync(LOG_FILE, line);
 }
 

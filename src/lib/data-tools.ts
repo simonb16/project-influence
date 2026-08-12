@@ -39,6 +39,8 @@ export const MAX_TOOL_CALLS = 8;
 const LOG_FILE = path.join(process.cwd(), "agent.log");
 function log(message: string) {
   const line = `[${new Date().toLocaleTimeString("en-US", { hour12: false })}] ${message}\n`;
+  // Mirror to stdout so hosted log viewers (Railway) capture the full trail
+  console.log(`[sway] ${line.trimEnd()}`);
   try {
     fs.appendFileSync(LOG_FILE, line);
   } catch { /* logging must never break a tool call */ }
