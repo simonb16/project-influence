@@ -11,6 +11,8 @@ import {
   AllLensOutputs,
 } from "@/lib/agents";
 import { ArchetypeReport } from "@/types";
+import fs from "fs";
+import path from "path";
 
 export const maxDuration = 300;
 
@@ -41,16 +43,27 @@ export async function POST(request: Request) {
   const inputs: AgentInputs = { audience: audience.trim(), brand, context };
 
   const encoder = new TextEncoder();
+  // A disconnected client must never kill the run: enqueue() throws once the
+  // controller closes (browser navigated away, proxy dropped the stream), so
+  // every send is guarded and the pipeline runs to completion regardless. The
+  // finished report is also persisted server-side for recovery.
+  let clientGone = false;
   const stream = new ReadableStream({
     async start(controller) {
       const send = (chunk: object) => {
-        controller.enqueue(encoder.encode(encode(chunk)));
+        if (clientGone) return;
+        try {
+          controller.enqueue(encoder.encode(encode(chunk)));
+        } catch {
+          if (!clientGone) {
+            clientGone = true;
+            log("Client disconnected mid-run — continuing pipeline, report will be recoverable via /api/reports/latest");
+          }
+        }
       };
 
       // Heartbeat every 5s to prevent Railway/proxy from closing idle stream
-      const heartbeat = setInterval(() => {
-        controller.enqueue(encoder.encode(JSON.stringify({ type: "heartbeat" }) + "\n"));
-      }, 5000);
+      const heartbeat = setInterval(() => send({ type: "heartbeat" }), 5000);
 
       try {
         const totalAgents = 6;
@@ -120,6 +133,15 @@ export async function POST(request: Request) {
           coreSize: reconciliation.coreSize,
         };
 
+        // Persist server-side BEFORE sending — if the stream died mid-run,
+        // the report survives for /api/reports/latest recovery.
+        try {
+          fs.writeFileSync(path.join(process.cwd(), "last-report.json"), JSON.stringify(report));
+        } catch { /* persistence is best-effort */ }
+        if (clientGone) {
+          log("Run completed after client disconnect — report persisted for recovery");
+        }
+
         send({ type: "report", report });
       } catch (err) {
         console.error("[analyze] Error:", err);
@@ -130,8 +152,15 @@ export async function POST(request: Request) {
         });
       } finally {
         clearInterval(heartbeat);
-        controller.close();
+        try {
+          controller.close();
+        } catch { /* already closed by client disconnect */ }
       }
+    },
+    cancel() {
+      // Browser explicitly cancelled the stream (tab closed / navigation)
+      clientGone = true;
+      log("Stream cancelled by client — continuing pipeline, report will be recoverable via /api/reports/latest");
     },
   });
 

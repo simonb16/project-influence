@@ -100,6 +100,30 @@ export default function Home() {
     setSavedReports(getSavedReports());
   }, []);
 
+  // A dropped stream no longer kills the server-side run — the finished report
+  // is persisted and recoverable from /api/reports/latest.
+  const handleRecoverLastRun = useCallback(async () => {
+    try {
+      const res = await fetch("/api/reports/latest");
+      if (!res.ok) {
+        setError("No completed report found on the server — the run may still be in progress. Wait a few minutes and try again, or check /api/logs.");
+        return;
+      }
+      const recovered: ArchetypeReport = await res.json();
+      const alreadySaved = getSavedReports().some(
+        (s) => s.report.generatedAt === recovered.generatedAt
+      );
+      if (!alreadySaved) {
+        saveReport(recovered);
+        setSavedReports(getSavedReports());
+      }
+      setReport(recovered);
+      setAppState("report");
+    } catch {
+      setError("Could not reach the server to recover the report.");
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#080B0F]">
       {/* Top nav bar */}
@@ -150,12 +174,21 @@ export default function Home() {
             <span className="mb-4 text-4xl text-red-500">✕</span>
             <h2 className="mb-2 text-lg font-semibold text-[#E8EDF2]">Intelligence sweep failed</h2>
             <p className="mb-6 max-w-md text-sm text-[#8B949E]">{error}</p>
-            <button
-              onClick={handleReset}
-              className="rounded-lg bg-[#6366F1] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#818CF8]"
-            >
-              Try Again
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={handleReset}
+                className="rounded-lg bg-[#6366F1] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#818CF8]"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={handleRecoverLastRun}
+                className="rounded-lg border border-[#1C2333] bg-[#0D1117] px-6 py-2.5 text-sm text-[#8B949E] transition-colors hover:border-[#6366F1]/50 hover:text-[#E8EDF2]"
+                title="If the connection dropped mid-run, the pipeline kept going — check whether it finished"
+              >
+                Recover Last Run
+              </button>
+            </div>
           </div>
         )}
       </main>
