@@ -106,7 +106,8 @@ export default function Home() {
     try {
       const res = await fetch("/api/reports/latest");
       if (!res.ok) {
-        setError("No completed report found on the server — the run may still be in progress. Wait a few minutes and try again, or check /api/logs.");
+        setError("No completed report found on the server — either the run is still in progress (wait a few minutes and retry, or check /api/logs), or a redeploy cleared the server's copy since the run finished.");
+        setAppState("error");
         return;
       }
       const recovered: ArchetypeReport = await res.json();
@@ -121,6 +122,7 @@ export default function Home() {
       setAppState("report");
     } catch {
       setError("Could not reach the server to recover the report.");
+      setAppState("error");
     }
   }, []);
 
