@@ -153,6 +153,17 @@ export default function Home() {
         {appState === "input" && (
           <>
             <InputForm onSubmit={handleSubmit} isLoading={false} />
+            {/* Reachable recovery: streams can drop mid-run (Railway enforces a
+                ~15-min proxy timeout) while the pipeline finishes server-side. */}
+            <div className="mx-auto mt-6 max-w-2xl text-center">
+              <button
+                onClick={handleRecoverLastRun}
+                className="text-xs text-[#6E7681] underline decoration-[#374151] underline-offset-4 transition-colors hover:text-[#8B949E]"
+                title="If a run's connection dropped, the pipeline kept going — fetch the last completed report from the server"
+              >
+                Lost a run to a network error? Recover the last completed report
+              </button>
+            </div>
             <PreviousReports
               reports={savedReports}
               onSelect={handleSelectReport}
