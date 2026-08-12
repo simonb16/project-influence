@@ -27,6 +27,10 @@ export interface ToolError {
 
 // Env-overridable for testing the timeout paths (DATA_TOOL_TIMEOUT_MS=50).
 const TOOL_TIMEOUT_MS = Number(process.env.DATA_TOOL_TIMEOUT_MS ?? 10_000);
+// Trends gets a longer leash: SerpApi's latency is spiky (183ms one call,
+// >10s the next) and 10s cost us the tool twice in one run via the strike
+// system. The env override still governs both for forced-timeout tests.
+const TRENDS_TIMEOUT_MS = Number(process.env.DATA_TOOL_TIMEOUT_MS ?? 15_000);
 
 /** Hard cap on reconciliation tool calls per run — enforced in the agent loop. */
 export const MAX_TOOL_CALLS = 8;
@@ -46,12 +50,16 @@ function isToolError(v: unknown): v is ToolError {
 
 /** Wrap any tool promise in a hard timeout so a hung API can't stall the pipeline.
  * Timeouts and thrown errors are infrastructure failures → toolDead. */
-async function withTimeout<T>(work: Promise<T>, label: string): Promise<T | ToolError> {
+async function withTimeout<T>(
+  work: Promise<T>,
+  label: string,
+  timeoutMs: number = TOOL_TIMEOUT_MS
+): Promise<T | ToolError> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<ToolError>((resolve) => {
     timer = setTimeout(
-      () => resolve({ error: `${label} timed out after ${TOOL_TIMEOUT_MS / 1000}s`, toolDead: true, timedOut: true }),
-      TOOL_TIMEOUT_MS
+      () => resolve({ error: `${label} timed out after ${timeoutMs / 1000}s`, toolDead: true, timedOut: true }),
+      timeoutMs
     );
   });
   try {
@@ -279,7 +287,8 @@ export async function searchGoogleTrends(query: string, timeRange?: string): Pro
   const backend = process.env.SERPAPI_KEY ? "serpapi" : "unofficial";
   const result = await withTimeout(
     backend === "serpapi" ? serpApiTrendsInner(query, timeRange) : unofficialTrendsInner(query, timeRange),
-    "google_trends"
+    "google_trends",
+    TRENDS_TIMEOUT_MS
   );
   if (isToolError(result)) {
     log(`google_trends("${query}") via ${backend} → FAILED: ${result.quotaExhausted ? "QUOTA EXHAUSTED — SerpApi monthly searches used up" : result.error}`);
