@@ -10,7 +10,7 @@ import {
   buildReconciliationPrompt,
   buildSynthesisPrompt,
 } from "@/lib/prompt";
-import { ArchetypeReport, DataSignalsSynthesis, PeripheryData } from "@/types";
+import { ArchetypeReport, CoreSize, DataSignalsSynthesis, PeripheryData, SocialSignal } from "@/types";
 import { getAvailableTools, executeDataTool, MAX_TOOL_CALLS, DataToolSchema } from "@/lib/data-tools";
 
 export type { AgentInputs };
@@ -168,8 +168,15 @@ async function runLensAgent<T>(
  * and safety classifiers can decline with stop_reason "refusal" — so we opt into a
  * server-side fallback to Opus 4.8 and still guard the stop_reason.
  */
-async function runReasoningAgent<T>(prompt: string, signal: AbortSignal, maxTokens = 32000): Promise<T> {
-  const { result } = await runReasoningToolLoop<T>(prompt, signal, [], undefined, maxTokens);
+async function runReasoningAgent<T>(
+  prompt: string,
+  signal: AbortSignal,
+  maxTokens = 32000,
+  label = "Reasoning agent"
+): Promise<T> {
+  const { result, outputChars } = await runReasoningToolLoop<T>(prompt, signal, [], undefined, maxTokens);
+  // Output-pressure telemetry (Round 7 scouting): chars vs the token ceiling
+  log(`${label} — output ${outputChars} chars (ceiling ${maxTokens} tokens)`);
   return result;
 }
 
@@ -188,7 +195,7 @@ async function runReasoningToolLoop<T>(
   tools: DataToolSchema[],
   onToolCall?: (message: string) => void,
   maxTokens = 32000
-): Promise<{ result: T; toolCallsUsed: number; quotaExhaustedTools: string[] }> {
+): Promise<{ result: T; toolCallsUsed: number; quotaExhaustedTools: string[]; outputChars: number }> {
   const messages: Array<{ role: "user" | "assistant"; content: unknown }> = [
     { role: "user", content: prompt },
   ];
@@ -303,7 +310,7 @@ async function runReasoningToolLoop<T>(
             : result;
         const resultJson = JSON.stringify(payload);
         // Log the full-ish result so cited numbers can be audited against reality
-        log(`Tool call ${toolCallCount}/${MAX_TOOL_CALLS} — ${tu.name}("${queryLabel}") → ${resultJson.slice(0, 1500)}`);
+        log(`Tool call ${toolCallCount}/${MAX_TOOL_CALLS} — ${tu.name}("${queryLabel}") → ${resultJson.slice(0, 4000)}`);
         results.push({ type: "tool_result", tool_use_id: tu.id, content: resultJson });
       }
 
@@ -312,10 +319,12 @@ async function runReasoningToolLoop<T>(
     }
 
     // end_turn (or max_tokens, which extractJSON/parse will surface as an error)
+    const text = textFromContent(message.content);
     return {
-      result: JSON.parse(extractJSON(textFromContent(message.content))) as T,
+      result: JSON.parse(extractJSON(text)) as T,
       toolCallsUsed: toolCallCount,
       quotaExhaustedTools: [...quotaExhaustedTools],
+      outputChars: text.length,
     };
   }
   throw new Error(`tool-use loop did not finish within ${maxTurns} turns`);
@@ -398,6 +407,8 @@ export interface ReconciliationResult {
   keyConflicts?: string[];
   keyGaps?: string[];
   dataSignals?: DataSignalsSynthesis; // Round 5 — present only when tools ran usefully
+  socialSignals?: SocialSignal[]; // Round 6b — reconciliation owns selection/scoring/placement
+  coreSize?: CoreSize; // Round 6b — quantified core size with confidence
 }
 
 // Tool turns add wall-clock time (up to 8 API calls + extra inference turns),
@@ -411,7 +422,10 @@ export async function runReconciliationAgent(
 ): Promise<ReconciliationResult> {
   const tools = getAvailableTools();
   log(`Reconciliation agent — started (${tools.length} data tools: ${tools.map((t) => t.name).join(", ") || "none"})`);
-  const { result, toolCallsUsed, quotaExhaustedTools } = await withDeadline(
+  // Round 6b grew reconciliation's output (socialSignals + coreSize on top of
+  // everything else) — ceiling raised 32K→48K preemptively per the brief's
+  // raise-first guidance.
+  const { result, toolCallsUsed, quotaExhaustedTools, outputChars } = await withDeadline(
     "Reconciliation agent",
     RECONCILIATION_TIMEOUT_MS,
     (signal) =>
@@ -425,9 +439,11 @@ export async function runReconciliationAgent(
         ),
         signal,
         tools,
-        onProgress
+        onProgress,
+        48000
       )
   );
+  log(`Reconciliation agent — output ${outputChars} chars (ceiling 48000 tokens)`);
 
   // Deterministic quota footnote: don't rely on the model to phrase it — if
   // SerpApi quota died mid-run, rewrite the unavailable-sources entry directly.
@@ -466,11 +482,58 @@ export async function runSynthesisAgent(
     runReasoningAgent<SynthesisResult>(
       buildSynthesisPrompt(inputs, JSON.stringify(reconciliation, null, 2)),
       signal,
-      48000
+      48000,
+      "Synthesis agent"
     )
   );
   log(`Synthesis agent — complete`);
   return result;
+}
+
+/**
+ * Round 6b enrichment boundary, enforced in code: reconciliation's signals are
+ * authority for everything except targetableSignals and body polish, which are
+ * taken from synthesis's version (matched by id). Any other change synthesis
+ * attempted is logged as drift and overridden — the diff test observes the
+ * model's behavior, the merge guarantees the invariant.
+ */
+export function mergeSocialSignals(
+  recon: SocialSignal[] | undefined,
+  synth: SocialSignal[] | undefined
+): SocialSignal[] | undefined {
+  if (!recon || recon.length === 0) return undefined;
+  const synthById = new Map((synth ?? []).map((s) => [s.id, s]));
+
+  if (synth) {
+    if (synth.length !== recon.length) {
+      log(`Enrichment drift: synthesis returned ${synth.length} signals vs reconciliation's ${recon.length} (overridden)`);
+    }
+    for (const r of recon) {
+      const s = synthById.get(r.id);
+      if (!s) {
+        log(`Enrichment drift: synthesis dropped signal ${r.id} "${r.signal}" (restored)`);
+        continue;
+      }
+      const drifts: string[] = [];
+      if (s.strength !== r.strength) drifts.push(`strength ${r.strength}→${s.strength}`);
+      if (s.scale !== r.scale) drifts.push(`scale ${r.scale}→${s.scale}`);
+      if (s.type !== r.type) drifts.push(`type ${r.type}→${s.type}`);
+      if (s.scaleBasis !== r.scaleBasis) drifts.push("scaleBasis changed");
+      if (s.strengthBasis !== r.strengthBasis) drifts.push("strengthBasis changed");
+      if (drifts.length > 0) {
+        log(`Enrichment drift on ${r.id} (overridden): ${drifts.join(", ")}`);
+      }
+    }
+  }
+
+  return recon.map((r) => {
+    const s = synthById.get(r.id);
+    return {
+      ...r,
+      targetableSignals: s?.targetableSignals?.length ? s.targetableSignals : (r.targetableSignals ?? []),
+      body: s?.body?.trim() ? s.body : r.body,
+    };
+  });
 }
 
 // ─── Batch 4: Periphery (parallel with Synthesis) ────────────────────────────

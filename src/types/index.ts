@@ -202,6 +202,10 @@ export interface ArchetypeReport {
   signalsSnapshot?: SignalsSnapshot;
   // Round 5: validated platform data from the reconciliation agent's tool calls
   dataSignals?: DataSignalsSynthesis;
+  // Round 6b: native social signals (reconciliation-owned, synthesis-enriched)
+  // and the quantified core size. Absent on older reports → transitional mapping.
+  socialSignals?: SocialSignal[];
+  coreSize?: CoreSize;
 }
 
 // ─── Periphery types (Round 2 Periphery agent) ───────────────────────────────
@@ -322,6 +326,7 @@ export interface SignalsSnapshot {
 // ─── Round 5: Data signals (reconciliation tool-use) + cultural connectors ───
 
 export interface DataSignal {
+  id?: string; // Round 6b: stable id ("ds1"…) so socialSignals can reference via validatedBy
   source: "google_trends" | "reddit" | "youtube" | "pinterest";
   signalType: "motivational" | "behavioral" | "trust" | "social";
   metric: string; // headline number: "+103% YoY", "452K subscribers"
@@ -336,6 +341,30 @@ export interface DataSignalsSynthesis {
   collectiveFinding: string; // 3-5 sentence synthesis — what the data collectively reveals
   dataSources: string[]; // APIs successfully queried
   unavailableSources: string[]; // APIs not configured or failed
+}
+
+// ─── Round 6b: Native social signals + core size ─────────────────────────────
+
+export interface SocialSignal {
+  id: string; // stable within report, for map→card linking
+  type: "content" | "digital" | "physical";
+  signal: string; // title
+  where: string; // platform/context
+  who: string; // the voices — named entities only with evidence; archetypes otherwise
+  body: string; // 1-3 sentences: what this signal is and how influence moves through it
+  strength: number; // 0-100 — momentum + concentration
+  strengthBasis: string; // what the strength score rests on, citing actual numbers used
+  scale: "micro" | "niche" | "significant" | "mainstream";
+  scaleBasis?: string; // the quant behind it, or explicit evidence-classified note
+  targetableSignals: Array<{ platform: string; detail: string }>; // synthesis enrichment
+  validatedBy?: string[]; // dataSignal ids that ground this signal
+  evidence: string;
+}
+
+export interface CoreSize {
+  estimate: string; // "8-15%"
+  basis: string; // what the evidence is
+  confidence: "grounded" | "directional" | "speculative";
 }
 
 export interface CulturalConnector {

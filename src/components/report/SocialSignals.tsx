@@ -22,6 +22,8 @@ export interface SocialSignalCard {
   strength: number; // 0-100
   scale: ReachLevel;
   targets: Array<{ platform: string; detail: string }>;
+  /** Round 6b native path: pre-rendered "source: metric — finding" validation lines. */
+  validation?: string[];
 }
 
 const TYPE_META: Record<SignalType, { label: string; color: string; border: string }> = {
@@ -104,15 +106,54 @@ export function mapReportToSignals(report: ArchetypeReport): SocialSignalCard[] 
     });
   });
 
-  // Suppress WHERE when it just repeats the card title (common for physical
-  // contexts, where the place IS the title)
+  return finalizeCards(cards);
+}
+
+/** Shared cleanup: suppress WHERE when it repeats the title, sort by strength. */
+function finalizeCards(cards: SocialSignalCard[]): SocialSignalCard[] {
   for (const card of cards) {
     if (card.where && card.where.trim().toLowerCase() === card.title.trim().toLowerCase()) {
       card.where = undefined;
     }
   }
-
   return cards.sort((a, b) => b.strength - a.strength);
+}
+
+// ─── Round 6b native path — used exclusively when socialSignals is present ───
+
+const SOURCE_LABELS: Record<string, string> = {
+  google_trends: "Google Trends",
+  reddit: "Reddit",
+  youtube: "YouTube",
+  pinterest: "Pinterest",
+};
+
+function nativeCards(report: ArchetypeReport): SocialSignalCard[] | null {
+  const signals = report.socialSignals;
+  if (!signals || signals.length === 0) return null;
+  const dataSignals = report.dataSignals?.signals ?? [];
+
+  return finalizeCards(
+    signals.map((s) => ({
+      id: s.id,
+      type: s.type,
+      title: s.signal,
+      where: s.where,
+      who: s.who,
+      body: s.body,
+      strength: s.strength,
+      scale: s.scale,
+      targets: s.targetableSignals ?? [],
+      validation: (s.validatedBy ?? [])
+        .map((ref) => {
+          const d =
+            dataSignals.find((x) => x.id === ref) ??
+            dataSignals.find((x) => x.subject === ref);
+          return d ? `${SOURCE_LABELS[d.source] ?? d.source}: ${d.metric} — ${d.finding}` : null;
+        })
+        .filter((v): v is string => v !== null),
+    }))
+  );
 }
 
 // ─── Signal Map (scatter) ────────────────────────────────────────────────────
@@ -325,6 +366,18 @@ function SignalCardView({ card, num }: { card: SocialSignalCard; num: number }) 
             {card.strength}
           </span>
         </div>
+
+        {/* Round 6b: dataSignal validation lines */}
+        {card.validation && card.validation.length > 0 && (
+          <div className="mt-3 space-y-1 border-t border-white/[0.05] pt-2.5">
+            {card.validation.map((v, i) => (
+              <p key={i} className="font-mono text-[10px] leading-relaxed text-[#E8EDF2]/40">
+                <span className="mr-1 text-emerald-400/70">✓ VALIDATED ·</span>
+                {v}
+              </p>
+            ))}
+          </div>
+        )}
       </div>
 
       {hasRail && (
@@ -352,13 +405,17 @@ function SignalCardView({ card, num }: { card: SocialSignalCard; num: number }) 
 
 export function SocialSignals({ report }: { report: ArchetypeReport }) {
   const [filter, setFilter] = useState<Filter>("all");
-  const cards = useMemo(() => mapReportToSignals(report), [report]);
+  // Native socialSignals (Round 6b) used exclusively when present; otherwise
+  // the 6a transitional mapping — old reports render unchanged.
+  const native = useMemo(() => nativeCards(report), [report]);
+  const cards = useMemo(() => native ?? mapReportToSignals(report), [native, report]);
   const visible = filter === "all" ? cards : cards.filter((c) => c.type === filter);
 
-  // Generic targetable block: only when findability exists but no card matched it
+  // Generic targetable block: transitional path only, when findability exists
+  // but no card matched it (native signals carry their own enriched targets)
   const anyCardHasTargets = cards.some((c) => c.targets.length > 0);
   const f = report.findability;
-  const showGenericTargets = !!f && !anyCardHasTargets;
+  const showGenericTargets = !native && !!f && !anyCardHasTargets;
 
   const handleSelect = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "center" });

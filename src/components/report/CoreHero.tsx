@@ -118,7 +118,15 @@ function ScorePanel({
 export function CoreHero({ report }: { report: ArchetypeReport }) {
   const core = report.influentialCore;
   const name = core?.coreName ?? report.signalsSnapshot?.coreLabel ?? "The Influential Core";
-  const coreSize = deriveCoreSize(core);
+  // Round 6b: the quantified coreSize field wins; older reports fall back to
+  // the 6a chain (coreSizeEstimate → narrative parse).
+  const native = report.coreSize;
+  const coreSize = native
+    ? /audience/i.test(native.estimate)
+      ? native.estimate
+      : `${native.estimate} of audience`
+    : deriveCoreSize(core);
+  const confidenceTag = native && native.confidence !== "grounded" ? native.confidence.toUpperCase() : null;
   const corePercent = parseCorePercent(coreSize ?? undefined);
   const sus = report.influenceSusceptibility;
   const generatedDate = new Date(report.generatedAt).toLocaleDateString("en-US", {
@@ -145,8 +153,16 @@ export function CoreHero({ report }: { report: ArchetypeReport }) {
         )}
         <div className="flex flex-wrap gap-1.5">
           {coreSize && (
-            <span className="rounded-[5px] border border-white/[0.08] bg-white/[0.045] px-2 py-1.5 font-mono text-[11px] font-medium text-[#E8EDF2]/60">
+            <span
+              className="rounded-[5px] border border-white/[0.08] bg-white/[0.045] px-2 py-1.5 font-mono text-[11px] font-medium text-[#E8EDF2]/60"
+              title={native?.basis}
+            >
               {coreSize}
+            </span>
+          )}
+          {confidenceTag && (
+            <span className="rounded-[5px] border border-dashed border-amber-400/25 px-2 py-1.5 font-mono text-[10px] font-medium tracking-[0.08em] text-amber-400/70">
+              {confidenceTag}
             </span>
           )}
           <span className="rounded-[5px] border border-white/[0.06] px-2 py-1.5 font-mono text-[11px] font-medium text-[#E8EDF2]/40">
