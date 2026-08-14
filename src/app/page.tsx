@@ -1,84 +1,83 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import { ArchetypeReport, StreamChunk } from "@/types";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { ArchetypeReport, ReportSummary, RunSummary } from "@/types";
 import { InputForm } from "@/components/InputForm";
-import { LoadingState } from "@/components/LoadingState";
+import { RunView } from "@/components/RunView";
 import { ReportView } from "@/components/report/ReportView";
-import { PreviousReports } from "@/components/PreviousReports";
-import { getSavedReports, saveReport, deleteReport, SavedReport } from "@/lib/storage";
+import { ReportsList } from "@/components/ReportsList";
+import { MigrationBanner } from "@/components/MigrationBanner";
+import { getEmail, setEmail as persistEmail, getUnimportedReports, markMigrated, SavedReport } from "@/lib/storage";
 
-type AppState = "input" | "loading" | "report" | "error";
+type AppState = "input" | "run" | "report" | "error";
+
+const LIST_REFRESH_MS = 10000;
 
 export default function Home() {
   const [appState, setAppState] = useState<AppState>("input");
-  const [loadingMessage, setLoadingMessage] = useState("Initializing intelligence sweep...");
-  const [loadingStep, setLoadingStep] = useState(0);
+  const [runId, setRunId] = useState<string | null>(null);
   const [report, setReport] = useState<ArchetypeReport | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [savedReports, setSavedReports] = useState<SavedReport[]>([]);
+  const [email, setEmailState] = useState("");
+  const [reports, setReports] = useState<ReportSummary[]>([]);
+  const [activeRuns, setActiveRuns] = useState<RunSummary[]>([]);
+  const [unimported, setUnimported] = useState<SavedReport[]>([]);
 
-  // Load saved reports from localStorage on mount
-  useEffect(() => {
-    setSavedReports(getSavedReports());
+  const appStateRef = useRef(appState);
+  appStateRef.current = appState;
+
+  const fetchLists = useCallback(async () => {
+    try {
+      const [reportsRes, runsRes] = await Promise.all([fetch("/api/reports"), fetch("/api/runs")]);
+      if (reportsRes.ok) setReports(await reportsRes.json());
+      if (runsRes.ok) setActiveRuns(await runsRes.json());
+    } catch {
+      // Homepage list refresh is best-effort — a transient failure here
+      // shouldn't interrupt anything the user is doing.
+    }
   }, []);
 
-  const handleSubmit = useCallback(async (audience: string, brand: string, context: string) => {
-    setAppState("loading");
-    setLoadingStep(0);
-    setLoadingMessage("Initializing intelligence sweep...");
+  // Initial load
+  useEffect(() => {
+    setEmailState(getEmail());
+    setUnimported(getUnimportedReports());
+    fetchLists();
+  }, [fetchLists]);
+
+  // Keep the shared list fresh while sitting on the homepage, so a
+  // colleague's run shows up without a manual refresh.
+  useEffect(() => {
+    if (appState !== "input") return;
+    const interval = setInterval(() => {
+      if (appStateRef.current === "input") fetchLists();
+    }, LIST_REFRESH_MS);
+    return () => clearInterval(interval);
+  }, [appState, fetchLists]);
+
+  const handleSubmit = useCallback(async (audience: string, brand: string, context: string, formEmail: string) => {
     setError(null);
+    if (formEmail) persistEmail(formEmail);
+    setEmailState(formEmail);
 
     try {
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ audience, brand, context }),
+        body: JSON.stringify({ audience, brand, context, email: formEmail || undefined }),
       });
 
-      if (!res.ok || !res.body) {
-        throw new Error(`Server error: ${res.status}`);
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setError(body.error || `Server error: ${res.status}`);
+        setAppState("error");
+        return;
       }
 
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-
-      const processLine = (line: string) => {
-        if (!line.trim()) return;
-        try {
-          const chunk: StreamChunk = JSON.parse(line);
-          if (chunk.type === "heartbeat") return;
-          if (chunk.type === "progress") {
-            setLoadingMessage(chunk.message ?? "Processing...");
-            setLoadingStep((s) => Math.min(s + 1, 9));
-          } else if (chunk.type === "report" && chunk.report) {
-            saveReport(chunk.report);
-            setSavedReports(getSavedReports());
-            setReport(chunk.report);
-            setAppState("report");
-          } else if (chunk.type === "error") {
-            throw new Error(chunk.error ?? "Unknown error");
-          }
-        } catch {
-          // Skip malformed chunks
-        }
-      };
-
-      while (true) {
-        const { done, value } = await reader.read();
-        buffer += decoder.decode(value ?? new Uint8Array(), { stream: !done });
-        const lines = buffer.split("\n");
-        buffer = done ? "" : (lines.pop() ?? "");
-        lines.forEach(processLine);
-        if (done) break;
-      }
-
-      // Flush any remaining buffer content after stream ends
-      if (buffer.trim()) processLine(buffer);
-
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      const { runId: newRunId } = await res.json();
+      setRunId(newRunId);
+      setAppState("run");
+    } catch {
+      setError("Could not reach the server.");
       setAppState("error");
     }
   }, []);
@@ -87,44 +86,51 @@ export default function Home() {
     setAppState("input");
     setReport(null);
     setError(null);
-    setLoadingStep(0);
-  }, []);
+    setRunId(null);
+    fetchLists();
+  }, [fetchLists]);
 
-  const handleSelectReport = useCallback((selected: ArchetypeReport) => {
-    setReport(selected);
-    setAppState("report");
-  }, []);
-
-  const handleDeleteReport = useCallback((id: string) => {
-    deleteReport(id);
-    setSavedReports(getSavedReports());
-  }, []);
-
-  // A dropped stream no longer kills the server-side run — the finished report
-  // is persisted and recoverable from /api/reports/latest.
-  const handleRecoverLastRun = useCallback(async () => {
+  const handleRunComplete = useCallback(async (reportId: string) => {
     try {
-      const res = await fetch("/api/reports/latest");
-      if (!res.ok) {
-        setError("No completed report found on the server — either the run is still in progress (wait a few minutes and retry, or check /api/logs), or a redeploy cleared the server's copy since the run finished.");
-        setAppState("error");
-        return;
+      const res = await fetch(`/api/reports/${reportId}`);
+      if (res.ok) {
+        setReport(await res.json());
+        setAppState("report");
       }
-      const recovered: ArchetypeReport = await res.json();
-      const alreadySaved = getSavedReports().some(
-        (s) => s.report.generatedAt === recovered.generatedAt
-      );
-      if (!alreadySaved) {
-        saveReport(recovered);
-        setSavedReports(getSavedReports());
-      }
-      setReport(recovered);
+    } finally {
+      fetchLists();
+    }
+  }, [fetchLists]);
+
+  const handleWatchRun = useCallback((id: string) => {
+    setRunId(id);
+    setAppState("run");
+  }, []);
+
+  const handleSelectReport = useCallback(async (id: string) => {
+    try {
+      const res = await fetch(`/api/reports/${id}`);
+      if (!res.ok) return;
+      setReport(await res.json());
       setAppState("report");
     } catch {
-      setError("Could not reach the server to recover the report.");
-      setAppState("error");
+      // leave the user on whatever screen they were on
     }
   }, []);
+
+  const handleDeleteReport = useCallback(async (id: string) => {
+    try {
+      await fetch(`/api/reports/${id}`, { method: "DELETE" });
+    } finally {
+      fetchLists();
+    }
+  }, [fetchLists]);
+
+  const handleImported = useCallback((ids: string[]) => {
+    markMigrated(ids);
+    setUnimported(getUnimportedReports());
+    fetchLists();
+  }, [fetchLists]);
 
   return (
     <div className="min-h-screen bg-[#080B0F]">
@@ -155,27 +161,19 @@ export default function Home() {
         {appState === "input" && (
           <>
             <InputForm onSubmit={handleSubmit} isLoading={false} />
-            {/* Reachable recovery: streams can drop mid-run (Railway enforces a
-                ~15-min proxy timeout) while the pipeline finishes server-side. */}
-            <div className="mx-auto mt-6 max-w-2xl text-center">
-              <button
-                onClick={handleRecoverLastRun}
-                className="text-xs text-[#6E7681] underline decoration-[#374151] underline-offset-4 transition-colors hover:text-[#8B949E]"
-                title="If a run's connection dropped, the pipeline kept going — fetch the last completed report from the server"
-              >
-                Lost a run to a network error? Recover the last completed report
-              </button>
-            </div>
-            <PreviousReports
-              reports={savedReports}
-              onSelect={handleSelectReport}
-              onDelete={handleDeleteReport}
+            <MigrationBanner unimported={unimported} runBy={email} onImported={handleImported} />
+            <ReportsList
+              reports={reports}
+              activeRuns={activeRuns}
+              onSelectReport={handleSelectReport}
+              onWatchRun={handleWatchRun}
+              onDeleteReport={handleDeleteReport}
             />
           </>
         )}
 
-        {appState === "loading" && (
-          <LoadingState message={loadingMessage} step={loadingStep} />
+        {appState === "run" && runId && (
+          <RunView runId={runId} email={email} onComplete={handleRunComplete} onReset={handleReset} />
         )}
 
         {appState === "report" && report && (
@@ -185,23 +183,14 @@ export default function Home() {
         {appState === "error" && (
           <div className="flex min-h-[400px] flex-col items-center justify-center text-center">
             <span className="mb-4 text-4xl text-red-500">✕</span>
-            <h2 className="mb-2 text-lg font-semibold text-[#E8EDF2]">Intelligence sweep failed</h2>
+            <h2 className="mb-2 text-lg font-semibold text-[#E8EDF2]">Couldn&apos;t start the sweep</h2>
             <p className="mb-6 max-w-md text-sm text-[#8B949E]">{error}</p>
-            <div className="flex gap-3">
-              <button
-                onClick={handleReset}
-                className="rounded-lg bg-[#6366F1] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#818CF8]"
-              >
-                Try Again
-              </button>
-              <button
-                onClick={handleRecoverLastRun}
-                className="rounded-lg border border-[#1C2333] bg-[#0D1117] px-6 py-2.5 text-sm text-[#8B949E] transition-colors hover:border-[#6366F1]/50 hover:text-[#E8EDF2]"
-                title="If the connection dropped mid-run, the pipeline kept going — check whether it finished"
-              >
-                Recover Last Run
-              </button>
-            </div>
+            <button
+              onClick={handleReset}
+              className="rounded-lg bg-[#6366F1] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#818CF8]"
+            >
+              Try Again
+            </button>
           </div>
         )}
       </main>

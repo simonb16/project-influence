@@ -380,11 +380,44 @@ export interface AnalyzeRequest {
   audience: string;
   brand?: string;
   context?: string;
+  email?: string; // Round 7: attribution + notification address, no auth
 }
 
-export interface StreamChunk {
-  type: "progress" | "report" | "error" | "heartbeat";
-  message?: string;
-  report?: ArchetypeReport;
+// Round 7: job model types (replaces the SSE StreamChunk delivery)
+
+export type RunState = "queued" | "running" | "complete" | "failed";
+
+export interface ProgressEvent {
+  message: string;
+  at: string; // ISO timestamp
+}
+
+export interface RunStatus {
+  id: string;
+  status: RunState;
+  progress: ProgressEvent[];
+  reportId?: string;
   error?: string;
+  runBy?: string;
+  createdAt: string;
+  emailEnabled: boolean; // server can send email (RESEND_API_KEY is set) — not whether this run has an address
+}
+
+/** A run still queued/running/failed — completed runs surface as ReportSummary instead. */
+export interface RunSummary {
+  id: string;
+  status: "queued" | "running" | "failed";
+  title: string;
+  audience: string;
+  error?: string;
+  runBy?: string;
+  createdAt: string;
+}
+
+export interface ReportSummary {
+  id: string;
+  title: string;
+  audience: string;
+  runBy?: string;
+  createdAt: string;
 }

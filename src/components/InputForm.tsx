@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
+import { getEmail, setEmail as persistEmail } from "@/lib/storage";
 
 interface InputFormProps {
-  onSubmit: (audience: string, brand: string, context: string) => void;
+  onSubmit: (audience: string, brand: string, context: string, email: string) => void;
   isLoading: boolean;
 }
 
@@ -41,11 +42,26 @@ export function InputForm({ onSubmit, isLoading }: InputFormProps) {
   const [audience, setAudience] = useState("");
   const [brand, setBrand] = useState("");
   const [context, setContext] = useState("");
+  const [email, setEmailState] = useState("");
+
+  // Asked once — remembered in localStorage so it's pre-filled on later runs.
+  // Deliberately deferred to an effect (not a lazy useState initializer):
+  // this is SSR'd, and localStorage isn't available server-side, so reading
+  // it during render would mismatch the server-rendered markup.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setEmailState(getEmail());
+  }, []);
+
+  const handleEmailChange = (value: string) => {
+    setEmailState(value);
+    persistEmail(value);
+  };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (audience.trim()) {
-      onSubmit(audience.trim(), brand.trim(), context.trim());
+      onSubmit(audience.trim(), brand.trim(), context.trim(), email.trim());
     }
   };
 
@@ -112,6 +128,19 @@ export function InputForm({ onSubmit, isLoading }: InputFormProps) {
               placeholder="Optional — why is this research happening now? A market shift, a new product launch, a strategy pivot? e.g., 'We're launching a men's line in Q1 and need to understand how influence works in men's wellness.'"
               disabled={isLoading}
               rows={3}
+              className={FIELD_CLASSES}
+            />
+          </div>
+          <div className="mb-6">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-[#8B949E]">
+              Your email <span className="ml-1 font-normal normal-case tracking-normal text-[#6E7681]">(optional — attributes your runs, emails you when a long one finishes)</span>
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => handleEmailChange(e.target.value)}
+              placeholder="you@company.com"
+              disabled={isLoading}
               className={FIELD_CLASSES}
             />
           </div>

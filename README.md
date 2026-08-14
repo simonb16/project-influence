@@ -56,3 +56,76 @@ PINTEREST_ACCESS_TOKEN=   # Pinterest API v5 (business account)
 # reliability depends on SERPAPI_KEY being set in Railway.
 DISABLE_DATA_TOOLS=       # set to 1 to disable ALL data tools (incl. Trends)
 ```
+
+## Job model, database, and email (Round 7)
+
+Railway's edge proxy kills any HTTP connection at 15:00, and reports had grown
+to take 18–24 minutes. `POST /api/analyze` now returns a `runId` in
+milliseconds and fires the pipeline detached (un-awaited — this relies on
+Railway running a persistent Node process; it would NOT work on a
+serverless/edge platform, where the function tears down as soon as the
+response goes out). The client polls `GET /api/runs/:id` every 4s instead of
+holding a long-lived stream open. Reports live in Postgres, not localStorage,
+so the team sees each other's runs.
+
+### Two Postgres databases
+
+There are two separate Railway Postgres instances on this project:
+
+- **postgres-production** — wired to the app service's `DATABASE_URL` as a
+  Railway variable reference. This is what production reads and writes.
+- **postgres-dev** — for local development. Its connection string (Railway's
+  public proxy host, e.g. `viaduct.proxy.rlwy.net:PORT`) goes in
+  `DATABASE_URL` in `.env.local`. It is a separate Railway Postgres instance
+  rather than a local install, so dev matches production's Postgres version
+  with zero local setup.
+
+Both are plain Postgres — `pg` with hand-written queries, two tables
+(`runs`, `reports`), no ORM. Schema is created automatically (`CREATE TABLE
+IF NOT EXISTS`) the first time any request touches the database, so there's
+no separate migration step to run.
+
+Note: the `runs` table carries `title` and `audience` columns beyond the
+brief's original schema sketch — needed so the homepage can show *which*
+audience an in-progress or failed run belongs to (important once concurrent
+runs from different people are normal), without joining to `reports`.
+
+### Email (Resend)
+
+`RESEND_API_KEY` is set in Railway's variables only — deliberately **not**
+in `.env.local`. Local dev has no key, so:
+
+- Emails are skipped silently (logged, not sent, not an error).
+- The run status's `emailEnabled` flag is `false`, so the client shows the
+  no-email variant of the "you can close this window" notice even if an
+  address was entered — because the notice's promise ("we'll email you")
+  would be a lie if the server can't actually send.
+
+In production, a completion email goes out when a run finishes **and** an
+email was entered **and** the run took longer than 2 minutes (nobody needs
+an email for something they watched finish). A failure email goes out under
+the same duration/address conditions when a run fails. Email is always
+non-fatal — a send failure is logged and never affects the run or report.
+
+The sender address defaults to Resend's `onboarding@resend.dev` test sender
+(works without setup, but only reliably for now — see Resend's own docs on
+sandbox sending limits). Set `EMAIL_FROM` once a real domain is verified
+with Resend. Report links point at `APP_URL` if set, else
+`https://${RAILWAY_PUBLIC_DOMAIN}` (Railway sets this automatically for
+public services), else `localhost:3000`.
+
+```
+# Railway service environment only — omit from .env.local
+RESEND_API_KEY=           # Resend API key; absent = emails skip silently (dev)
+EMAIL_FROM=                # optional — "Name <verified@yourdomain.com>"
+APP_URL=                   # optional — overrides the auto-detected Railway URL in email links
+```
+
+### What retired
+
+The SSE streaming delivery (`/api/analyze` used to hold the connection open
+and stream progress + the final report) and the disconnect-recovery
+workaround it needed (`/api/reports/latest`, `/api/logs`, the "Recover Last
+Run" button) are gone — the job model replaces both. A dropped browser tab
+no longer matters: the run keeps going server-side regardless, and reopening
+the homepage shows it in progress or complete.
