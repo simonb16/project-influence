@@ -341,6 +341,26 @@ function tokenInLog(token: string, log: string): boolean {
   return false;
 }
 
+/** Derivation markers: text signals that a number is arithmetic OVER tool
+ * data (sums, averages, ratios, rounded ranges) rather than a quoted value.
+ * The reconciliation prompt explicitly demands such derived comparisons in
+ * `significance` ("2.4x the average engagement ratio"), so strict-verbatim
+ * matching would flag by-design output on every run. */
+const DERIVATION_MARKERS = /~|average|avg\b|combined|implying|roughly|about\s|approx|ratio|x\s+(smaller|larger|above|below|the)|-to-/i;
+
+/** All numbers present in the audit log, for proximity comparison. */
+function logNumbers(logText: string): number[] {
+  return (logText.match(/\d+(?:\.\d+)?/g) ?? []).map(Number).filter((n) => n >= 10);
+}
+
+function nearSomeLogNumber(token: string, nums: number[]): boolean {
+  const n = Number(token);
+  if (Number.isNaN(n) || n === 0) return false;
+  // Compare at raw scale and K/M scales (claims often use shorthand units).
+  const candidates = [n, n * 1e3, n * 1e6];
+  return nums.some((m) => candidates.some((c) => m > 0 && Math.abs(c - m) / m <= 0.15));
+}
+
 export function checkNumberLogAudit(report: ArchetypeReport, toolAudit?: ToolAuditEntry[]): VerifierCheck {
   if (!toolAudit || toolAudit.length === 0) {
     return { id: "number-log-audit", status: "pass", detail: "skipped — no tool audit available for this run" };
@@ -353,7 +373,9 @@ export function checkNumberLogAudit(report: ArchetypeReport, toolAudit?: ToolAud
   // Comma-normalized haystack: tokens are comma-stripped ("23,509" → "23509"),
   // and tool results quote numbers both raw (23509) and formatted ("23,509").
   const logText = toolAudit.map((e) => `${e.query} ${e.resultJson}`).join("\n").replace(/,/g, "");
+  const nums = logNumbers(logText);
   const failures: string[] = [];
+  const warns: string[] = [];
   let audited = 0;
 
   for (const d of dataSignals) {
@@ -364,14 +386,21 @@ export function checkNumberLogAudit(report: ArchetypeReport, toolAudit?: ToolAud
     ] as const) {
       for (const token of extractNumericTokens(text ?? "")) {
         audited++;
-        if (!tokenInLog(token, logText)) {
-          failures.push(`${d.id ?? d.subject}: "${token}" (${field}) not found in any tool result`);
-        }
+        if (tokenInLog(token, logText)) continue;
+        // Unmatched: derived-looking numbers (near a real log number, or
+        // carrying derivation markers) downgrade to warn — the LLM
+        // paraphrase check adjudicates whether the derivation truly traces.
+        // Bare unmatched numbers are the invention signal: fail.
+        const derivedLooking =
+          nearSomeLogNumber(token, nums) || DERIVATION_MARKERS.test(text ?? "");
+        const msg = `${d.id ?? d.subject}: "${token}" (${field}) not found in any tool result`;
+        if (derivedLooking) warns.push(`${msg} (looks derived — see paraphrase audit)`);
+        else failures.push(msg);
       }
     }
   }
 
-  return check("number-log-audit", failures, [], `${audited} numeric claims all trace to tool results`);
+  return check("number-log-audit", failures, warns, `${audited} numeric claims all trace to tool results`);
 }
 
 // ─── Assembly ─────────────────────────────────────────────────────────────────
