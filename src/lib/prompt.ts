@@ -3,6 +3,11 @@
 // perspectives, a reconciliation agent forces their findings to converge and
 // scores every signal, a synthesis agent produces the final report, and a
 // periphery agent maps adjacent audiences from the reconciled data.
+// Round 8 adds: an enrichment agent (findability + signal targetables, taken
+// out of synthesis) and a verifier prompt (the three LLM judgment checks).
+
+import type { ArchetypeReport } from "@/types";
+import type { ToolAuditEntry } from "@/lib/verifier";
 
 export interface AgentInputs {
   audience: string;
@@ -396,11 +401,13 @@ You have platform API tools to validate and quantify the lens findings. Each pla
 - TRUST signals (what earns belief): YouTube (creators repeatedly relied on for advice, engagement relative to channel size, "I bought this because of you"), Google Trends ("best"/"recommended" searches), Reddit (recommendations with evidence cited, visible persuasion).
 - SOCIAL signals (where they gather): Reddit (subreddit size and concentration, recurring contributors, cross-posts), Pinterest (co-occurring interests).
 
-TOOL USE BUDGET: Maximum 8 calls. Use them strategically:
+search_web (when available) is the FALLBACK for sources without a dedicated API tool — especially Reddit data while its API tool is unavailable (subreddit sizes, community existence via site:reddit.com queries). Prefer the dedicated API tool when one exists for the source; never use search_web to re-verify what an API already answered. Numbers from search_web are SEARCH-SOURCED: label them as such wherever cited (dataSignal source "web_search", "per web search" in basis fields and prose) — never present them as API data.
+
+TOOL USE BUDGET: Maximum 12 API tool calls. Use them strategically:
 - Prioritize claims where lenses DISAGREE — data can break the tie
 - Prioritize claims about community size, creator reach, or trend direction — easily quantifiable
 - Prioritize claims central to the influential core definition and the top-scored influence items
-- Resolving a social signal's map placement is a valid use of a tool call, ranked alongside resolving lens conflicts ("is r/crochet niche or significant? — check subscriber count"; "is the craft-night format growing? — check search trend"). Placement-critical signals — the ones that will read as Concentrated Conviction vs Scaled Momentum — deserve quant more than obvious ones.
+- Resolving a social signal's map placement is a valid use of a tool call, ranked alongside resolving lens conflicts ("is r/crochet niche or significant? — check subscriber count"; "is the craft-night format growing? — check search trend"). Placement-critical signals — the ones that will read as Concentrated Conviction vs Scaled Momentum — deserve quant more than obvious ones. Spend the budget's extra headroom here: scale/strength lookups for signals whose placement would otherwise be a guess.
 - A targeted lookup that grounds the core-size estimate (e.g., a subreddit's active-poster statistics vs subscriber count) is also a valid spend
 - Real-world habitat claims can often be validated digitally (e.g., "craft night" search growth, meetup-related subreddit activity)
 - Don't spend calls on claims all three lenses agree on with strong evidence, or on subjective interpretations data can't resolve
@@ -441,7 +448,7 @@ Add to your output JSON (alongside the existing fields):
     "signals": [
       {
         "id": "stable id for cross-referencing: 'ds1', 'ds2', ...",
-        "source": "google_trends" | "reddit" | "youtube" | "pinterest",
+        "source": "google_trends" | "reddit" | "youtube" | "pinterest" | "web_search",
         "signalType": "motivational" | "behavioral" | "trust" | "social",
         "metric": "headline number, e.g. '+103% YoY', '452K subscribers'",
         "subject": "what it's about, e.g. \\"'craft night' searches\\", 'r/knitting'",
@@ -564,7 +571,7 @@ The hard rule is unchanged: only actual tool results and lens-sourced numbers ev
 
 VALIDATION LINKS: where a dataSignal you produced grounds a social signal, list that dataSignal's id in the signal's validatedBy array. You created both in the same pass — link them.
 
-Leave targetableSignals as an empty array on every signal — the synthesis agent fills it during enrichment.
+Leave targetableSignals as an empty array on every signal — the enrichment agent fills it downstream.
 
 CORE SIZE: Reconcile the lenses' coreSizeEvidence into coreSize: { "estimate": "8-15%", "basis": <what the evidence is>, "confidence": "grounded" | "directional" | "speculative" }. If evidence is thin, say "directional" — never present a guess as grounded. If there is no evidence at all, still produce the field with confidence "speculative" and a basis explaining the reasoning, or omit it entirely rather than inventing statistics.
 
@@ -677,15 +684,6 @@ Identify 4-8 barriers that prevent the influential core from acting — adopting
 - intensity: 0-100, how strongly this blocks action
 - implication: what would lower this barrier (evidence-based, not a campaign idea)
 
-FINDABILITY:
-Produce the targeting profile for the influential core — the practical parameters someone would use to find and reach them:
-- targetableInterests: 5-10 interest/affinity categories as they'd appear in ad platforms (e.g., "indie yarn dyeing", "visible mending", "cosy gaming")
-- searchBehaviors: 5-10 search terms/patterns the core actually uses (draw from language codes and lens evidence — insider vocabulary is targeting gold)
-- platformConcentrations: where the core over-indexes, with the specific spaces (subreddits, hashtags, forum names, YouTube niches) — not just "Instagram" but the specific corners
-- affinityAdjacencies: 3-6 non-obvious interest overlaps usable for lookalike or affinity targeting (draw from the reconciled adjacency-relevant findings)
-
-Rules: every entry must trace to lens evidence. These are findability parameters, not campaign recommendations. Use the core's own vocabulary, not marketing-speak.
-
 IN-MARKET BEHAVIOR:
 Describe how the influential core behaves when actively considering a purchase or adoption decision in this category:
 - researchPattern: how they research (sources consulted, in what order, how long)
@@ -726,12 +724,6 @@ Produce an at-a-glance summary of the four Signals of Influence for the influent
 3-5 entries per signal, ordered by score descending. Every entry must trace to an item in the full report — same name, same score. If a signal has fewer than 3 high-scoring items, show fewer rather than padding with low scorers. Include at least one real-world context in social when the real world habitat has a well-evidenced entry.
 
 Also produce coreLabel: the name of the influential core archetype. This must be THE SAME archetype name used in your influential core definition/description (e.g., if the description says the core is "the multicraftual dabbler with established taste", coreLabel is exactly that). Do not write a new or alternative label — the snapshot and the Influential Core section must refer to the core by the same name.
-
-SOCIAL SIGNALS — ENRICHMENT ONLY:
-The reconciled data may contain a socialSignals list. If it does, reproduce it in your output. Do not re-score, re-place, add, or remove signals — the reconciliation agent owns selection, typing, scoring, and placement, and its ids, types, strength, strengthBasis, scale, scaleBasis, validatedBy, and evidence fields must pass through UNCHANGED. Your job is enrichment only:
-- For each signal, fill targetableSignals with 2-4 entries: platform → the specific parameter someone would use to find or track this signal ("YouTube — trending interests, channel subscribers", "Google — trending keywords", "Reddit — subreddits, leading community voices", "Instagram — saves and sends, follower overlap"). Draw from your findability analysis and the signal's own evidence. These are findability parameters, not campaign recommendations. Only name platforms where this signal actually lives.
-- You may lightly polish the body copy for report tone — meaning must not change.
-If the reconciled data has no socialSignals, omit the field entirely.
 
 CORE NAME:
 Produce two fields inside influentialCore:
@@ -887,17 +879,6 @@ OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with
     }
   ],
 
-  "findability": {
-    "targetableInterests": ["5-10 interest/affinity categories in ad-platform terms"],
-    "searchBehaviors": ["5-10 search terms/patterns the core actually uses"],
-    "platformConcentrations": [
-      { "platform": "platform name", "spaces": ["specific subreddits/hashtags/forums/niches"], "note": "how the core shows up here" }
-    ],
-    "affinityAdjacencies": [
-      { "interest": "non-obvious overlap", "rationale": "the evidence for this affinity" }
-    ]
-  },
-
   "inMarketBehavior": {
     "researchPattern": "how the core researches — sources, order, duration",
     "comparisonBehavior": "how they compare — criteria that matter, criteria ignored, dealbreakers",
@@ -933,18 +914,6 @@ OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with
     "trust": [{ "label": "channel", "detail": "the one-step-deeper specific", "score": number }],
     "social": [{ "label": "the specific space", "score": number }]
   },
-
-  "socialSignals": [ (ONLY when the reconciled data contains socialSignals — reproduce each signal with all reconciliation fields UNCHANGED, filling only targetableSignals and optionally polishing body)
-    {
-      "id": "unchanged from reconciliation",
-      "type": "unchanged", "signal": "unchanged", "where": "unchanged", "who": "unchanged",
-      "body": "reconciliation's body, optionally polished for tone (meaning unchanged)",
-      "strength": unchanged, "strengthBasis": "unchanged",
-      "scale": "unchanged", "scaleBasis": "unchanged",
-      "targetableSignals": [{ "platform": "platform this signal actually lives on", "detail": "the specific findability parameter" }],
-      "validatedBy": unchanged, "evidence": "unchanged"
-    }
-  ],
 
   "researchDepth": {
     "totalSignalsScored": number (count of reconciledSignals),
@@ -1089,4 +1058,137 @@ OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with
 }
 
 Aim for 4-6 items in the inner ring and 6-10 in the outer ring. Quality over quantity — each item should be evidence-backed. Spread items across all four segments (mindset, lifestyle, interest, entertainment) where the evidence supports it.`;
+}
+
+// ─── Enrichment (Round 8 — parallel with Synthesis + Periphery) ──────────────
+// The first synthesis seam: findability production and per-signal targetables
+// enrichment, moved out of Synthesis. The two jobs are derived together so
+// the findability section (the superset) and per-signal targetables (its
+// signal-specific projections) agree.
+
+export function buildEnrichmentPrompt(inputs: AgentInputs, reconciliationOutput: string): string {
+  return `You are the Enrichment Agent. You receive the reconciled, scored dataset produced by three independent research lenses and a reconciliation agent. Your job is two tightly-related outputs: the findability profile for the influential core, and the per-signal targetable parameters for the social signals.
+
+${CORE_DEFINITION}
+
+${inputBlock(inputs)}
+
+RECONCILED DATA:
+${reconciliationOutput}
+
+YOUR MISSION — derive these together so they agree (the findability section is the superset; per-signal targetables are its signal-specific projections):
+
+1. FINDABILITY:
+Produce the targeting profile for the influential core — the practical parameters someone would use to find and reach them:
+- targetableInterests: 5-10 interest/affinity categories as they'd appear in ad platforms (e.g., "indie yarn dyeing", "visible mending", "cosy gaming")
+- searchBehaviors: 5-10 search terms/patterns the core actually uses (draw from language codes and lens evidence — insider vocabulary is targeting gold)
+- platformConcentrations: where the core over-indexes, with the specific spaces (subreddits, hashtags, forum names, YouTube niches) — not just "Instagram" but the specific corners
+- affinityAdjacencies: 3-6 non-obvious interest overlaps usable for lookalike or affinity targeting (draw from the reconciled adjacency-relevant findings)
+
+Rules: every entry must trace to lens evidence. These are findability parameters, not campaign recommendations. Use the core's own vocabulary, not marketing-speak.
+
+2. SIGNAL ENRICHMENT:
+The reconciled data contains a socialSignals list. Reproduce it as enrichedSignals. Do not re-score, re-place, add, or remove signals — the reconciliation agent owns selection, typing, scoring, and placement, and its ids, types, strength, strengthBasis, scale, scaleBasis, validatedBy, and evidence fields must pass through UNCHANGED. Your job is enrichment only:
+- For each signal, fill targetableSignals with 2-4 entries: platform → the specific parameter someone would use to find or track this signal ("YouTube — trending interests, channel subscribers", "Google — trending keywords", "Reddit — subreddits, leading community voices", "Instagram — saves and sends, follower overlap"). Draw from your findability analysis (above) and the signal's own evidence — a signal's targetables should be consistent with the platformConcentrations and searchBehaviors you produced. These are findability parameters, not campaign recommendations. Only name platforms where this signal actually lives.
+- You may lightly polish the body copy for report tone — meaning must not change.
+If the reconciled data has no socialSignals, output enrichedSignals as an empty array.
+
+OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with {):
+{
+  "findability": {
+    "targetableInterests": ["5-10 interest/affinity categories in ad-platform terms"],
+    "searchBehaviors": ["5-10 search terms/patterns the core actually uses"],
+    "platformConcentrations": [
+      { "platform": "platform name", "spaces": ["specific subreddits/hashtags/forums/niches"], "note": "how the core shows up here" }
+    ],
+    "affinityAdjacencies": [
+      { "interest": "non-obvious overlap", "rationale": "the evidence for this affinity" }
+    ]
+  },
+  "enrichedSignals": [
+    {
+      "id": "unchanged from reconciliation",
+      "type": "unchanged", "signal": "unchanged", "where": "unchanged", "who": "unchanged",
+      "body": "reconciliation's body, optionally polished for tone (meaning unchanged)",
+      "strength": unchanged, "strengthBasis": "unchanged",
+      "scale": "unchanged", "scaleBasis": "unchanged",
+      "targetableSignals": [{ "platform": "platform this signal actually lives on", "detail": "the specific findability parameter" }],
+      "validatedBy": unchanged, "evidence": "unchanged"
+    }
+  ]
+}
+
+CRITICAL RULES:
+- Use ONLY the reconciled data. Do not add new claims, new names, or new statistics.
+- Every findability entry and every targetable must trace to lens evidence or the signal's own evidence.
+- Reconciliation's signal fields pass through byte-identical — enrichment fills targetableSignals and may polish body, nothing else.`;
+}
+
+// ─── Verifier LLM checks (Round 8 — judgment checks 7-9) ─────────────────────
+
+export function buildVerifierPrompt(report: ArchetypeReport, toolAudit: ToolAuditEntry[]): string {
+  const auditBlock =
+    toolAudit.length > 0
+      ? toolAudit
+          .map((e, i) => `[${i + 1}] ${e.tool}("${e.query}") → ${e.resultJson.slice(0, 3000)}`)
+          .join("\n\n")
+      : "(no tool calls were made this run)";
+
+  const signals = (report.socialSignals ?? []).map((s) => ({
+    id: s.id,
+    signal: s.signal,
+    where: s.where,
+    body: s.body,
+    strengthBasis: s.strengthBasis,
+    scaleBasis: s.scaleBasis,
+    targetableSignals: s.targetableSignals,
+    evidence: s.evidence,
+  }));
+
+  return `You are the Verifier. You audit a market-research report for integrity: do its numeric claims trace to real sources, are its basis statements honest, are its targetables grounded? You do NOT judge the quality of the analysis — only whether claims are properly sourced and honestly framed.
+
+THE THREE SOURCE CATEGORIES for any number in this report:
+1. TOOL-API numbers — returned by a platform API call (google_trends, reddit, youtube, pinterest). Must appear in the tool-call log below.
+2. SEARCH-SOURCED numbers — returned by the search_web tool. Must appear in the tool-call log below AND be labeled as search-sourced wherever cited ("per web search", source name — never dressed as API data).
+3. LENS-ATTRIBUTED numbers — carried from the research lenses' web research, recognizable by attribution in the text ("per Mintel", "documented by", "Ravelry's 2022 data", a named source or report). These are fine WHEN attributed — the lenses did real web research. An unattributed number that appears in no tool result is a failure.
+
+TOOL-CALL LOG (everything the tools actually returned this run):
+${auditBlock}
+
+REPORT EXCERPTS TO AUDIT:
+
+THE STORY (summary):
+${report.summary ?? "(none)"}
+
+INFLUENTIAL CORE definition/profile:
+${report.influentialCore?.definition ?? "(none)"}
+${report.influentialCore?.profile ?? "(none)"}
+
+CORE SIZE:
+${JSON.stringify(report.coreSize ?? null)}
+
+DATA SIGNALS:
+${JSON.stringify(report.dataSignals?.signals ?? [], null, 1)}
+
+SOCIAL SIGNALS (bodies, bases, targetables):
+${JSON.stringify(signals, null, 1)}
+
+RUN THESE THREE CHECKS:
+
+1. "paraphrase-number-audit" — Find every numeric claim in the PROSE (the Story, core definition/profile, coreSize basis, signal bodies) that references platform data or research findings. For each: does it trace to a logged tool result (paraphrase-tolerant — "2.4M" matches "2400000", "roughly 100K" matches "103450") or to clearly attributed lens evidence? Classify each number by the three source categories. PASS if every number traces or is attributed. WARN if a number is plausible but its sourcing is ambiguous. FAIL if any number appears in no tool result and carries no attribution (an invented number), or if a search-sourced number is presented as API data.
+
+2. "basis-honesty" — For each social signal's strengthBasis and scaleBasis: it must either (a) cite a real number that is verifiable in the tool log or clearly lens-attributed, or (b) explicitly self-identify as evidence-classified ("no direct measure — classified niche from prevalence in community discussion"). FAIL any basis that states numbers with no source and no hedge. WARN for bases that are vague but not dishonest.
+
+3. "targetable-groundedness" — Spot-check the targetableSignals: does each reference platforms/spaces that the signal's own evidence, body, or where-field actually mentions? Generic filler ("social media — engagement") → WARN. Targetables naming platforms with no connection to the signal's evidence → FAIL.
+
+OUTPUT (respond with ONLY this valid JSON object — no prose, start with {):
+{
+  "checks": [
+    { "id": "paraphrase-number-audit", "status": "pass" | "warn" | "fail", "detail": "one line; on warn/fail name the specific number/signal and why" },
+    { "id": "basis-honesty", "status": "pass" | "warn" | "fail", "detail": "one line; on warn/fail name the specific signal and its basis problem" },
+    { "id": "targetable-groundedness", "status": "pass" | "warn" | "fail", "detail": "one line; on warn/fail name the specific signal and targetable" }
+  ]
+}
+
+Be precise and conservative: a FAIL must name the exact claim that failed. Do not fail attributed lens evidence — attribution is the point. Do not fail honest hedges — self-identified classification is the correct behavior when no quant exists.`;
 }

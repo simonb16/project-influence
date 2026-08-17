@@ -1,0 +1,1912 @@
+{
+ "sources": [
+  {
+   "url": "https://www.pressdemocrat.com/2026/04/20/stitched-together-craft-stores-key-local-spaces-for-connection/",
+   "platform": "Press Democrat",
+   "relevance": "Documented the LYS as trust engine and community hub — the strongest real-world influence context",
+   "description": "Feature on craft stores as local connection spaces, including LYS drop-in potlucks"
+  },
+  {
+   "url": "https://wanderlog.com/place/details/4492316",
+   "platform": "Wanderlog",
+   "relevance": "Conversion evidence for LYS staff trust ('she was right'; 45-minute drives)",
+   "description": "LYS reviews documenting followed staff recommendations"
+  },
+  {
+   "url": "https://knitlikegranny.com/ravelry-stats/",
+   "platform": "Knit Like Granny",
+   "relevance": "Quantified Ravelry's role as verification layer and its flat growth trajectory",
+   "description": "Ravelry platform statistics (9M registered, ~1M MAU, 336K threads)"
+  },
+  {
+   "url": "https://freshhobby.com/5-best-knitting-apps-for-hobby-makers-in-2026/",
+   "platform": "Fresh Hobby",
+   "relevance": "Trust-quality evidence for Ravelry in the audience/brand lens view",
+   "description": "2026 knitting-apps roundup describing Ravelry as 'irreplaceable'"
+  },
+  {
+   "url": "https://littleskein.substack.com/p/the-dont-buy-list-edition-2024",
+   "platform": "Substack (Little Skein)",
+   "relevance": "Core evidence for intentionality rules, anti-consumption engagement, and the stash guilt loop",
+   "description": "'The Don't Buy List' edition — most-shared newsletter issue (400 shares)"
+  },
+  {
+   "url": "https://littleskein.substack.com/sitemap/2024",
+   "platform": "Substack (Little Skein)",
+   "relevance": "Anti-optimization language codes and the newsletter ecosystem's philosophy articulation",
+   "description": "Little Skein publication archive"
+  },
+  {
+   "url": "https://threadstackcommunity.substack.com",
+   "platform": "Substack (THREADSTACK)",
+   "relevance": "Newsletter-ecosystem infrastructure and growth momentum; participation-cap caveat",
+   "description": "Fiber-community Substack directory"
+  },
+  {
+   "url": "https://craftindustryalliance.org/craft-industry-reflections-on-2025-and-predictions-for-2026/",
+   "platform": "Craft Industry Alliance",
+   "relevance": "'Connection, not commerce' prediction; picky consumers; post-JOANN gap; sustainability baseline",
+   "description": "Industry reflections on 2025 and 2026 predictions"
+  },
+  {
+   "url": "https://hobbyscool.com/blog/craft-trends-2026-michaels-report",
+   "platform": "HobbysCool (Michaels 2026 report)",
+   "relevance": "Craft-night search growth (+103%/+242%), guided kits (+86%), portable analog hobbies (+136%)",
+   "description": "Michaels 2026 craft trends data"
+  },
+  {
+   "url": "https://framptoncotterell-pc.gov.uk/wp-content/uploads/2025/08/Appendix-10-Crochet-Knit-Club-annual-report-May-25.pdf",
+   "platform": "Frampton Cotterell Parish Council",
+   "relevance": "Documented recurring-circle format and scale",
+   "description": "Crochet & Knit Club annual report (~25 weekly regulars)"
+  },
+  {
+   "url": "https://www.interweave.com/article/knitting/ufo-to-wip-can-crochet-or-knitting-project-be-saved/",
+   "platform": "Interweave",
+   "relevance": "UFO vocabulary and candor culture as emotional processing system",
+   "description": "UFO-to-WIP article on saving unfinished projects"
+  },
+  {
+   "url": "https://meetglimpse.com/trends/crafting-trends/",
+   "platform": "Glimpse",
+   "relevance": "The structural buy/use mismatch behind the stash pleasure/guilt loop; visible mending +144%",
+   "description": "Crafting trends analysis"
+  },
+  {
+   "url": "https://www.moderndailyknitting.com/community/wear-make-unfinished/",
+   "platform": "Modern Daily Knitting",
+   "relevance": "The experienced-practitioner-as-permission-granter trusted-voice archetype",
+   "description": "Community permission-granting threads on unfinished work"
+  },
+  {
+   "url": "https://chrissey.substack.com/p/worth-the-overflow-2826",
+   "platform": "Substack",
+   "relevance": "The friend-who-crafts entry point and kit-gifting onboarding evidence",
+   "description": "Personal essay on crafting siblings and onboarding"
+  },
+  {
+   "url": "https://kelsieforeman.com/cricut-announced-a-new-subscription-model%E2%80%95customers-shut-it-down/",
+   "platform": "Kelsie Foreman",
+   "relevance": "The community immune system's coordinated mobilization capacity",
+   "description": "Account of the Cricut subscription revolt and reversal"
+  },
+  {
+   "url": "https://www.placer.ai/anchor/articles/the-post-joann-arts-crafts-retail-landscape",
+   "platform": "Placer.ai",
+   "relevance": "The mid-market vacuum and traffic polarization toward Michaels and LYS/indie",
+   "description": "Post-JOANN arts & crafts retail landscape analysis"
+  },
+  {
+   "url": "https://www.theyarnbitch.com/blog/gift-guide-for-crafters-what-to-get-for-your-crafty-bestie",
+   "platform": "The Yarn Bitch",
+   "relevance": "Core redirection behavior away from big-box ('I would recommend staying away from big box stores')",
+   "description": "Crafter gift guide with big-box avoidance advice"
+  },
+  {
+   "url": "https://www.aol.com/inspired-book-warner-robins-knitting-100000815.html",
+   "platform": "AOL",
+   "relevance": "Subreddit commons scale and LYS community evidence",
+   "description": "Warner Robins knitting community feature (r/Embroidery scale)"
+  },
+  {
+   "url": "https://nationaltoday.com/us/ny/new-york/news/2026/03/14/gen-z-turns-to-analog-hobbies-to-curb-social-media-addiction/",
+   "platform": "National Today",
+   "relevance": "The analog/screen-free revival as macro tailwind",
+   "description": "Gen Z analog hobbies coverage including the analog bag"
+  },
+  {
+   "url": "https://thebarefootcrafter.com/general-stuff/on-crafting-hobby-sanity-identity/",
+   "platform": "The Barefoot Crafter",
+   "relevance": "Evidence the core's 'craft as sanity' framing predates retail wellness copy",
+   "description": "Community writing on craft, sanity, and identity"
+  },
+  {
+   "url": "https://stitchcraftmarketing.com/7-popular-craft-trends-to-watch-for-in-2025/",
+   "platform": "Stitchcraft Marketing",
+   "relevance": "'Embroiderers want to learn how to felt; knitters want to quilt' — the multicraftual dabbler shape",
+   "description": "Craft trends including multicraftual behavior"
+  },
+  {
+   "url": "https://schubethehobbyist.substack.com/p/february-2025-with-the-hobbyist-some",
+   "platform": "Substack",
+   "relevance": "Anti-monetization stance articulation in the core's own voice",
+   "description": "Hobbyist newsletter on keeping hobbies unmonetized"
+  },
+  {
+   "url": "https://presencenews.org/tiktok-algorithm-changes-2026/",
+   "platform": "Presence News",
+   "relevance": "Context for fading broadcast craft influencers and the niche shift",
+   "description": "TikTok algorithm changes toward niche content"
+  },
+  {
+   "url": "https://www.eventbrite.com/blog/press/newsroom/gen-z-turns-to-eventbrite-for-nostalgic-granny-core-experiences/",
+   "platform": "Eventbrite",
+   "relevance": "Event-format demand supporting the social-crafting and analog trends",
+   "description": "Gen Z nostalgic craft-experience event demand"
+  }
+ ],
+ "summary": "Home crafters who dabble for joy are moved by permission, not aspiration: the influential core earns authority by confessing over-bought stashes and unfinished objects, refusing to monetize, and granting others release from productivity guilt. Trust is inversely distributed with reach — belief forms in 1K-view peer channels, yarn-store floors, and Ravelry project logs, while mass craft-night and analog-hobby content is the shallow surface the core transmits through. The lever: show up with zero-commercial-stake candor in the micro layer, because the core's sponsored-content immune system detects and discounts anything else instantly.",
+ "audience": "Home crafters — people who love to dabble in crafting without wanting to overcommit, consider it an outlet for creativity but don't want to make it their identity or a side hustle.",
+ "barriers": [
+  {
+   "name": "The sponsored-content immune system",
+   "type": "trust",
+   "evidence": "Three-lens convergence: audience trust architecture on sponsored-recommendation discounting; brand-lens creator recalibration; context-lens fading of broadcast craft creators",
+   "intensity": 88,
+   "description": "The core detects commercial framing instantly and discounts it — creators are recalibrated the moment partnership arrives, and broadcast craft influencers are losing trust and reach. Any brand approach is filtered through this before it can land.",
+   "implication": "Full disclosure history, zero-script partnerships with peer-scale voices, and presence in community-owned verification layers (Ravelry logs, tagged LYS samples) where proof doesn't depend on brand claims"
+  },
+  {
+   "name": "Hustle-framing identity rejection",
+   "type": "psychological",
+   "evidence": "'Just for me' / 'not a side hustle' language codes across all three lenses; Business Insider on monetization 'snuffing out the fire'; hustle framing documented as fading",
+   "intensity": 82,
+   "description": "The audience defines itself against monetization and optimization; side-hustle language triggers identity rejection rather than mere disinterest. Brands using productivity or earning framing land on the wrong side of the community's defining boundary.",
+   "implication": "Adopt the joy/process framing the core already uses — the 'craft for joy, not profit' stance is validated as commercially unclaimed white space"
+  },
+  {
+   "name": "Anti-consumption headwind for 'buy more' messaging",
+   "type": "psychological",
+   "evidence": "'Don't Buy List' as most-shared newsletter issue (400 shares); highest-viewed stash video (23.5K) about winding down a collection; ds2 YouTube validation",
+   "intensity": 75,
+   "description": "The community's most-engaged content is explicitly about not buying — don't-buy lists, stash-only years, stash wind-downs. Acquisition-oriented marketing swims directly against the core's most-shared material and triggers the guilt side of the stash loop.",
+   "implication": "Position products as serving intentionality — stash-busting patterns, UFO-finishing support, organization — so purchase resolves guilt rather than compounding it"
+  },
+  {
+   "name": "Wellness co-option fatigue",
+   "type": "trust",
+   "evidence": "Conflicted reconciled signal: brand lens on Michaels positioning recognition; audience lens on core distinguishing authentic slow-craft philosophy from performative posturing",
+   "intensity": 64,
+   "description": "The core coined 'craft as sanity' before retail adopted it; Michaels' 'Emotional Support Crafts' is widely recognized as brand positioning rather than community voice. Wellness language from brands now risks reading as co-option to precisely the people who felt it first.",
+   "implication": "Demonstrate the value (calm, process, community) through formats and behavior rather than claiming it in copy — the frame works for the base but must be shown, not stated, to the core"
+  },
+  {
+   "name": "Ownership and platform distrust",
+   "type": "trust",
+   "evidence": "Brand-lens Cricut case with documented outcome; PE-distrust purchase factor; Hobby Lobby values-penalty redirection campaigns",
+   "intensity": 62,
+   "description": "Crafters preemptively diversify away from private-equity-owned retailers ('being murdered by private equity') and mobilize within hours against extractive moves — the Cricut subscription announcement triggered a cross-platform revolt reversed within days.",
+   "implication": "Ownership transparency, no lock-in mechanics, and demonstrated responsiveness to community objection — the community rewards genuine reversal"
+  },
+  {
+   "name": "Post-JOANN access vacuum",
+   "type": "practical",
+   "evidence": "Placer.ai post-JOANN landscape analysis; Craft Industry Alliance noting the gap is 'still being filled'; flagged as a key gap in the reconciled data",
+   "intensity": 55,
+   "description": "The mid-market physical home for the casual crafter is empty after ~800 JOANN closures, polarizing access between mass scale (Michaels) and premium niche (LYS/indie). The core's redirection of displaced casual crafters is unresolved.",
+   "implication": "Whoever rebuilds an accessible, values-compatible mid-market habitat inherits a displaced base segment and gives the core somewhere to send people"
+  },
+  {
+   "name": "The digital-forcing paradox",
+   "type": "practical",
+   "evidence": "Converged analog-revival signal with the paradox explicit in the key conflicts; Cricut subscription/software lock-in revolt as the cautionary case",
+   "intensity": 52,
+   "description": "The audience defines itself against screens while discovering and performing the analog identity on them; brands that force digital engagement into the product experience land on the wrong side of the paradox.",
+   "implication": "Keep the product experience analog-complete — digital as optional discovery and community layer, never as required infrastructure"
+  },
+  {
+   "name": "Legitimacy anxiety under gatekeeping",
+   "type": "social",
+   "evidence": "Conflicted reconciled signal: context-lens authenticity policing vs. audience-lens permission-granting documentation; directional confidence",
+   "intensity": 45,
+   "description": "The broader enthusiast culture polices 'real crafter' authenticity ('grandmacore' debates), creating judgment risk that suppresses participation and advocacy — even though the influential core itself is anti-gatekeeping.",
+   "implication": "Amplify the core's permission-granting behavior — it is precisely what distinguishes them from gatekeeping enthusiasts and what lowers this barrier for the base"
+  }
+ ],
+ "coreSize": {
+  "basis": "Convergent proxies from all three lenses: the 1-9-90 participation model applied to craft communities (audience lens); Ravelry's ~11% active-to-registered ratio, 1M MAU of 9M registered (context lens); Mintel's 71% of US adults identifying as crafters vs. documented low active-contribution rates even in self-selected enthusiast newsletters (context/brand lenses). No craft-specific enthusiast-to-casual ratio exists in any lens; the core — those whose contributions are deferred to — is a subset of active contributors.",
+  "estimate": "5-10% of engaged crafting-community members; a low-single-digit fraction of the total self-identified crafting population",
+  "confidence": "directional"
+ },
+ "archetype": "Home crafters",
+ "dataSignals": {
+  "signals": [
+   {
+    "id": "ds1",
+    "metric": "5.6% comment ratio on 1,030 views",
+    "source": "youtube",
+    "finding": "Small hobbyist video-diary channels (1K-10.7K views per episode) show extreme engagement density — e.g., 137 likes and 58 comments on 1,030 views — with comments expressing peer gratitude and direct project imitation.",
+    "subject": "Peer-scale 'knitting podcast' WIP/FO channels",
+    "validates": "Audience lens 'experienced practitioner' trusted-voice archetype and the canonical definition that core influence is peer-trust, not reach",
+    "signalType": "trust",
+    "significance": "A 5-6% comment ratio is roughly 10x typical YouTube engagement, and the comments show trust behavior ('I even have yarn for it in my stash... we will see'), not spectator behavior. This is quantitative confirmation that the core's trusted voices operate at peer scale, not media scale — the opportunity is in the long tail of tiny channels, not craft influencers."
+   },
+   {
+    "id": "ds2",
+    "metric": "23,509 views on a stash wind-down video",
+    "source": "youtube",
+    "finding": "Stash-tour videos are an active 2025-2026 format with self-deprecating framing ('How Did I End Up With This Much Yarn?') and intentionality framing ('road to winding down my collection + free template'), with comment threads swapping storage and moth-prevention systems.",
+    "subject": "'Yarn stash tour' confession format",
+    "validates": "Audience lens stash-guilt emotional driver and 'intentionality rules' behavioral signal; context lens pleasure/guilt loop tension",
+    "signalType": "motivational",
+    "significance": "The highest-viewed result in the set is explicitly about reducing consumption, not hauling — and comment sections turn confession into practical peer exchange (168 comments on a 9K-view video). The stash guilt/intentionality loop the audience lens found in Substack comments is independently visible on a second platform, in current uploads. Risk for brands: 'buy more' messaging swims directly against the community's most engaged content."
+   },
+   {
+    "id": "ds3",
+    "metric": "746K views, 43 comments",
+    "source": "youtube",
+    "finding": "Craft-night content reaches mass audiences (123K-746K views across multiple videos) but with very shallow engagement — 43 comments on 746K views (0.006%) — plus emotionally revealing comments like 'the second I get some friends, I will host craft night.'",
+    "subject": "Craft-night ideas content",
+    "validates": "Confirms context/brand lens craft-night growth while validating the audience lens's more conservative 'medium' influence-density rating",
+    "signalType": "social",
+    "significance": "The scale confirms Michaels' +103%/+242% search-growth claims, but the engagement profile is the inverse of core habitats (compare ds1's 5.6% comment ratio). Craft night is Scaled Momentum: the base's aspiration and the core's transmission surface, not where core conviction is formed. Brands should treat it as a reach channel that needs a core-credible host to convert."
+   },
+   {
+    "id": "ds4",
+    "metric": "2.16M views / 91K likes",
+    "source": "youtube",
+    "finding": "A single screen-free-hobbies short reached 2.16M views and 91K likes, while micro-scale 'analog bag' videos (2.3K-9.9K views) carry dense adoption-report comments ('I have small embroidery kits in my analog bag', 'You have inspired me').",
+    "subject": "Screen-free hobby and 'analog bag' content",
+    "validates": "Context lens 'analog bag' emerging behavior and 136% analog-hobby search surge; audience lens 'analog resistance' emotional driver",
+    "signalType": "behavioral",
+    "significance": "The analog revival is verifiably mainstream at the top of the funnel, but the actual copyable behavior (building an analog bag) shows up in videos three orders of magnitude smaller — where the comments document real adoption. This two-layer structure is the core-to-base transmission pattern in miniature: viral framing above, behavioral conviction below. Entry strategy should target the micro layer where copying actually happens."
+   }
+  ],
+  "dataSources": [
+   "search_youtube"
+  ],
+  "collectiveFinding": "The YouTube data reveals a consistent two-tier structure across every validated signal: mass-scale content (craft night at 746K views, screen-free hobbies at 2.16M) with near-zero engagement density, sitting above micro-scale practitioner content (knitting podcasts at 1K views, analog bags at 2.3K) with engagement ratios 10-1000x higher and comments documenting actual adoption and trust. This independently confirms the canonical core definition: influence density and reach are inversely distributed in this audience. It also validates the anti-consumption finding on a second platform — the most-viewed stash content is about winding down collections, not acquiring. Strategically, the base can be reached through the viral layer, but belief is formed in the micro layer, and no amount of top-layer spend substitutes for presence there.",
+  "unavailableSources": [
+   "google_trends (timed out, unavailable this run)",
+   "reddit (not configured this run)",
+   "pinterest (not configured this run)"
+  ]
+ },
+ "entryPoints": [
+  {
+   "type": "context",
+   "avoid": "Bypassing staff with direct-to-consumer push, promotional displays that read as retail rather than practitioner recommendation, or anything that competes with the store's community role.",
+   "approach": "Enable rather than advertise: support tagged finished samples, staff education, request boards, drop-in circle programming, and LYS Day-style events. Let the store's non-pushy contextual expertise carry the product.",
+   "examples": [
+    {
+     "url": "https://www.pressdemocrat.com/2026/04/20/stitched-together-craft-stores-key-local-spaces-for-connection/",
+     "why": "Documented conversion of visits into recurring community membership — the LYS as trust engine in action",
+     "title": "LYS drop-in circles and potlucks (Press Democrat account)",
+     "platform": "Independent yarn stores"
+    },
+    {
+     "url": "https://wanderlog.com/place/details/4492316",
+     "why": "Direct evidence that LYS staff recommendations convert to purchase and repeat trust",
+     "title": "Followed staff recommendations ('she was right')",
+     "platform": "LYS review ecosystems"
+    }
+   ],
+   "rationale": "Strongest triple-lens convergence in the dataset (composite 7.5, credibility 9, participation quality 9), with documented conversion behavior: followed recommendations, 45-minute drives for trusted staff, tagged samples triggering purchases.",
+   "confidence": "high",
+   "description": "The local yarn store — the densest influence context in the category, where recommendation, demonstration, gathering, and discovery converge through trusted practitioner staff."
+  },
+  {
+   "type": "voice",
+   "avoid": "Recruiting broadcast-scale craft influencers (fading in both reach and trust), scripted endorsements, or any framing that recalibrates the creator from peer to media.",
+   "approach": "Long-tail partnerships with tiny channels on their terms: product access without scripts, full disclosure, candor preserved — including permission to show failures and frogging. Value trust density over subscriber counts.",
+   "examples": [
+    {
+     "why": "Engagement density an order of magnitude above platform norms; comments show trust behavior, not spectator behavior",
+     "title": "Peer-scale knitting podcast channels (Melissa knits for fun, Rena Made, Alex Talks and Knits, Theknittingpaige)",
+     "platform": "YouTube",
+     "unverified": true
+    },
+    {
+     "url": "https://www.moderndailyknitting.com/community/wear-make-unfinished/",
+     "why": "The permission-granting voice archetype documented in its native format",
+     "title": "Modern Daily Knitting permission-granting threads",
+     "platform": "Community publication"
+    }
+   ],
+   "rationale": "YouTube data quantitatively confirms the archetype: 5.6% comment ratios (10x platform norms) on 1K-view channels, with comments documenting direct project imitation. Converged audience/brand finding (composite 7.4).",
+   "confidence": "high",
+   "description": "The peer-scale experienced practitioner — small YouTube knitting-podcast channels and permission-granting community voices trusted as fellow crafters, not media."
+  },
+  {
+   "type": "ritual",
+   "avoid": "'Buy more' messaging or haul culture — it swims directly against the community's most-engaged content and reads as the exact behavior the core is publicly renouncing.",
+   "approach": "Align with the anti-consumption grain: stash-busting patterns, UFO-finishing support, organizing tools and templates, gifting formats. Position products as serving intentionality, not accumulation.",
+   "examples": [
+    {
+     "url": "https://littleskein.substack.com/p/the-dont-buy-list-edition-2024",
+     "why": "The most-opened, most-shared issue — comment threads show adoption of the rules in real time",
+     "title": "The 'Don't Buy List' edition",
+     "platform": "Substack (Little Skein)"
+    },
+    {
+     "why": "23,509 views on consumption-reduction content — the format is productizable without violating values",
+     "title": "Stash wind-down video with free organizing template",
+     "platform": "YouTube (Tiffany Liew)",
+     "unverified": true
+    }
+   ],
+   "rationale": "The 'Don't Buy List' was its newsletter's most-shared post (400 shares); the top stash video in the dataset (23.5K views) is explicitly about reducing consumption. Validated on two platforms (composite 7.8 stash loop, 6.8 intentionality rules).",
+   "confidence": "high",
+   "description": "The intentionality-rule cycle — January goal-setting posts, 'don't buy lists', stash-only years, and stash wind-down content where the core publicly commits and others copy."
+  },
+  {
+   "type": "channel",
+   "avoid": "Hustle language of any kind, conversion-oriented CTAs, or treating newsletters as ad inventory — this is where the immune system's vocabulary is written.",
+   "approach": "Patronage-style presence: sponsor writers without editorial influence, support community directories, contribute genuinely useful resources. Tone must be reflective and craft-first.",
+   "examples": [
+    {
+     "url": "https://littleskein.substack.com/sitemap/2024",
+     "why": "Where 'can't be optimized' and don't-buy framing generate the audience's highest engagement",
+     "title": "Little Skein / 'Knit Together'",
+     "platform": "Substack"
+    },
+    {
+     "url": "https://threadstackcommunity.substack.com",
+     "why": "Fiber-community infrastructure that grew to standalone publication in 5 months — the philosophy's distribution layer",
+     "title": "THREADSTACK community directory",
+     "platform": "Substack"
+    }
+   ],
+   "rationale": "Flagged as a key gap: the brand lens entirely missed this infrastructure, making it commercially untouched space. THREADSTACK grew from launch to standalone publication in five months; comment sections function as commitment devices (composite 8.1 for the stance articulated there).",
+   "confidence": "medium",
+   "description": "The craft Substack ecosystem — newsletters and comment sections where the core's anti-hustle philosophy is articulated, argued, and adopted, and which no brand has touched."
+  },
+  {
+   "type": "moment",
+   "avoid": "Treating craft night as a standalone mass channel — reach without a core-credible host produces the shallow-engagement profile the data documents.",
+   "approach": "Equip the host, not the crowd: hosting formats, shareable starter materials, and gifted beginner kits that the friend-who-crafts deploys on others. Design for the recurring circle of 25-40, not the one-off event.",
+   "examples": [
+    {
+     "url": "https://hobbyscool.com/blog/craft-trends-2026-michaels-report",
+     "why": "Confirms the format's momentum and the base's aspiration to participate",
+     "title": "Michaels 2026 craft-night search data (+103% / +242%)",
+     "platform": "Category trend data"
+    },
+    {
+     "url": "https://framptoncotterell-pc.gov.uk/wp-content/uploads/2025/08/Appendix-10-Crochet-Knit-Club-annual-report-May-25.pdf",
+     "why": "The recurring-circle format where craft night deepens into core habitat",
+     "title": "UK Crochet & Knit Club (~25 weekly regulars)",
+     "platform": "Community centers"
+    }
+   ],
+   "rationale": "Exceptional momentum and copyability (composite 7.8, transmission 9) but measurably shallow participation at scale (43 comments on 746K views). The conflict resolution: it converts only when the core hosts it.",
+   "confidence": "high",
+   "description": "Craft night — the fastest-growing format in the category (+103%/+242% search growth) — engaged as a reach-and-onboarding surface hosted by a core-credible 'friend who crafts'."
+  },
+  {
+   "type": "community",
+   "avoid": "Astroturfing or undisclosed seeding — this community coordinated a policy reversal against Cricut within days and polices commercial intrusion.",
+   "approach": "Listen and learn first: mine 'what should I buy' and 'should I frog' threads for language and unmet needs; if participating, do so with disclosed identity and genuinely expert, non-promotional answers.",
+   "examples": [
+    {
+     "url": "https://www.aol.com/inspired-book-warner-robins-knitting-100000815.html",
+     "why": "Documented scale of the advice commons where norms and vocabulary circulate",
+     "title": "r/Embroidery (893K members)",
+     "platform": "Reddit",
+     "unverified": true
+    }
+   ],
+   "rationale": "893K members in r/Embroidery alone; the core surfaces as highly-upvoted answerers whose experience-based responses set purchasing norms (composite 7.0 signal strength).",
+   "confidence": "medium",
+   "description": "Fiber-craft subreddits (r/knitting, r/crochet, r/Embroidery) — the advice and norm-setting commons where the core's upvoted answers transmit material opinions to a much larger lurker base."
+  }
+ ],
+ "findability": {
+  "searchBehaviors": [
+   "stash busting patterns",
+   "frogging a WIP",
+   "yarn chicken",
+   "knitting podcast (YouTube video-diary sense)",
+   "what's in my analog bag",
+   "don't buy list",
+   "UFO knitting projects",
+   "stash-only year",
+   "LYS near me / local yarn store",
+   "visible mending"
+  ],
+  "affinityAdjacencies": [
+   {
+    "interest": "Digital minimalism / screen-time reduction",
+    "rationale": "The analog-bag behavior and screen-free hobby content are the audience's discovery gateway (+136% portable analog hobby searches; 2.16M-view screen-free short)"
+   },
+   {
+    "interest": "Sustainability and anti-fast-fashion (visible mending)",
+    "rationale": "Visible mending searches +144% and eco-material adoption +27%; stash-busting connects directly to values-compatible guilt resolution"
+   },
+   {
+    "interest": "Shop-local / independent retail values",
+    "rationale": "The big-box vs. LYS divide, Hobby Lobby redirection campaigns, and PE-ownership distrust show the core's purchasing is values-loaded toward independents"
+   },
+   {
+    "interest": "Library and community-center programming",
+    "rationale": "Recurring drop-in circles documented in libraries, community centers, and cafés (UK Crochet & Knit Club annual report; Bushwick circle of 30-40 regulars)"
+   },
+   {
+    "interest": "Newsletter/long-form reading culture",
+    "rationale": "The core's philosophy lives in Substack essays and comment sections — reflective practitioners who comment and confess rather than lurk"
+   }
+  ],
+  "targetableInterests": [
+   "Indie hand-dyed yarn",
+   "Knitting patterns / Ravelry",
+   "Crochet",
+   "Embroidery kits",
+   "Visible mending",
+   "Slow craft / slow living",
+   "Local yarn stores",
+   "Fiber festivals",
+   "Analog hobbies / screen-free living",
+   "Stash organization"
+  ],
+  "platformConcentrations": [
+   {
+    "note": "The verification layer — long-tenure members with documented project histories whose logs others consult before buying; ~1M MAU",
+    "spaces": [
+     "Project pages and stash logs",
+     "Forums (336K threads)",
+     "Yarn review pages",
+     "LYS directory"
+    ],
+    "platform": "Ravelry"
+   },
+   {
+    "note": "The core appears as recurring, highly-upvoted answerers in 'what should I buy' and 'should I frog' threads",
+    "spaces": [
+     "r/knitting",
+     "r/crochet",
+     "r/Embroidery (~893K members)"
+    ],
+    "platform": "Reddit"
+   },
+   {
+    "note": "Screen for engagement density, not subscribers — core channels run 3-6% comment ratios on 1K-10K views",
+    "spaces": [
+     "'Knitting podcast' niche (Melissa knits for fun, Rena Made, Alex Talks and Knits, Theknittingpaige)",
+     "Yarn stash tours (Tiffany Liew, Keeley Davies, Chieri's Channel)",
+     "Micro 'analog bag' videos"
+    ],
+    "platform": "YouTube"
+   },
+   {
+    "note": "Where the anti-hustle philosophy is written and adopted; comment sections act as public commitment devices",
+    "spaces": [
+     "Little Skein 'Knit Together'",
+     "THREADSTACK directory",
+     "Hobbyist-manifesto newsletters"
+    ],
+    "platform": "Substack"
+   },
+   {
+    "note": "Insider-vocabulary hashtag with documented cross-platform presence — a belonging-marker filter",
+    "spaces": [
+     "#WIPWednesday"
+    ],
+    "platform": "Instagram / cross-platform"
+   }
+  ]
+ },
+ "generatedAt": "2026-08-11T18:44:41.968Z",
+ "influenceMap": [
+  {
+   "name": "The anti-monetization stance ('just for me', 'keep your hobby a hobby')",
+   "type": "initiator",
+   "scores": {
+    "composite": 8.1,
+    "copyability": 8,
+    "credibility": 9,
+    "desireCreation": 8,
+    "bridgePotential": 7,
+    "transmissionPower": 8,
+    "participationQuality": 8
+   },
+   "platform": "Substack essays, subreddit self-descriptions, community writing",
+   "sourceUrl": "https://littleskein.substack.com/sitemap/2024",
+   "confidence": "high",
+   "coreVsBase": {
+    "base": "Encounters the framing downstream through viral content and retail copy; latent sentiment is broader but unnamed",
+    "core": "Articulates and enforces the stance as an in-group marker; rejects monetized maker culture explicitly"
+   },
+   "reachLevel": "niche",
+   "unverified": false,
+   "description": "The core's defining identity boundary, found independently by all three lenses — and the side-hustle framing dominating craft marketing is actively fading. Highly copyable framing that generates the audience's most-engaged content.",
+   "behavioralRole": "Identity-distancing: using the language signals values alignment and invites peer affirmation; hustle language triggers identity rejection.",
+   "intensityScore": 81,
+   "convergenceStatus": "converged"
+  },
+  {
+   "name": "The stash pleasure/guilt loop and permission-granting",
+   "type": "initiator",
+   "scores": {
+    "composite": 7.8,
+    "copyability": 8,
+    "credibility": 9,
+    "desireCreation": 6,
+    "bridgePotential": 6,
+    "transmissionPower": 7,
+    "participationQuality": 9
+   },
+   "platform": "Substack comment sections, YouTube stash tours, Ravelry forums",
+   "sourceUrl": "https://littleskein.substack.com/p/the-dont-buy-list-edition-2024",
+   "confidence": "high",
+   "reachLevel": "niche",
+   "unverified": false,
+   "description": "A structurally embedded emotional cycle — over-buying followed by guilt — resolved through the core's signature influence act: don't-buy lists, stash-busting, and UFO release that others publicly adopt.",
+   "behavioralRole": "Guilt resolved through communal permission; confession converts into practical peer exchange and copied commitment rules.",
+   "intensityScore": 78,
+   "convergenceStatus": "converged"
+  },
+  {
+   "name": "The analog/screen-free revival ('analog bag')",
+   "type": "amplifier",
+   "scores": {
+    "composite": 7.8,
+    "copyability": 9,
+    "credibility": 7,
+    "desireCreation": 8,
+    "bridgePotential": 8,
+    "transmissionPower": 9,
+    "participationQuality": 6
+   },
+   "platform": "TikTok and YouTube Shorts, spreading to offline carry behavior",
+   "sourceUrl": "https://hobbyscool.com/blog/craft-trends-2026-michaels-report",
+   "confidence": "high",
+   "coreVsBase": {
+    "base": "Consumes the viral framing at mass scale with near-zero engagement (360 comments on 2.16M views)",
+    "core": "Lives the analog behavior; documents real analog bags in micro videos with adoption comments"
+   },
+   "reachLevel": "mainstream",
+   "unverified": false,
+   "description": "The macro tailwind: mass-reach screen-free content (2.16M views on one short) introduces the values the core has held for years, while micro 'analog bag' videos show dense adoption comments.",
+   "behavioralRole": "Viral framing above, behavioral conviction below — the core-to-base transmission pattern in miniature; copying happens in the micro layer.",
+   "intensityScore": 78,
+   "convergenceStatus": "converged"
+  },
+  {
+   "name": "The friend/sibling/colleague who crafts",
+   "type": "initiator",
+   "scores": {
+    "composite": 7.7,
+    "copyability": 8,
+    "credibility": 10,
+    "desireCreation": 7,
+    "bridgePotential": 8,
+    "transmissionPower": 5,
+    "participationQuality": 7
+   },
+   "platform": "Immediate social networks — homes, workplaces, friend groups",
+   "sourceUrl": "https://chrissey.substack.com/p/worth-the-overflow-2826",
+   "confidence": "high",
+   "reachLevel": "micro",
+   "unverified": false,
+   "description": "The highest-trust mechanism in the entire map: onboarding happens through social proximity, often via a gifted beginner kit, with near-total conversion per relationship.",
+   "behavioralRole": "Existing relationship equals maximum credibility; demonstration and contagious enthusiasm convert without any persuasion frame.",
+   "intensityScore": 77,
+   "convergenceStatus": "converged"
+  },
+  {
+   "name": "Craft night and recurring drop-in circles",
+   "type": "amplifier",
+   "scores": {
+    "composite": 7.8,
+    "copyability": 9,
+    "credibility": 7,
+    "desireCreation": 8,
+    "bridgePotential": 8,
+    "transmissionPower": 9,
+    "participationQuality": 6
+   },
+   "platform": "Homes, cafés, libraries, breweries; YouTube craft-night content",
+   "sourceUrl": "https://hobbyscool.com/blog/craft-trends-2026-michaels-report",
+   "confidence": "high",
+   "coreVsBase": {
+    "base": "Aspires to attend ('the second I get some friends, I will host craft night'); engages shallowly at mass scale",
+    "core": "Hosts and anchors recurring circles of 25-40 regulars"
+   },
+   "reachLevel": "significant",
+   "unverified": false,
+   "description": "The fastest-growing format in the category (+103%/+242% search growth) — but primarily a base-expansion surface the core hosts, not where core conviction is formed.",
+   "conflictNotes": "Context/brand lenses read craft night as accelerating mainstream opportunity; the audience lens rates its influence density only 'medium'. YouTube data supports both — 746K views with 0.006% comment ratio vs. 5.6% on core channels. Resolved as the core→base transmission surface, not a core habitat.",
+   "behavioralRole": "Demonstration and social contagion lower activation energy for newcomers; belief still requires a core-credible host to transfer.",
+   "intensityScore": 76,
+   "convergenceStatus": "conflicted"
+  },
+  {
+   "name": "WIP/UFO candor and insider vocabulary",
+   "type": "initiator",
+   "scores": {
+    "composite": 7.6,
+    "copyability": 8,
+    "credibility": 9,
+    "desireCreation": 6,
+    "bridgePotential": 6,
+    "transmissionPower": 7,
+    "participationQuality": 8
+   },
+   "platform": "Subreddits, YouTube video titles, community threads, #WIPWednesday",
+   "sourceUrl": "https://www.interweave.com/article/knitting/ufo-to-wip-can-crochet-or-knitting-project-be-saved/",
+   "confidence": "high",
+   "reachLevel": "niche",
+   "unverified": false,
+   "description": "Frogging, stash-busting, and yarn chicken function as both belonging markers and the community's emotional processing system — verified live in 2026 video titles.",
+   "behavioralRole": "Shame defused through humor and shared vulnerability; naming your UFOs invites others to name theirs.",
+   "intensityScore": 76,
+   "convergenceStatus": "converged"
+  },
+  {
+   "name": "The local yarn store as trust engine",
+   "type": "initiator",
+   "scores": {
+    "composite": 7.5,
+    "copyability": 7,
+    "credibility": 9,
+    "desireCreation": 7,
+    "bridgePotential": 7,
+    "transmissionPower": 5,
+    "participationQuality": 9
+   },
+   "platform": "Independent LYS — sales floors, sample displays, drop-in circles",
+   "sourceUrl": "https://www.pressdemocrat.com/2026/04/20/stitched-together-craft-stores-key-local-spaces-for-connection/",
+   "confidence": "high",
+   "coreVsBase": {
+    "base": "Shops big-box on price and access; uses LYS occasionally if at all",
+    "core": "Defaults to LYS/indie for 'real' work; drives 45 minutes for trusted staff"
+   },
+   "reachLevel": "niche",
+   "unverified": false,
+   "description": "The highest-density influence context for the core: staff recommendations are followed ('she was right'), tagged samples trigger purchases, and drop-in circles convert visits into community membership.",
+   "behavioralRole": "Non-pushy, contextual practitioner expertise — the opposite of algorithmic recommendation; depth over reach, capped by physical locality.",
+   "intensityScore": 75,
+   "convergenceStatus": "converged"
+  },
+  {
+   "name": "The experienced practitioner as permission-granter",
+   "type": "initiator",
+   "scores": {
+    "composite": 7.4,
+    "copyability": 7,
+    "credibility": 9,
+    "desireCreation": 6,
+    "bridgePotential": 6,
+    "transmissionPower": 6,
+    "participationQuality": 9
+   },
+   "platform": "Peer-scale YouTube knitting podcasts, Modern Daily Knitting threads",
+   "sourceUrl": "https://www.moderndailyknitting.com/community/wear-make-unfinished/",
+   "confidence": "high",
+   "reachLevel": "micro",
+   "unverified": false,
+   "description": "The core's central trusted-voice archetype, operating at peer scale with candor as their credential — YouTube confirms engagement ratios an order of magnitude above platform norms.",
+   "behavioralRole": "Parasocial-peer trust: viewers respond as fellow crafters ('I even have yarn for it in my stash'), imitating projects directly.",
+   "intensityScore": 74,
+   "convergenceStatus": "converged"
+  },
+  {
+   "name": "The wellness / 'emotional support crafts' framing",
+   "type": "amplifier",
+   "scores": {
+    "composite": 7.2,
+    "copyability": 8,
+    "credibility": 7,
+    "desireCreation": 7,
+    "bridgePotential": 7,
+    "transmissionPower": 8,
+    "participationQuality": 6
+   },
+   "platform": "Retail marketing (Michaels), mainstream trend coverage, community writing",
+   "sourceUrl": "https://thebarefootcrafter.com/general-stuff/on-crafting-hobby-sanity-identity/",
+   "confidence": "high",
+   "coreVsBase": {
+    "base": "Responds to the retail version — the frame works as an on-ramp",
+    "core": "Originated the framing and distinguishes authentic slow-craft philosophy from performative posturing"
+   },
+   "reachLevel": "significant",
+   "unverified": false,
+   "description": "Genuinely felt by the audience (Mintel: ~half of US adults use leisure crafting for stress) but industrialized by Michaels — the core originated the sentiment and detects the retail copy.",
+   "conflictNotes": "Context lens treats crafting-as-self-care as an accelerating mainstream trend; brand lens notes Michaels' wellness language is recognized as positioning, not community voice; audience lens shows the core used 'sanity/therapy/just for me' framing before it entered retail copy. Same phenomenon at different lifecycle stages.",
+   "behavioralRole": "Legitimizes entry for the base via calm/stress-relief framing; risks reading as co-option to the core.",
+   "intensityScore": 70,
+   "convergenceStatus": "conflicted"
+  },
+  {
+   "name": "The community immune system (Cricut revolt pattern)",
+   "type": "amplifier",
+   "scores": {
+    "composite": 6.8,
+    "copyability": 6,
+    "credibility": 8,
+    "desireCreation": 4,
+    "bridgePotential": 5,
+    "transmissionPower": 8,
+    "participationQuality": 8
+   },
+   "platform": "Cross-platform — Facebook, Reddit, Twitter coordination",
+   "sourceUrl": "https://kelsieforeman.com/cricut-announced-a-new-subscription-model%E2%80%95customers-shut-it-down/",
+   "confidence": "medium",
+   "reachLevel": "niche",
+   "unverified": false,
+   "description": "The community can mobilize against extractive brand behavior within hours and rewards genuine reversal — the Cricut subscription announcement triggered a revolt that reversed policy within days.",
+   "behavioralRole": "Betrayal and ownership defense: trust violations activate coordinated network behavior, proving the core operates as an organized network.",
+   "intensityScore": 65,
+   "convergenceStatus": "single-lens"
+  },
+  {
+   "name": "The sponsored-content immune system",
+   "type": "amplifier",
+   "scores": {
+    "composite": 6.2,
+    "copyability": 6,
+    "credibility": 8,
+    "desireCreation": 4,
+    "bridgePotential": 5,
+    "transmissionPower": 7,
+    "participationQuality": 6
+   },
+   "platform": "All channels — a filter, not a venue",
+   "sourceUrl": "https://craftindustryalliance.org/craft-industry-reflections-on-2025-and-predictions-for-2026/",
+   "confidence": "high",
+   "reachLevel": "niche",
+   "unverified": false,
+   "description": "The core detects and discounts commercial framing instantly, and broadcast-scale craft influencers are losing both reach and trust — a barrier that shapes every other influence path.",
+   "behavioralRole": "Skepticism as protection of trusted space: sponsorship recalibrates a creator's standing the moment partnership arrives.",
+   "intensityScore": 62,
+   "convergenceStatus": "converged"
+  },
+  {
+   "name": "Ravelry as verification layer",
+   "type": "amplifier",
+   "scores": {
+    "composite": 6.2,
+    "copyability": 6,
+    "credibility": 9,
+    "desireCreation": 4,
+    "bridgePotential": 4,
+    "transmissionPower": 4,
+    "participationQuality": 8
+   },
+   "platform": "Ravelry.com — pattern database, project logs, forums",
+   "sourceUrl": "https://knitlikegranny.com/ravelry-stats/",
+   "confidence": "high",
+   "reachLevel": "significant",
+   "unverified": false,
+   "description": "Where discovery gets verified: crafters see something on TikTok/Instagram, then check Ravelry project logs and yarn reviews before purchasing. Deep but not growing — a well, not a river.",
+   "conflictNotes": "Audience/brand lenses call Ravelry 'irreplaceable' (trust quality); context lens shows traffic flat since 2013 with ~11% of registered users active, and younger crafters using it only for project management (growth trajectory). Both right: reach the existing core there, don't expect it to recruit the base.",
+   "behavioralRole": "Community-owned proof: peer-populated project logs and reviews carry maximum credibility precisely because they're non-commercial.",
+   "intensityScore": 61,
+   "convergenceStatus": "conflicted"
+  }
+ ],
+ "peripheryData": {
+  "insights": {
+   "expansionPaths": [
+    {
+     "risk": "The overlap is behavioral, not identitarian for most of this audience — they listen while crafting but don't identify as 'crafter-listeners.' Framing that is too constructed or brand-initiated may feel forced rather than recognized. The approach that works is being present in craft-side audio spaces (knitting podcast formats, Craft Industry Alliance listening recommendations) rather than importing craft into audio brands.",
+     "direction": "Audiobook and podcast platforms / audio media brands",
+     "rationale": "Crafters are structurally the ideal audio listener — long sessions, hands occupied, high engagement — and the overlap is demonstrated rather than assumed. Craft Lit (2006-present), true crime craft nights, and the #booktok × #crochettok cluster all document lived pairing. Audio media brands that acknowledge this shared identity (rather than treating crafting and listening as separate behaviors) would reach a high-attention, loyal audience."
+    },
+    {
+     "risk": "The slow fashion audience has a highly developed commercial immune system nearly identical to the crafter core's — both are fluent in detecting brand co-option of their values. Any expansion into this space that leads with brand positioning rather than genuine material or community alignment will be detected and rejected. The bridge works through the craft community reaching into slow fashion, not the reverse.",
+     "direction": "Slow fashion / sustainable clothing brands and communities",
+     "rationale": "The anti-fast-fashion, visible-mending, stash-busting values documented across all three lenses in the reconciled data are the same values that define slow fashion. The influential core who already knit and crochet their own garments are the most credible ambassadors for natural fiber clothing, slow collections, and repair culture — a bridge the core already informally inhabits."
+    },
+    {
+     "risk": "The cottagecore and grandmacore communities are primarily image-driven and aesthetics-focused — the visual performance of the lifestyle is central — while the influential crafter core explicitly rejects performance and curation in favor of candor about imperfection. Brands that activate this bridge through aesthetic content risk importing the performative values the core is defined against. The bridge works when actual crafters demonstrate their imperfect work inside aesthetic spaces, not when brands create polished cottagecore imagery.",
+     "direction": "Cottagecore / grandmacore lifestyle and aesthetic communities",
+     "rationale": "These are the largest adjacent populations with inherent craft identity (combined 20+ billion TikTok views) who are already oriented toward handmade objects, natural fibers, and domestic rituals but many of whom have not yet committed to a craft practice. The influential core's role as permission-granters and onboarders maps exactly onto what this adjacent audience needs to convert from aesthetic admirer to active crafter."
+    }
+   ],
+   "surprisingOverlaps": [
+    "True crime podcast listeners: the genre that correlates most specifically with crafter listening habits is not cozy mystery or personal development but true crime — documented by a library running a monthly 'craft while listening to true crime' event for six consecutive months in 2025, suggesting a habitual pairing that is invisible in demographic data.",
+    "Cozy gaming shares more identity DNA with home crafting than it does with mainstream gaming: the 'Cozy Gamer' aesthetic is listed as a related aesthetic to Grandmacore and Cottagecore, and the Maker × Nerd intersection is documented as active in 2026 (custom resin dice for D&D as the most cited bridge), suggesting a younger audience layer where digital and analog making co-exist without contradiction.",
+    "BookTok and fiber crafting are not merely overlapping communities but have developed shared artifact genres (crocheted book sleeves, Kindle covers, book-inspired blanket patterns) that are commercially active on Etsy — the overlap has generated its own product category, suggesting durability beyond trend.",
+    "The charity crafting sub-segment is large and almost entirely invisible to brands: it appears as a standard feature in virtually every documented craft club report but is rarely captured in social media data or influencer content because its output leaves the community rather than being posted. This is a trust-rich, values-aligned behavior with no brand presence.",
+    "Crafters who are also podcast listeners represent a structural demand advantage: the repetitive-hands, eyes-on-work format of fiber crafting creates near-mandatory audio accompaniment — meaning podcast advertisers and audio-first brands have a captive, long-listening audience that is underpriced relative to its actual attention quality."
+   ],
+   "bridgeOpportunities": [
+    "Craft + audio: the knitting podcast and crafting-while-listening habit creates a natural bridge between home crafters and the broader audio media world (podcasts, audiobooks, radio dramas) — a bridge that already exists structurally but is rarely activated by brands or media targeting both simultaneously.",
+    "Slow fashion entry: the anti-fast-fashion, visible-mending, stash-busting values of the core crafter community are an organic bridge into the slow fashion movement, where crafters who make their own garments become the most credible ambassadors for sustainable clothing — a bridge currently activated at the individual level but not at scale.",
+    "The cottagecore-to-craft pipeline: the cottagecore and grandmacore aesthetic communities (13.8B TikTok views) are the largest adjacent population with an inherent craft identity — they are already oriented toward handmade objects, natural fibers, and domestic rituals; they are an unconverted pipeline into active crafting that the influential core could ignite through peer demonstration.",
+    "Civic and community: the charity crafting and craftivism sub-segments bridge home crafters into civic engagement and community service ecosystems — libraries, hospitals, advocacy organizations — giving craft a public role that is values-aligned with the anti-hustle, 'just for me and my community' ethos without commercializing it."
+   ]
+  },
+  "peripheryMap": {
+   "innerRing": [
+    {
+     "name": "Audiobook and podcast listeners",
+     "segment": "interest",
+     "evidence": "TikTok evidence of #booktok × #crochettok crossover shows crafters explicitly framing audiobooks as their craft companion ('learn to crochet with me so I have something to do with my hands while listening to audiobooks'); Craft Industry Alliance documents 'Craft Lit' — an annotated audiobook podcast explicitly designed for crafters, in continuous production since 2006; crafting community site whileshenaps.com lists 20 podcasts explicitly recommended for use while crafting; the repetitive, eyes-on nature of knitting and crochet structurally creates demand for audio content. The overlap is functional, not incidental.",
+     "description": "Crafters — especially fiber crafters — are among the heaviest consumers of audio content because the hands-on, eyes-on nature of their work makes simultaneous listening not just possible but actively pleasurable; podcasting and crafting co-evolved as paired habits.",
+     "overlapStrength": "near-universal"
+    },
+    {
+     "name": "Slow living / intentional living movement",
+     "segment": "mindset",
+     "evidence": "Create Me Free Substack explicitly maps craft onto slow living, framing 'slow yarn' as a direct analog to the slow food movement; the slow living / crafting overlap is documented across multiple independent sources (createmefree.substack.com, lifeloving.co.uk, artisanandfox.com) with consistent value alignment: 'quality over quantity, sustainability over speed, beauty with purpose'; craft-loft.com (May 2026) frames 'choosing analog hobbies' as choosing to be present and building non-algorithmic community — language mirroring the reconciled data's anti-optimization stance; cottagecore and slow living Pinterest searches up 240% in 2025 with crafting as a central activity. The reconciled data's most-engaged content (Don't Buy List, craft-as-sanity framing) maps directly onto the slow living canon.",
+     "description": "The values animating home crafting — anti-optimization, process over product, quality over quantity — are nearly identical to the slow living philosophy, making the two communities functionally the same audience approaching the same stance from different entry points.",
+     "overlapStrength": "near-universal"
+    },
+    {
+     "name": "Reading / book community (BookTok and beyond)",
+     "segment": "interest",
+     "evidence": "TikTok explicitly clusters #booktok and #crochettok tags in the same videos; Lemon8 users describe building 'a cozy room for reading and crocheting'; BookRiot (Feb 2025) covers 'bookish crochet and knitting patterns' as a distinct genre with its own following; Etsy has a well-developed 'bookish crochet' product category (book sleeves, Kindle covers, book-inspired blankets); crafters on TikTok describe reading 10 books in a month specifically because they were crocheting simultaneously; 'Craft Lit' podcast (annotated audiobooks for crafters) has been running weekly since 2006. The overlap is bidirectional: crafters who read and readers who craft both identify with it.",
+     "description": "Craft and reading are explicitly paired hobbies in this audience's self-description, with active cross-community identity ('bookish crocheter'), craft projects made for readers, and the audiobook-while-crafting behavior creating a near-universal behavioral bridge.",
+     "overlapStrength": "strong"
+    },
+    {
+     "name": "Secondhand / thrifting culture",
+     "segment": "lifestyle",
+     "evidence": "Savers/Value Village 2024 Thrift Industry Report documents over 40% of Gen Z as regular thrifters, with sustainability and community alignment as primary motivators — values identical to the reconciled data's anti-monetization, intentionality-rules behaviors; visible mending searches +144% (documented in reconciled data) directly links crafting and secondhand clothing; the slow fashion movement explicitly connects handmade garments and thrifting under the same values umbrella ('buy less but better'); craft-loft.com (May 2026) uses identical framing for both thrifting and crafting — 'being present' and 'choosing community over consumption'; stitchcraftmarketing documents '#MendMarch25' where crafters of all disciplines participate in visible mending of thrifted items.",
+     "description": "The values structure of home crafting — anti-consumption, sustainability, anti-fast-fashion, finding quality in overlooked things — maps directly onto thrifting culture, with additional functional overlap through crafters sourcing vintage fabric, yarn, and notions at thrift stores.",
+     "overlapStrength": "strong"
+    },
+    {
+     "name": "Cottagecore / grandmacore aesthetic communities",
+     "segment": "lifestyle",
+     "evidence": "Allynscloset.com (May 2026) fully defines grandmacore as encompassing 'natural fibers, handmade crafts, vintage objects, domestic rituals' with crafting as 'needlepoint, cross-stitch, or crocheted blankets'; cottagecore pinterest searches +240% in 2025; #Cottagecore has 13.8 billion TikTok views, with crafting as a defining practice; grandmacore specifically 'romanticizes a specific person in a specific place — the grandmother's house, the grandmother's wardrobe, the grandmother's habits' — directly connecting to the 'grandma hobbies' revival documented across the reconciled data; aesthetics.fandom.com lists gardening, crocheting, fresh baked bread, and knitted fabric as core grandmacore elements. The overlap is structural: these aesthetics are partly definitions of what home crafting looks like.",
+     "description": "Cottagecore and grandmacore are the visual and cultural aesthetic identities that most explicitly include crafting as a core practice, making them the closest adjacent lifestyle community — though the core crafter often inhabits the values without the aesthetic label.",
+     "overlapStrength": "strong"
+    },
+    {
+     "name": "Home gardening and plant parenthood",
+     "segment": "lifestyle",
+     "evidence": "Axios (Dec 2024) explicitly lists gardening, homesteading, needlepoint, and crochet together as 'hobbies typically enjoyed by boomers' now taking off with younger generations under the same slow living tailwind; Pinterest 2025 trend report shows 'self-sufficient gardens' searches up 55% in the same period as crafting's revival; grandmacore aesthetic (13.8B TikTok views) explicitly pairs gardening and knitting as co-equal activities; cottagecore aesthetic defines itself around crafting + nature + domestic food production as a unified lifestyle; craft clubs documented in the reconciled data (Frampton Cotterell) explicitly list 'Floral Friends' participation and seasonal nature-themed yarn art as adjacent activities. The convergence between the analog-revival tailwind and the back-to-nature movement places gardening and crafting as parallel tracks.",
+     "description": "Gardening shares the same 'hands in something real' orientation as crafting — process-focused, anti-optimization, seasonal, and community-practiced — making it a structural adjacency rather than a coincidental one.",
+     "overlapStrength": "strong"
+    }
+   ],
+   "outerRing": [
+    {
+     "name": "Craftivism and social justice causes",
+     "segment": "mindset",
+     "evidence": "Boston Globe (Dec 2025) covers protest crafting / craftivism as actively surging in the current political climate; Edinburgh government-sponsored exhibition on craftivism ran through January 2026 with topics including politics, feminism, LGBTQ+ rights, and environmental justice; Axios documents knitting's 'close relationship and long history with radical activism' and the term 'craftivist' surfacing around knitting and crocheting publicly as political statement; the Craftivist Collective achieved tangible outcomes pressuring Marks & Spencer on living wage through embroidered handkerchief campaigns; the Frampton Cotterell club (reconciled data) donates to charities and creates remembrance poppies — a mild version of the same impulse. This overlap is primarily core-layer: the base crafts for calm, the core extends craft into values-action.",
+     "description": "A historically documented but currently active segment of crafters uses fiber arts as political expression — an adjacency that belongs primarily to the influential core (who have held the anti-monetization, anti-hustle stance longest and are most likely to extend craft into values-based action) rather than the casual base.",
+     "overlapStrength": "moderate"
+    },
+    {
+     "name": "Baking and home cooking communities",
+     "segment": "interest",
+     "evidence": "Grandmacore aesthetics explicitly include 'fresh baked goods' alongside crocheting and gardening as defining activities; cottagecore defines itself around 'baking, preserves, homemade goods' alongside handcrafts; mindspacecafe.com lists both baking and knitting as core 'cottagecore hobbies for slow living'; sassafrascurio.substack.com documents a Substack newsletter that explicitly merges baking and craft storytelling as a unified philosophy ('craft is the transformation of raw to whole'); the cozy-hobby genre on TikTok and YouTube surfaces baking and crafting in shared playlists and hashtag clusters. The connection is real but less documented than the reading or slow living overlap — treat as moderate.",
+     "description": "Baking and crafting share the same 'made by my hands' identity structure, the same therapeutic-process orientation, and co-appear in the same aesthetic communities (cottagecore, slow living, grandmacore) — the overlap is values-rooted rather than activity-rooted.",
+     "overlapStrength": "moderate"
+    },
+    {
+     "name": "True crime podcast listeners",
+     "segment": "entertainment",
+     "evidence": "Waverley Library, Sydney documented a recurring monthly event (April–September 2025) called 'Killer Podcrafts' — explicitly designed for crafters who are also true crime fans, gathering makers to listen to true crime podcasts while working on projects including sewing, knitting, and collage; TikTok #crochettok and #truecrime hashtags co-appear in crafter content; the structural logic is strong: true crime requires no visual attention, runs long, and provides enough narrative tension to hold attention through repetitive tasks. The event-as-evidence approach (a library running this monthly for six months) is the strongest documented proof of lived overlap.",
+     "description": "True crime is the surprising audio genre that most overlaps with crafter listening habits — the functional pairing of repetitive handwork with narrative audio creates a specific demand for long-form story content, and true crime's episodic, immersive format matches it well.",
+     "overlapStrength": "moderate"
+    },
+    {
+     "name": "Cozy gaming (Stardew Valley, Animal Crossing, narrative RPGs)",
+     "segment": "entertainment",
+     "evidence": "Craft-loft.com (May 2026) explicitly documents 'a massive intersection between the Maker world and Nerd Culture' with resin crafting as a bridge (making custom dice for D&D sessions as the most cited example); the aesthetics wiki lists 'Cozy Gamer' as a related aesthetic to both Grandmacore and Cottagecore with overlapping visual and value systems; the reconciled data's 'analog bag' behavior (carrying portable craft projects to avoid screens) suggests screen-resistance as an identity stance, but cozy gaming — low-stakes, slow, non-competitive — is the digital exception that doesn't violate the analog identity. The overlap is emerging and stronger at younger audience layers.",
+     "description": "The 'cozy gamer' subculture shares identity markers, values, and aesthetics almost entirely with the home crafter — anti-competition, process-over-outcome, gentle world-building, community over performance — and the Maker × Nerd intersection is documented as active in 2026.",
+     "overlapStrength": "moderate"
+    },
+    {
+     "name": "Maker/DIY home improvement communities",
+     "segment": "interest",
+     "evidence": "Michaels 2026 Creativity Trend Report specifically identifies growth in 'hobbies with multiple uses, such as painting, embroidery, sewing, and patchwork' alongside DIY home décor as co-occurring trends; stitchcraftmarketing.com documents cross-modality crafting behavior ('embroiderers want to learn how to felt; knitters want to quilt, quilters want to learn how to crochet') which sits adjacent to DIY home projects under the same identity umbrella; Yahoo/BHG (Apr 2025) explicitly frames craft hobbies as home décor enablers — 'home decor enthusiasts are naturally creative — styling a shelf or arranging a room takes the same artistic eye used in crafting DIY decor'; r/DIY and r/HomeImprovement on Reddit share regular posters with fiber craft subreddits in the crafting community. Overlap is real but less intense than the reading or slow living adjacencies.",
+     "description": "The 'multicraftual' behavior documented in the reconciled data (crafters rotating across disciplines) extends naturally into broader making — home repair, furniture upcycling, and DIY décor — where the same 'I made this' identity and anti-mass-production values apply.",
+     "overlapStrength": "moderate"
+    },
+    {
+     "name": "Mental health and mindfulness communities",
+     "segment": "mindset",
+     "evidence": "Craft Yarn Council survey of 3,100 crafters found stress reduction in 85% of participants and sense of accomplishment in 93%; Crafts Council UK documents emerging UK craft clubs 'specifically aimed at boosting mental health' (Woolly Wellbeing in Liverpool); Australian Occupational Therapy Journal (2025) published a systematic review of craft-based mental health interventions; Frontiers in Public Health (March 2025) published 'Craftwell' study on outdoor heritage crafting for wellbeing; Craft Club reports 70% of customers citing relaxation and creative outlet as primary reasons for crafting (March 2026). The distinction noted in reconciled data applies: the core's framing predates the retail version and is more authentic; the wellness community overlap is broadest at the base layer where 'emotional support crafts' language resonates.",
+     "description": "Crafting-as-mental-health-tool is now academically validated and community-practiced, with dedicated wellness-oriented craft groups emerging — the audience's authentic 'craft as sanity' framing (predating the retail co-option) connects them to the broader mental wellness movement.",
+     "overlapStrength": "moderate"
+    },
+    {
+     "name": "Local small business and independent maker economy supporters",
+     "segment": "mindset",
+     "evidence": "Reconciled data documents 45-minute drives to trusted LYS staff, Hobby Lobby redirection campaigns, and documented private-equity distrust ('being murdered by private equity') as active crafter behaviors; Craft Industry Alliance 2026 predictions frame winners as those who 'lead with connection, not commerce' — aligning with support-local values; indie dyer market events (patch.com account of St. Louis 'Green with Indie') and LYS Day events draw core crafters who report back to their communities; the post-JOANN vacuum (reconciled data) accelerated polarization toward LYS / indie, further embedding the support-independent value. This adjacency is particularly strong in the influential core, who explicitly steer others away from big-box and toward independent retailers.",
+     "description": "The active preference for LYS over big-box, indie dyers over mass brands, and the documented distrust of private equity ownership places home crafters squarely in the 'shop local / support independent' values community.",
+     "overlapStrength": "moderate"
+    },
+    {
+     "name": "Journaling and personal narrative communities (junk journaling, vision boards)",
+     "segment": "interest",
+     "evidence": "Michaels 2026 Creativity Trend Report documents 63% year-over-year growth in junk-journaling searches and 61% surge in vision-board searches under the same 'Main Character Maintenance' trend that covers portable crafts; the analog bag behavior documented in the reconciled data explicitly includes journaling as a co-occurring portable practice; THREADSTACK community directory (reconciled data) notes members who write about craft also writing about 'art, photography, writing or the lack of doing it, life' — suggesting overlapping expressive identities; paper crafting communities (card-making, scrapbooking) are adjacent to fiber arts in the Hive Index community directory and Craftsy platforms. This is an emerging overlap, stronger in the base than the core — the influential core is already deep in fiber crafts and less likely to cross into journaling.",
+     "description": "Junk journaling, scrapbooking, and vision boarding are emerging adjacent practices within the same 'analog creative outlet for self-expression' identity space, sharing the non-monetized, process-for-joy orientation and the physical-object-as-emotional-record behavior.",
+     "overlapStrength": "emerging"
+    },
+    {
+     "name": "Charity and community service crafting",
+     "segment": "mindset",
+     "evidence": "Frampton Cotterell Crochet & Knit Club annual report (May 2025) explicitly documents members 'knitting hats and cardigans for premature babies' and making items for MacMillan Coffee Morning, Hedgehog Heroes fundraising, and remembrance poppies; the Loose Ends Project (Wikipedia) pairs local crafters with unfinished projects from those who have died or become disabled; the Craftivist Collective (Edinburgh exhibition, running through Jan 2026) demonstrates the institutional version; community service crafting appears in virtually every recurring club account found in the research as a standard club activity. This is not niche — it is a widespread but underarticulated audience behavior that doesn't surface in digital content because it doesn't get posted.",
+     "description": "A meaningful sub-segment of home crafters channels their output toward community giving — knitting premature baby hats, crocheting blankets for shelters, making remembrance poppies — an identity that bridges the private pleasure of crafting with public purpose.",
+     "overlapStrength": "emerging"
+    }
+   ]
+  },
+  "culturalConnectors": [
+   {
+    "type": "voice",
+    "bridges": "Core fiber-craft community → adjacent audiobook/podcast listener community and broader slow-living audience",
+    "evidence": "Reconciled data ds1: 5.6% comment ratio on peer-scale knitting podcast channels confirming trust-density; TikTok evidence of crafters explicitly describing audiobooks as craft companions; Craft Industry Alliance documents 'Craft Lit' (annotated audiobooks for crafters) as a top recommendation among craft podcasters — confirming the audio adjacency is already active within the community's own media infrastructure.",
+    "connector": "The 'knitting podcast' small-channel YouTube host — peer-scale crafter who crafts audibly on camera",
+    "mechanism": "These hobbyist video-diary channels (documented at 1K–10K views per episode with 5-6% comment ratios, an order of magnitude above platform norms) model the behavior of crafting while consuming audio content — they are simultaneously craft content and listening content, and their candid WIP/UFO disclosures are the trust format that moves influence from core outward. When they mention what they're listening to while they craft, they carry their audience's attention into adjacent audio communities.",
+    "bridgeStrength": 72
+   },
+   {
+    "type": "voice",
+    "bridges": "Influential core crafter community → non-crafting social groups, cozy gaming communities, and slow-living base audience",
+    "evidence": "Reconciled data sig8 documenting craft night growth (+103%/+242% searches) with YouTube comment 'the second I get some friends, I will host craft night'; reconciled data confirming 'friend who crafts' as highest-conversion onboarding mechanism; Frampton Cotterell club report documenting charity crafting and community events flowing out from the club into the broader community.",
+    "connector": "The craft night host — the social crafter who convenes non-crafters around a table",
+    "mechanism": "The craft night host (the 'friend who crafts' documented as the highest-conversion entry point in the reconciled data) physically brings their non-crafting social network into contact with the craft practice. As craft night formats spread beyond dedicated fiber crafters into social groups organized around other interests — documented growing fastest of any format at +103%/+242% search growth — the host becomes a bridge figure who exports the core's values (permission-granting, non-competitive, joy-for-its-own-sake) into entirely non-craft social contexts.",
+    "bridgeStrength": 80
+   },
+   {
+    "type": "format",
+    "bridges": "Core craft Substack community → slow fashion community, anti-consumption mindset communities, and general intentional-living readers",
+    "evidence": "Reconciled data sig7 and sig10 documenting craft Substack as the space where the anti-monetization language is named and spread; createmefree.substack.com explicitly maps craft onto slow living movement as connected practices; THREADSTACK directory members explicitly writing about craft, self-care, and 'rebellious acts' together; the 'Don't Buy List' as the most-shared newsletter issue (400 shares) confirming the anti-consumption framing travels beyond the immediate craft community.",
+    "connector": "The fiber arts + slow fashion Substack writer — the crafter who connects handmaking to broader cultural critique",
+    "mechanism": "The THREADSTACK ecosystem and craft Substack writers like those in the reconciled data (littleskein, schubethehobbyist) write about craft as a values practice — connecting yarn stash guilt to overconsumption more broadly, connecting UFO disclosure to sustainable consumption, connecting the 'don't buy list' to the slow fashion principle of buying less but better. These newsletters carry the core's defining framing into reader communities that have never picked up a knitting needle.",
+    "bridgeStrength": 65
+   },
+   {
+    "type": "moment",
+    "bridges": "Aesthetic-adjacent base audience (13.8B TikTok views on #cottagecore) → active home crafting practice and LYS entry",
+    "evidence": "Allynscloset.com (May 2026) defines grandmacore as including 'natural fibers, handmade crafts, vintage objects, domestic rituals'; #Cottagecore at 13.8B TikTok views with crafting as a defining aesthetic activity; the analog bag viral moment (2.16M views, reconciled data ds4) demonstrates the same gateway pattern — viral aesthetic content above, behavioral conversion below at micro-channel scale; Eventbrite documents Gen Z turning to Eventbrite for 'nostalgic granny-core experiences' (reconciled source data), confirming the moment is converting to in-person behavior.",
+    "connector": "The cottagecore/grandmacore aesthetic moment on TikTok — the viral visual gateway",
+    "mechanism": "Cottagecore and grandmacore visual content — which explicitly foregrounds handmade objects, natural fibers, domestic rituals, and craft in action — functions as a recurring viral gateway that shows the aesthetic of crafting to audiences who haven't yet converted to practice. The moment when a viewer recognizes themselves in the visual world (the crocheted cardigan, the yarn basket by the armchair) is the trigger that precedes the 'how do I start' question that the influential core's friend-onboarding and LYS entry mechanisms then answer.",
+    "bridgeStrength": 70
+   },
+   {
+    "type": "moment",
+    "bridges": "Core craft community → slow fashion community, sustainability advocates, and visible mending participants beyond fiber crafting",
+    "evidence": "Stitchcraftmarketing.com (2025) documents #MendMarch25 as an inclusive event spanning all craft disciplines; visible mending searches +144% (reconciled context data); slow fashion movement's 'buy less but better' and 'repair rather than replace' values documented across multiple sources as directly overlapping with crafter stash-busting and intentionality-rules behavior; the craftivism connection (mending as political act) documented in Boston Globe Dec 2025 as active in current political climate.",
+    "connector": "The MendMarch / visible mending campaign — craft as public sustainability act",
+    "mechanism": "#MendMarch (documented by stitchcraftmarketing as 'a party where we all mend to the word of the day and share') is an annual organized moment that pulls crafters of all disciplines — knitters, crocheters, sewists, quilters, potters — into a shared public act framed around sustainability rather than craft mastery. By centering the act of repair rather than making, it bridges craft communities outward into sustainability and anti-fast-fashion communities whose members may not identify as crafters but who do own things worth fixing.",
+    "bridgeStrength": 60
+   }
+  ]
+ },
+ "researchDepth": {
+  "lensesUsed": [
+   "audience",
+   "brand",
+   "context"
+  ],
+  "convergedFindings": 14,
+  "conflictedFindings": 4,
+  "singleLensFindings": 1,
+  "totalSignalsScored": 19,
+  "averageCompositeScore": 7,
+  "highConfidenceFindings": 15
+ },
+ "socialSignals": [
+  {
+   "id": "sig1",
+   "who": "LYS owners and knowledgeable staff (e.g., Purls of Joy Healdsburg, Our Yarn Studio Warner Robins, Friends & Fiber); in-store regulars who function as informal recommenders",
+   "body": "All three lenses independently identified the LYS as the densest in-person influence context: staff recommendations are followed, finished samples with yarn and pattern tags trigger purchases, and drop-in circles convert visits into recurring community membership. Influence moves through non-pushy, contextual expertise — the opposite of algorithmic recommendation.",
+   "type": "physical",
+   "scale": "niche",
+   "where": "Independent LYS — sales floor, sample displays, drop-in circles, in-store classes, request boards",
+   "signal": "The local yarn store as trust engine and consultation hub",
+   "evidence": "Press Democrat 2026 account of drop-in potlucks; Wanderlog reviews documenting followed recommendations; Ravelry stash entries linking to LYS of purchase; request-board demand loop at Our Yarn Studio",
+   "strength": 85,
+   "scaleBasis": "No direct measure — classified niche from evidence: individual stores host 25-40 regulars; LYS Day aggregates 'thousands' nationally, not millions.",
+   "validatedBy": [],
+   "strengthBasis": "Triple-lens convergence with documented conversion evidence (customers driving 45 minutes for trusted staff; 'she was right'; LYS Day drawing 'thousands of yarnies'); no growth quant available.",
+   "targetableSignals": [
+    {
+     "detail": "LYS directory listings and stash entries tagged to store of purchase",
+     "platform": "Ravelry"
+    },
+    {
+     "detail": "Local reviews mentioning followed staff recommendations ('she was right' pattern); 'LYS near me' searches",
+     "platform": "Google"
+    },
+    {
+     "detail": "LYS account followers, drop-in circle and LYS Day event listings, local geotags",
+     "platform": "Instagram / Facebook"
+    }
+   ]
+  },
+  {
+   "id": "sig2",
+   "who": "Multi-year crafters with documented project histories; LYS staff who tag displayed samples",
+   "body": "The core's trust currency is a completed project photographed with exact materials — yarn brand, weight, needle size, pattern source. Others explicitly use these posts as a purchasing database ('check out how others have used different colors and yarns on patterns I wanted to try'), making this the mechanism through which material choices spread from core to base.",
+   "type": "content",
+   "scale": "significant",
+   "where": "Ravelry project pages, r/knitting, r/crochet, r/Embroidery, LYS sample displays with tags",
+   "signal": "Finished-object posts with material specificity as the primary proof format",
+   "evidence": "knitlikegranny.com Ravelry stats; wanderlog LYS reviews praising tagged finished products; audience-lens behavioral signal on FO posting",
+   "strength": 80,
+   "scaleBasis": "Ravelry ~1M monthly active users (2020 figure, most recent public) is the platform where this format lives.",
+   "validatedBy": [
+    "ds1"
+   ],
+   "strengthBasis": "Concentration evidence: Ravelry's 336K forum threads and project database function as the category's reference layer; in-store tagged samples explicitly cited as purchase triggers; no momentum quant.",
+   "targetableSignals": [
+    {
+     "detail": "Project pages filterable by yarn brand, pattern, and materials — the purchasing-database behavior itself",
+     "platform": "Ravelry"
+    },
+    {
+     "detail": "FO posts in r/knitting, r/crochet, r/Embroidery with material-detail comments",
+     "platform": "Reddit"
+    },
+    {
+     "detail": "#WIPWednesday-adjacent finished-object tags with material specificity",
+     "platform": "Instagram"
+    }
+   ]
+  },
+  {
+   "id": "sig3",
+   "who": "Experienced practitioners who model imperfection ('stash exceeds life expectancy'); YouTube channels like Tiffany Liew, Keeley Davies, Chieri's Channel",
+   "body": "Openly cataloguing over-bought stash and unfinished objects is how the core builds trust and grants permission — showing imperfection alongside competence is more credible than curated perfection. The format is highly copyable: naming your UFOs invites others to name theirs.",
+   "type": "content",
+   "scale": "niche",
+   "where": "YouTube stash tours, Substack comment sections, Ravelry forums, blog posts, UFO stitch sessions",
+   "signal": "Stash confession and UFO disclosure — self-deprecating candor as credibility code",
+   "evidence": "interweave.com UFO piece; Aberdeen Art Gallery UFO sessions; littleskein 'Don't Buy List' comments; YouTube stash-tour engagement data",
+   "strength": 75,
+   "scaleBasis": "Stash-tour videos cluster at 2K-24K views — a niche format with high engagement density, not mass reach.",
+   "validatedBy": [
+    "ds2"
+   ],
+   "strengthBasis": "YouTube stash-tour uploads active through 2025-2026 with dense comment participation (168 comments on 9K views for Chieri's Channel; storage-tip swapping in threads); 'Don't Buy List' was its newsletter's most-shared post at 400 shares.",
+   "targetableSignals": [
+    {
+     "detail": "'Yarn stash tour' search niche; channels Tiffany Liew, Keeley Davies, Chieri's Channel; comment-density screening",
+     "platform": "YouTube"
+    },
+    {
+     "detail": "Little Skein comment sections where confession converts to public commitment",
+     "platform": "Substack"
+    },
+    {
+     "detail": "UFO and stash-guilt forum threads",
+     "platform": "Ravelry"
+    }
+   ]
+  },
+  {
+   "id": "sig4",
+   "who": "Hobbyist channels like Melissa knits for fun, Rena Made, Alex Talks and Knits, Theknittingpaige — practitioners trusted as peers, not media",
+   "body": "Small channels walking through WIPs, finished objects, and frogging decisions generate engagement densities far above platform norms, with comments showing parasocial-peer trust and direct project imitation ('I even have yarn for it in my stash'). This is the core's video habitat — trusted as fellow crafters rather than followed as influencers.",
+   "type": "digital",
+   "scale": "micro",
+   "where": "YouTube — small-channel 'knitting podcast' episodic format",
+   "signal": "Peer-scale YouTube knitting podcasts (WIP/FO video diaries)",
+   "evidence": "YouTube API results: 6 active podcast-format channels with view counts 1K-10.7K and comment ratios 3-6%",
+   "strength": 72,
+   "scaleBasis": "Individual videos range 1K-10K views; the format's reach per node is small by design.",
+   "validatedBy": [
+    "ds1"
+   ],
+   "strengthBasis": "Engagement concentration: 137 likes and 58 comments on 1,030 views (13% like ratio, 5.6% comment ratio) — an order of magnitude above typical YouTube engagement; fresh uploads throughout 2026 show format vitality.",
+   "targetableSignals": [
+    {
+     "detail": "'Knitting podcast' niche search; subscriber lists of Melissa knits for fun, Rena Made, Alex Talks and Knits, Theknittingpaige",
+     "platform": "YouTube"
+    },
+    {
+     "detail": "Engagement-ratio screening: channels with >3% comment ratios on sub-10K views identify peer-trust nodes",
+     "platform": "YouTube"
+    }
+   ]
+  },
+  {
+   "id": "sig5",
+   "who": "Long-tenure members with well-documented project histories whose logs others consult before buying",
+   "body": "Ravelry is where discovery gets verified: crafters see something on TikTok or Instagram, then check Ravelry project logs and yarn reviews before purchasing. Its community-owned content makes it the credibility anchor of fiber crafting, though it no longer drives live discovery.",
+   "type": "digital",
+   "scale": "significant",
+   "where": "Ravelry.com — pattern database, project logs, stash tracking, forums, LYS directory",
+   "signal": "Ravelry as institutional memory and verification layer",
+   "evidence": "knitlikegranny.com/ravelry-stats; freshhobby.com describing Ravelry as 'irreplaceable'; brand-lens purchase-influence sequence (social discovery → Ravelry verification)",
+   "strength": 62,
+   "scaleBasis": "~1M monthly active users against 9M registered (an 11% active ratio).",
+   "validatedBy": [],
+   "strengthBasis": "High concentration (336K forum threads, ~500K patterns, community-populated reviews) but flat-to-declining momentum — traffic peaked 2013 with only a COVID bump.",
+   "targetableSignals": [
+    {
+     "detail": "Long-tenure member project logs, yarn review pages, pattern-database activity",
+     "platform": "Ravelry"
+    },
+    {
+     "detail": "'Ravelry' + pattern/yarn-name verification searches following social discovery",
+     "platform": "Google"
+    }
+   ]
+  },
+  {
+   "id": "sig6",
+   "who": "Recurring commenters whose experience-based answers get upvoted and deferred to when newcomers ask what to buy or whether to frog",
+   "body": "Subreddits are where WIP/UFO vocabulary circulates, stash guilt is processed communally, and the craft-as-joy norm is enforced. The core surfaces here as the highly-upvoted answerers, transmitting material opinions and permission structures to the much larger lurker base.",
+   "type": "digital",
+   "scale": "significant",
+   "where": "Reddit — r/knitting, r/crochet, r/Embroidery (~893K members)",
+   "signal": "Fiber-craft subreddits as advice and norm-setting commons",
+   "evidence": "aol.com r/Embroidery feature; audience-lens documentation of advice threads and upvoted experienced-member responses",
+   "strength": 70,
+   "scaleBasis": "893K members in r/Embroidery alone places the subreddit cluster in the 100K-1M+ band.",
+   "validatedBy": [],
+   "strengthBasis": "r/Embroidery documented at 893K members (audience lens); no independent Reddit API validation available this run — concentration evidence is lens-sourced.",
+   "targetableSignals": [
+    {
+     "detail": "r/knitting, r/crochet, r/Embroidery — top recurring commenters and advice-thread patterns ('what should I buy', 'should I frog')",
+     "platform": "Reddit"
+    },
+    {
+     "detail": "Insider-vocabulary keyword tracking: frogging, stash-busting, yarn chicken, UFO, WIP",
+     "platform": "Reddit"
+    }
+   ]
+  },
+  {
+   "id": "sig7",
+   "who": "Writer-crafters like Anne Vally; reflective practitioners who comment and confess rather than lurk",
+   "body": "Substack is where the core's defining stance — craft that 'can't be optimized', 'just for me', don't-buy-more — is named, argued, and spread. Comment sections function as commitment devices where readers adopt intentionality rules publicly.",
+   "type": "digital",
+   "scale": "micro",
+   "where": "Substack newsletters and comment sections (Little Skein / 'Knit Together', THREADSTACK directory, hobbyist manifesto essays)",
+   "signal": "Craft Substack ecosystem — where the anti-hustle philosophy gets articulated",
+   "evidence": "littleskein.substack.com Don't Buy List; threadstackcommunity.substack.com; createmefree participation note",
+   "strength": 65,
+   "scaleBasis": "No subscriber counts published; classified micro from share counts in the hundreds and documented low weekly participation.",
+   "validatedBy": [],
+   "strengthBasis": "Momentum: THREADSTACK grew from launch (May 2024) to standalone publication in 5 months; concentration: 'Don't Buy List' generated 400 shares as its most-opened issue — but a THREADSTACK note admits weekly participation is too low to sustain, capping the score.",
+   "targetableSignals": [
+    {
+     "detail": "THREADSTACK fiber-community directory; Little Skein 'Knit Together' subscriber and comment community",
+     "platform": "Substack"
+    },
+    {
+     "detail": "Essay-keyword tracking: 'just for me', 'not a side hustle', 'don't buy list', 'can't be optimized'",
+     "platform": "Substack"
+    }
+   ]
+  },
+  {
+   "id": "sig8",
+   "who": "The friend-group host ('the one who crafts'); club organizers; documented examples: Bushwick Knitting & Crochet Circle (30-40 regulars), UK Crochet & Knit Club (~25 weekly)",
+   "body": "Bring-your-WIP gatherings are where the base gets onboarded by the core through demonstration and social contagion — the highest-conversion entry point into the hobby. All three lenses found it; the format is growing fastest of any signal in the set.",
+   "type": "physical",
+   "scale": "significant",
+   "where": "Homes, cafés, libraries, community centers, breweries; weekly/monthly recurring formats",
+   "signal": "Craft night and recurring drop-in circles — project-centered social gathering",
+   "evidence": "hobbyscool Michaels 2026 data; framptoncotterell club annual report; Press Democrat drop-in potluck account; YouTube API results",
+   "strength": 78,
+   "scaleBasis": "YouTube craft-night videos at 123K-746K views plus triple-digit search growth put the format's reach above 100K; the recurring-circle core within it is far smaller.",
+   "validatedBy": [
+    "ds3"
+   ],
+   "strengthBasis": "Momentum: 'craft night' searches +103% YoY, 'girls night craft' +242% (Michaels 2026); concentration: documented recurring clubs of 25-40 regulars; YouTube craft-night content reaches 123K-746K views but with shallow engagement (43 comments on 746K views), flagging that scale skews toward the base.",
+   "targetableSignals": [
+    {
+     "detail": "Trending keywords: 'craft night' (+103% YoY), 'girls night craft' (+242%)",
+     "platform": "Google"
+    },
+    {
+     "detail": "Craft-night ideas content (123K-746K views) as the base-facing reach layer",
+     "platform": "YouTube"
+    },
+    {
+     "detail": "Recurring craft-night and nostalgic craft-experience event listings",
+     "platform": "Eventbrite"
+    }
+   ]
+  },
+  {
+   "id": "sig9",
+   "who": "Indie dyers selling direct; LYS owners; the core crafters who travel for these events and report back",
+   "body": "Event-based discovery is where indie products earn their story — chance conversations become custom colorways that later sell out at the LYS. Influence is experiential and personal, then amplified through the core's community reporting.",
+   "type": "physical",
+   "scale": "micro",
+   "where": "Regional fiber festivals, craft fairs (e.g., St. Louis 'Green with Indie'), museum markets, annual LYS Day",
+   "signal": "Fiber festivals, indie dyer markets, and LYS Day events",
+   "evidence": "patch.com indie dyer account; goodreads LYS Day post",
+   "strength": 55,
+   "scaleBasis": "No direct measure — classified micro from single-event attendance in the thousands.",
+   "validatedBy": [],
+   "strengthBasis": "Concentration evidence only (documented sell-out following event discovery; LYS Day drawing 'thousands'); no growth quant found by any lens.",
+   "targetableSignals": [
+    {
+     "detail": "Regional fiber festival, craft fair, and annual LYS Day event listings and coverage",
+     "platform": "Google"
+    },
+    {
+     "detail": "Event threads and LYS Day community posts; post-event stash entries",
+     "platform": "Ravelry"
+    }
+   ]
+  },
+  {
+   "id": "sig10",
+   "who": "The core practitioner who names the stance; writers like Erin Lowry and hobbyist-manifesto Substackers",
+   "body": "Identity-distancing language that separates the core from monetized maker culture is the audience's primary in-group marker. Using it signals values alignment and invites peer affirmation; brands using hustle language trigger identity rejection. All three lenses found this independently — it is the defining boundary of the audience.",
+   "type": "content",
+   "scale": "niche",
+   "where": "Substack essays, subreddit self-descriptions, community conversations about why people craft",
+   "signal": "The anti-optimization language code — 'just for me', 'not a side hustle', 'can't be optimized'",
+   "evidence": "littleskein titles; schubethehobbyist newsletter; Business Insider hobby-monetization piece; Craft Industry Alliance 'connection not commerce' prediction",
+   "strength": 74,
+   "scaleBasis": "No direct measure — classified niche: the articulated stance lives in newsletter/community spaces in the tens of thousands, though the latent sentiment is likely broader.",
+   "validatedBy": [],
+   "strengthBasis": "Triple-lens convergence; momentum evidence from context lens (anti-monetization essays widely shared, side-hustle framing documented as fading and 'generating diminishing returns'); highest-engagement newsletter content carries this framing.",
+   "targetableSignals": [
+    {
+     "detail": "Essay and title keywords: 'just for me', 'not a side hustle', 'keep your hobby a hobby'",
+     "platform": "Substack"
+    },
+    {
+     "detail": "Self-description phrases in craft subreddit posts and bios rejecting monetization",
+     "platform": "Reddit"
+    }
+   ]
+  },
+  {
+   "id": "sig11",
+   "who": "Core crafters who name their rules transparently and attract adopters in comments",
+   "body": "Self-imposed consumption rules shared publicly act as social commitment devices that others copy — a directly imitable behavior that resolves the stash-guilt tension and spreads intentionality norms from core to base.",
+   "type": "content",
+   "scale": "micro",
+   "where": "January goal-setting posts on Substack, blogs, Ravelry threads; YouTube 'winding down my collection' videos",
+   "signal": "Publicly announced intentionality rules — 'stash-only year', 'finish before casting on'",
+   "evidence": "queerblob.substack.com 2025 plans; littleskein Don't Buy List comments; Tiffany Liew stash-wind-down video (23,509 views)",
+   "strength": 68,
+   "scaleBasis": "Individual posts/videos reach hundreds of shares to low-tens-of-thousands of views.",
+   "validatedBy": [
+    "ds2"
+   ],
+   "strengthBasis": "Concentration: the 'Don't Buy List' (400 shares, most-opened) and comment threads show adoption in real time; YouTube 'winding down' stash video at 23.5K views with a free organizing template shows format productization.",
+   "targetableSignals": [
+    {
+     "detail": "January goal-setting posts; 'don't buy list' format and its comment-adoption threads",
+     "platform": "Substack"
+    },
+    {
+     "detail": "'Winding down my collection' / stash wind-down search behavior (23.5K-view benchmark)",
+     "platform": "YouTube"
+    },
+    {
+     "detail": "Stash-down and 'stash-only year' commitment threads",
+     "platform": "Ravelry"
+    }
+   ]
+  },
+  {
+   "id": "sig12",
+   "who": "Cozy-lifestyle creators (cosyorenda at 2.1M+ views per short; Shelbizleee; micro-creators like Malia Bryant and Molly Hernandez documenting their analog bags)",
+   "body": "Screen-free hobby content is the paradoxical digital gateway into analog crafting: mass-reach shorts introduce the framing, and micro-channel 'what's in my analog bag' videos show dense adoption comments ('I have small embroidery kits in my analog bag'). This is where the base first encounters the values the core has held for years.",
+   "type": "content",
+   "scale": "mainstream",
+   "where": "TikTok and YouTube Shorts ('cozy hobbies', 'analog bag', screen-free lists), spreading to offline carry behavior",
+   "signal": "Analog-bag and screen-free hobby content — the bridge genre from digital base to offline core",
+   "evidence": "YouTube API results; nationaltoday analog-bag coverage; Michaels 2026 'Touching Grass Crafts' data",
+   "strength": 70,
+   "scaleBasis": "Top video at 2,158,629 views; multiple related videos in the 170K-890K range.",
+   "validatedBy": [
+    "ds4"
+   ],
+   "strengthBasis": "Momentum: 2.16M views / 91K likes on a single screen-free-hobbies short plus Michaels' 136% six-month growth in portable analog hobby searches; concentration is thinner (360 comments on 2.16M views) — scaled momentum, not core density.",
+   "targetableSignals": [
+    {
+     "detail": "'Analog bag' and 'cozy hobbies' hashtags; cosyorenda-scale viral framing layer",
+     "platform": "TikTok"
+    },
+    {
+     "detail": "Micro 'what's in my analog bag' channels (Malia Bryant, Molly Hernandez) where adoption comments cluster",
+     "platform": "YouTube Shorts"
+    },
+    {
+     "detail": "Portable analog hobby trending keywords (+136% over six months, Michaels 2026)",
+     "platform": "Google"
+    }
+   ]
+  }
+ ],
+ "trustedVoices": [
+  {
+   "voice": "The friend, sibling, or colleague who crafts",
+   "fragility": "Almost unbreakable interpersonally — but it cannot be manufactured; any brand attempt to simulate it reads as astroturfing.",
+   "whyTrusted": "The existing relationship supplies maximum credibility (scored 10/10 in the reconciled data) — there is no persuasion frame to filter. Onboarding flows through demonstration, contagious enthusiasm, and gifted beginner kits, with near-total conversion per relationship ('my sisters are both crochet and yarn hobbyists'; a crafter fielding how-do-I-start questions after starting herself).",
+   "trustWeight": 95,
+   "proofFormats": [
+    "In-person demonstration of WIPs",
+    "Gifted beginner kits",
+    "Direct answers to 'how do I start' questions",
+    "Hosting craft nights"
+   ]
+  },
+  {
+   "voice": "The LYS owner and knowledgeable staff",
+   "fragility": "Pushy selling or stocking driven by margin over community need would convert the trust engine into just another retailer.",
+   "whyTrusted": "Non-pushy, contextual expertise delivered at the point of decision — recommendations are followed, validated ('she was right'), and rewarded with 45-minute drives and repeat loyalty. Named examples in the evidence include Purls of Joy Healdsburg, Our Yarn Studio Warner Robins, and Friends & Fiber.",
+   "trustWeight": 92,
+   "proofFormats": [
+    "Tagged finished samples on the floor",
+    "In-person material matching to project",
+    "Drop-in circles and classes",
+    "Request boards responding to community demand"
+   ]
+  },
+  {
+   "voice": "The peer-scale knitting podcaster (experienced practitioner as permission-granter)",
+   "fragility": "Visible sponsorship without an established disclosure history recalibrates them from peer to media overnight.",
+   "whyTrusted": "Trusted as a fellow crafter, not media: WIP/FO video diaries on 1K-10K-view channels generate 5.6% comment ratios — 10x YouTube norms — with comments showing gratitude and direct project imitation ('I even have yarn for it in my stash'). Candor about frogging and failure is the credential.",
+   "trustWeight": 88,
+   "proofFormats": [
+    "WIP/FO video diaries",
+    "Frogging and failure disclosure",
+    "Stash confessions with intentionality framing",
+    "Granular material commentary"
+   ]
+  },
+  {
+   "voice": "The long-tenure Ravelry member with a documented project history",
+   "fragility": "Commercialization of the logs or the platform would dissolve the non-commercial credibility that makes them trustworthy.",
+   "whyTrusted": "Their project logs are the category's verification layer — others consult them before buying, and the platform's community-owned, non-commercial content earns maximum credibility (9/10). Specificity is the mechanism: exact yarns, needles, and outcomes across years of documented work.",
+   "trustWeight": 82,
+   "proofFormats": [
+    "Project logs with exact materials",
+    "Yarn reviews",
+    "Stash entries linked to LYS of purchase",
+    "Forum answers grounded in logged experience"
+   ]
+  },
+  {
+   "voice": "The recurring subreddit answerer",
+   "fragility": "Any hint of undisclosed commercial interest — the community actively polices and mobilizes against it.",
+   "whyTrusted": "Experience-based answers to 'what should I buy' and 'should I frog' threads get upvoted and deferred to, transmitting material opinions and permission structures to a much larger lurker base (~893K members in r/Embroidery alone).",
+   "trustWeight": 75,
+   "proofFormats": [
+    "Upvoted advice comments",
+    "Experience-grounded buying steers",
+    "Communal processing of stash guilt and UFO decisions"
+   ]
+  },
+  {
+   "voice": "The writer-crafter newsletter voice (e.g., Anne Vally / Little Skein)",
+   "fragility": "Pivoting to monetized recommendations or hustle framing would violate the exact philosophy that earned the audience.",
+   "whyTrusted": "They articulate what the core feels — 'can't be optimized', don't-buy framing — and their most-engaged content is anti-consumption (the Don't Buy List at 400 shares). Comment sections become public commitment devices where readers adopt the rules.",
+   "trustWeight": 72,
+   "proofFormats": [
+    "Reflective essays naming community tensions",
+    "Don't-buy lists and intentionality rules",
+    "Confessional comment-section exchange"
+   ]
+  }
+ ],
+ "digitalHabitat": [
+  {
+   "category": "video",
+   "platform": "YouTube",
+   "community": "Peer-scale 'knitting podcast' channels (Melissa knits for fun, Rena Made, Alex Talks and Knits, Theknittingpaige)",
+   "sourceUrl": "https://www.moderndailyknitting.com/community/wear-make-unfinished/",
+   "description": "The core's video habitat — WIP/FO video diaries with 10x-norm engagement density; trust formation and direct project imitation, not spectatorship.",
+   "convergenceStatus": "converged",
+   "engagementIntensity": 78
+  },
+  {
+   "category": "forum",
+   "platform": "Ravelry",
+   "community": "Project pages, stash logs, forums (336K threads), LYS directory",
+   "sourceUrl": "https://knitlikegranny.com/ravelry-stats/",
+   "description": "Verification and institutional memory — where social-media discoveries are checked against real project logs and yarn reviews before purchase. Deep but not growing.",
+   "convergenceStatus": "conflicted",
+   "engagementIntensity": 75
+  },
+  {
+   "category": "video",
+   "platform": "YouTube",
+   "community": "Stash tour / stash wind-down confession format (Tiffany Liew, Keeley Davies, Chieri's Channel)",
+   "sourceUrl": "https://www.interweave.com/article/knitting/ufo-to-wip-can-crochet-or-knitting-project-be-saved/",
+   "description": "Emotional processing and permission-granting — confession content with dense tip-swapping comments; the most-viewed stash content is about reducing consumption.",
+   "convergenceStatus": "converged",
+   "engagementIntensity": 72
+  },
+  {
+   "category": "forum",
+   "platform": "Reddit",
+   "community": "r/knitting, r/crochet, r/Embroidery (~893K members)",
+   "sourceUrl": "https://www.aol.com/inspired-book-warner-robins-knitting-100000815.html",
+   "description": "Advice and norm-setting commons — the core appears as upvoted experienced answerers; stash guilt is processed communally and craft-as-joy norms enforced.",
+   "convergenceStatus": "converged",
+   "engagementIntensity": 70
+  },
+  {
+   "category": "newsletter",
+   "platform": "Substack",
+   "community": "Little Skein 'Knit Together', THREADSTACK directory, hobbyist-manifesto newsletters",
+   "sourceUrl": "https://littleskein.substack.com/sitemap/2024",
+   "description": "Philosophy articulation — where 'can't be optimized' gets named and argued; comment sections act as public commitment devices for intentionality rules.",
+   "convergenceStatus": "converged",
+   "engagementIntensity": 64
+  },
+  {
+   "category": "social",
+   "platform": "TikTok / YouTube Shorts",
+   "community": "'Analog bag', 'cozy hobbies', screen-free hobby content (cosyorenda and micro-creators)",
+   "sourceUrl": "https://nationaltoday.com/us/ny/new-york/news/2026/03/14/gen-z-turns-to-analog-hobbies-to-curb-social-media-addiction/",
+   "description": "Discovery layer for the base — mass-reach framing above, with the actual copyable behavior living in micro-channel videos with adoption comments.",
+   "convergenceStatus": "converged",
+   "engagementIntensity": 58
+  }
+ ],
+ "influentialCore": {
+  "profile": "They were early to the anti-optimization, craft-as-sanity framing that retail marketing has since adopted — and they can distinguish the authentic version from the commercial copy. Unlike the base, they default to LYS and indie yarn for 'real' work and use big-box only instrumentally; unlike merely experienced crafters who police 'real crafter' authenticity, the core is explicitly anti-gatekeeping — welcoming, shame-defusing, and openly imperfect. They are multicraftual by temperament, rotating across knitting, crochet, embroidery, and more without specializing, and they hold multiple WIPs without apology. Where the base discovers via viral TikTok/Shorts content and shops on price and access, the core verifies via Ravelry project logs, consults trusted LYS staff, and buys premium indie by conviction.",
+  "coreName": "The Friend Who Crafts",
+  "definition": "The influential core of home crafters — The Friend Who Crafts — are multi-year practitioners who have accumulated specific, experience-based material opinions (fiber composition, needle brands, where big-box falls short) while deliberately refusing to monetize, professionalize, or perform their craft. Their authority is earned through candor: they disclose UFOs, over-bought stashes, and frogged failures alongside finished objects. Their influence operates through peer-scale channels — LYS floors and drop-in circles, Ravelry project logs, subreddit advice threads, small Substack newsletters, peer-scale YouTube knitting podcasts — and above all through their role as 'the friend who crafts' in their immediate social networks. Their signature influence act is permission-granting: naming the community's tensions (stash guilt, UFO burden, hustle pressure) and releasing others from them.",
+  "coreTagline": "The one you text before buying yarn — and who sometimes tells you not to.",
+  "keyTensions": [
+   "Stash pleasure vs. stash guilt — the buy/use mismatch is structural, resolved through communal permission and stash-busting",
+   "Loving the craft vs. refusing the hustle — monetization pressure threatens the identity ('keep your hobby a hobby')",
+   "Analog identity discovered and performed on screens — the lived paradox of the screen-free revival",
+   "Authentic wellness framing vs. its retail copy — they coined 'craft as sanity' before Michaels industrialized 'Emotional Support Crafts'",
+   "Welcoming dabblers vs. a broader enthusiast culture that gatekeeps — anti-gatekeeping is what sets the core apart"
+  ],
+  "keyBehaviors": [
+   "Post finished objects with exact material specificity (yarn brand, weight, needle size, pattern source) — the community's proof format",
+   "Publicly confess stash overload and unfinished objects as a credibility code, not a shame ritual",
+   "Announce intentionality rules — 'stash-only year', 'finish before casting on', 'don't buy lists' — that others adopt in comments",
+   "Verify social-media discoveries against Ravelry project logs and yarn reviews before purchasing",
+   "Onboard friends, siblings, and colleagues through demonstration, gifted beginner kits, and hosting craft nights",
+   "Actively redirect others away from big-box for meaningful projects ('I would recommend staying away from big box stores')",
+   "Mobilize as an organized network against extractive brand behavior (Cricut subscription revolt reversed within days)"
+  ],
+  "trustSignals": [
+   "Demonstrated multi-year experience with material-specific detail, not follower counts",
+   "Candor about imperfection — failures and frogged projects shared alongside successes",
+   "Zero commercial stake — sponsored framing is detected and discounted instantly",
+   "Community-populated verification (Ravelry project logs, peer reviews) over brand claims",
+   "Non-pushy, contextual expertise — the LYS staff model, the opposite of algorithmic recommendation"
+  ],
+  "languageCodes": [
+   "'Just for me' / 'not a side hustle' / 'can't be optimized'",
+   "Frogging, stash-busting, yarn chicken, WIP, UFO, FO",
+   "'Stash exceeds life expectancy' — self-deprecating stash humor",
+   "'Don't Buy List' / 'stash-only year' intentionality vocabulary",
+   "#WIPWednesday and 'winding down my collection' framing"
+  ],
+  "coreSizeEstimate": "5–10% of engaged crafting-community members",
+  "activationRecommendations": [
+   "Claim the commercially unclaimed 'craft for joy, not profit' stance — need, gap, and timing all converge on this white space",
+   "Be present in the micro layer where belief forms: peer-scale YouTube knitting podcasts, Substack newsletters, subreddit threads — no top-layer spend substitutes for it",
+   "Support permission-granting formats (stash-busting, UFO amnesty, don't-buy framing) rather than 'buy more' messaging, which swims against the community's most-engaged content",
+   "Work through LYS infrastructure — tagged samples, drop-in circles, request boards — where recommendation converts at highest density",
+   "Use craft night as a reach channel only with a core-credible host; mass reach without core conviction produces shallow engagement",
+   "Never use hustle or side-hustle framing; never disguise sponsorship — the immune system mobilizes within hours and remembers"
+  ]
+ },
+ "signalsSnapshot": {
+  "trust": [
+   {
+    "label": "The friend who crafts",
+    "score": 95,
+    "detail": "demonstration and gifted beginner kits, zero persuasion frame"
+   },
+   {
+    "label": "LYS staff",
+    "score": 92,
+    "detail": "non-pushy point-of-decision expertise ('she was right')"
+   },
+   {
+    "label": "Peer-scale knitting podcaster",
+    "score": 88,
+    "detail": "frogged-failure candor and stash confession as credential"
+   },
+   {
+    "label": "Peer channel overall",
+    "score": 90,
+    "detail": "zero-commercial-stake recommendations from documented experience"
+   }
+  ],
+  "social": [
+   {
+    "label": "The local yarn store",
+    "score": 90
+   },
+   {
+    "label": "Peer-scale YouTube knitting podcasts",
+    "score": 78
+   },
+   {
+    "label": "Craft nights and drop-in circles",
+    "score": 78
+   },
+   {
+    "label": "Ravelry project logs and forums",
+    "score": 75
+   }
+  ],
+  "coreLabel": "The Friend Who Crafts",
+  "behavioral": [
+   {
+    "label": "Finished-object posts with material specificity",
+    "rating": "HIGH"
+   },
+   {
+    "label": "Stash confession and UFO disclosure",
+    "rating": "HIGH"
+   },
+   {
+    "label": "Ravelry verification before buying",
+    "rating": "HIGH"
+   },
+   {
+    "label": "Publicly announced intentionality rules",
+    "rating": "HIGH"
+   }
+  ],
+  "motivational": [
+   {
+    "label": "guilt",
+    "score": 85,
+    "detail": "stash guilt resolved communally"
+   },
+   {
+    "label": "belonging",
+    "score": 82,
+    "detail": "circles, shops, shared WIPs"
+   },
+   {
+    "label": "pride",
+    "score": 70,
+    "detail": "finished objects as proof"
+   },
+   {
+    "label": "reward",
+    "score": 68,
+    "detail": "craft as calm and sanity"
+   }
+  ]
+ },
+ "emotionalDrivers": [
+  {
+   "score": 85,
+   "emotion": "guilt",
+   "evidence": "The stash pleasure/guilt loop is structurally embedded: 'stash exceeds life expectancy'; Glimpse documents the buy/use mismatch; the most-engaged newsletter content and highest-viewed stash video are about not buying and winding down.",
+   "mechanism": "Guilt is resolved through communal permission — confession formats, don't-buy lists, and stash-busting convert private shame into shared, copyable practice, making permission-granting the core's signature influence act.",
+   "coreVsBase": {
+    "base": "Carries the guilt privately and adopts the rules the core announces",
+    "core": "Names the guilt publicly and grants permission around it via intentionality rules"
+   },
+   "convergenceStatus": "converged"
+  },
+  {
+   "score": 82,
+   "emotion": "belonging",
+   "evidence": "LYS drop-in potlucks, recurring circles of 25-40 regulars, subreddit commons, insider vocabulary as belonging markers, and craft-night aspiration ('the second I get some friends, I will host craft night').",
+   "mechanism": "Project-centered gathering converts participation into membership; shared vocabulary and shared imperfection signal in-group status and pull newcomers deeper.",
+   "coreVsBase": {
+    "base": "Aspires to belonging through craft night and viral cozy content",
+    "core": "Belongs through recurring circles, LYS community, and hosting roles"
+   },
+   "convergenceStatus": "converged"
+  },
+  {
+   "score": 70,
+   "emotion": "pride",
+   "evidence": "Finished-object posts with exact material specificity are the community's proof format; Ravelry project histories function as earned credentials; 'craft attention deficit disorder' claimed with pride.",
+   "mechanism": "Pride is expressed through demonstrated work, not self-promotion — the FO post is simultaneously achievement display and purchasing database for others.",
+   "convergenceStatus": "converged"
+  },
+  {
+   "score": 68,
+   "emotion": "reward",
+   "evidence": "Crafting as calm, stress relief, and grounding — Mintel documents roughly half of US adults using leisure crafting for stress; the core's 'craft as sanity' framing predates retail adoption.",
+   "mechanism": "The intrinsic reward of process over product is the defining motivation the core protects — which is exactly why optimization and monetization framing threatens it.",
+   "convergenceStatus": "conflicted"
+  },
+  {
+   "score": 52,
+   "emotion": "disgust",
+   "evidence": "Rejection of hustle framing, instant discounting of sponsored content, 'being murdered by private equity' distrust, Hobby Lobby redirection campaigns, and the Cricut revolt.",
+   "mechanism": "Commercial intrusion into trusted space triggers visceral rejection and active redirection of others' spend — a repulsion response that shapes brand outcomes.",
+   "convergenceStatus": "converged"
+  },
+  {
+   "score": 42,
+   "emotion": "scarcity",
+   "evidence": "Event-discovered indie colorways selling out at the LYS; the post-JOANN vacuum flagged as a scarcity signal (loss of the mid-market default); white space itself marked scarce.",
+   "mechanism": "Scarcity operates through story and access — a custom colorway with a personal origin sells out — rather than manufactured urgency, which the immune system would reject.",
+   "convergenceStatus": "converged"
+  },
+  {
+   "score": 32,
+   "emotion": "fear",
+   "evidence": "Limited direct evidence: displacement anxiety after JOANN's closure and mild insecurity about legitimacy amid authenticity policing are the closest signals.",
+   "mechanism": "Fear appears mostly as legitimacy insecurity in the base ('am I a real crafter?'), which the core actively defuses through permission-granting.",
+   "convergenceStatus": "conflicted"
+  },
+  {
+   "score": 28,
+   "emotion": "fomo",
+   "evidence": "Limited evidence: craft-night aspiration comments and viral analog-bag content suggest mild trend-participation pull at the base layer only.",
+   "mechanism": "FOMO operates on the base through mass-reach trend content; the core's anti-optimization identity largely inoculates it against urgency appeals.",
+   "convergenceStatus": "single-lens"
+  },
+  {
+   "score": 15,
+   "emotion": "envy",
+   "evidence": "Little to no evidence in the reconciled data — the candor-and-imperfection culture (UFO disclosure, stash confession) actively suppresses comparison dynamics.",
+   "mechanism": "Modeled imperfection makes curated perfection less credible than confession, structurally limiting envy as a driver.",
+   "convergenceStatus": "single-lens"
+  },
+  {
+   "score": 10,
+   "emotion": "competition",
+   "evidence": "Essentially absent: the audience explicitly defines itself against optimization, ranking, and performance ('can't be optimized', 'just for me').",
+   "mechanism": "Competitive framing conflicts directly with the core's identity boundary and would trigger rejection rather than motivation.",
+   "convergenceStatus": "converged"
+  }
+ ],
+ "inMarketBehavior": {
+  "coreVsBase": {
+   "base": "Discovers via viral content, shops big-box on price and access, and relies on the core's logs, samples, and recommendations rather than producing them",
+   "core": "Buys premium indie/LYS by default, runs the full verification sequence, and then documents the purchase as reusable community proof"
+  },
+  "researchPattern": "The documented sequence runs: social discovery (TikTok/Instagram surfaces a pattern or yarn) → Ravelry verification (project logs showing the exact yarn/pattern combination in others' hands, community yarn reviews) → LYS staff consultation for the final call. Finished-object posts with material specificity function as the purchasing database throughout ('check out how others have used different colors and yarns on patterns I wanted to try'). In-store, tagged samples and request boards do the same verification work physically.",
+  "decisionTriggers": [
+   "A trusted LYS staff recommendation — followed and validated in reviews ('she was right')",
+   "A tagged finished sample in-store showing the exact yarn and pattern",
+   "Ravelry project logs confirming the discovery works in real crafters' hands",
+   "Experiential discovery at fiber festivals and indie dyer markets — story-carrying colorways that later sell out at the LYS",
+   "A friend who crafts demonstrating or gifting the entry product directly"
+  ],
+  "comparisonBehavior": "Criteria that matter: fiber composition and material quality ('95% acrylic' is a documented disqualifier for big-box), evidence of the product in real finished projects, and who's recommending it — demonstrated experience with no commercial stake. Criteria ignored: follower counts, sponsored endorsements, and brand claims, all discounted instantly. Dealbreakers: hustle framing, subscription lock-in (the Cricut revolt), private-equity ownership, and values violations (the Hobby Lobby penalty).",
+  "postPurchaseBehavior": "This is where the core becomes a transmission engine: they log the project on Ravelry with exact materials (often linking the LYS of purchase), post finished objects that others use as buying references, report event discoveries back to their communities, gift beginner kits to onboard friends and siblings, host and teach at craft nights and drop-in circles, and actively redirect others' spend ('I would recommend staying away from big box stores'). Negative experiences transmit just as fast — the community coordinated a full Cricut policy reversal within days."
+ },
+ "realWorldHabitat": [
+  {
+   "context": "The local yarn store",
+   "evidence": "'She was right' review patterns; customers driving 45 minutes for trusted staff; Ravelry stash entries linked to LYS of purchase; Our Yarn Studio request-board loop",
+   "strength": 90,
+   "description": "The densest in-person influence context: staff recommendations are followed, tagged finished samples trigger purchases, and request boards create a demand loop between community and shelf.",
+   "influenceType": "recommendation"
+  },
+  {
+   "context": "The immediate social network (homes, workplaces, friend groups)",
+   "evidence": "'My sisters are both crochet and yarn hobbyists'; crafter fielding how-do-I-start questions after starting herself; kit-gifting documented as onboarding",
+   "strength": 85,
+   "description": "The friend-who-crafts onboards others through social proximity — visible WIPs, contagious enthusiasm, and gifted beginner kits — with the highest conversion of any mechanism in the map.",
+   "influenceType": "demonstration"
+  },
+  {
+   "context": "Craft nights and recurring drop-in circles",
+   "evidence": "Michaels 2026: 'craft night' searches +103%, 'girls night craft' +242%; documented recurring circles of 25-40 regulars (Bushwick, UK Crochet & Knit Club); LYS drop-in potlucks",
+   "strength": 78,
+   "description": "Bring-your-WIP gatherings in homes, cafés, libraries, and breweries where the base gets onboarded by the core through demonstration and social contagion — the fastest-growing format in the category.",
+   "influenceType": "gathering"
+  },
+  {
+   "context": "Fiber festivals, indie dyer markets, and LYS Day events",
+   "evidence": "Patch.com indie dyer sell-out account; LYS Day drawing 'thousands of yarnies'; St. Louis 'Green with Indie' craft fair",
+   "strength": 60,
+   "description": "Event-based discovery where indie products earn their story — chance conversations become custom colorways that later sell out at the LYS, amplified by the core's community reporting.",
+   "influenceType": "discovery"
+  }
+ ],
+ "behavioralSignals": [
+  {
+   "detail": "Completed projects photographed with exact yarn brand, weight, needle size, and pattern source — used by others as a purchasing database ('check out how others have used different colors and yarns').",
+   "signal": "Finished-object posts with material specificity",
+   "trigger": "Project completion; community norm that proof requires specificity",
+   "category": "content",
+   "intensity": "high",
+   "convergenceStatus": "converged"
+  },
+  {
+   "detail": "Openly cataloguing over-bought stash and unfinished objects ('How Did I End Up With This Much Yarn?'); 168 comments on a 9K-view stash tour swapping storage systems.",
+   "signal": "Stash confession and UFO disclosure",
+   "trigger": "The stash guilt loop; candor as credibility code — naming your UFOs invites others to name theirs",
+   "category": "content",
+   "intensity": "high",
+   "convergenceStatus": "converged"
+  },
+  {
+   "detail": "Discovery on TikTok/Instagram is checked against Ravelry project logs and community yarn reviews before purchase — the brand lens's documented purchase-influence sequence.",
+   "signal": "Ravelry verification before buying",
+   "trigger": "Social-media discovery of a pattern or yarn that requires peer-evidence validation",
+   "category": "purchase",
+   "intensity": "high",
+   "coreVsBase": {
+    "base": "Often buys directly off viral discovery without the verification step",
+    "core": "Runs the full verification sequence through project logs and reviews"
+   },
+   "convergenceStatus": "conflicted"
+  },
+  {
+   "detail": "'I would recommend staying away from big box stores' ('95% acrylic'); Hobby Lobby redirection campaigns; preemptive diversification away from PE-owned retailers.",
+   "signal": "Big-box redirection and LYS default",
+   "trigger": "Values alignment and quality discernment; requests for buying advice from less experienced crafters",
+   "category": "brand",
+   "intensity": "high",
+   "coreVsBase": {
+    "base": "Shops big-box on price and access",
+    "core": "Defaults to LYS/indie for real work and steers others there; uses big-box instrumentally"
+   },
+   "convergenceStatus": "converged"
+  },
+  {
+   "detail": "'Stash-only year', 'finish before casting on', don't-buy lists shared in January goal posts — the Don't Buy List generated 400 shares as its newsletter's most-opened issue.",
+   "signal": "Publicly announced intentionality rules",
+   "trigger": "New-year goal setting and stash-guilt resolution; public commitment as a social device",
+   "category": "habit",
+   "intensity": "high",
+   "convergenceStatus": "converged"
+  },
+  {
+   "detail": "The friend-who-crafts deploys gifted beginner kits as onboarding tools; guided kit sales +86% (Michaels 2026); documented crafter starting via gifted kit then onboarding friends.",
+   "signal": "Gifting beginner kits to onboard others",
+   "trigger": "A friend, sibling, or colleague expressing curiosity; craft night as the structural venue",
+   "category": "purchase",
+   "intensity": "medium",
+   "coreVsBase": {
+    "base": "Consumes kits as their own frictionless entry point",
+    "core": "Buys kits as gifts and onboarding tools for others"
+   },
+   "convergenceStatus": "converged"
+  },
+  {
+   "detail": "'Embroiderers want to learn how to felt; knitters want to quilt' — rotating across modalities with multiple WIPs, without specializing; no brand or platform is organized around it.",
+   "signal": "Multicraftual rotation across crafts",
+   "trigger": "Curiosity without commitment — the dabbler temperament that defines the audience",
+   "category": "habit",
+   "intensity": "medium",
+   "convergenceStatus": "converged"
+  }
+ ],
+ "culturalDiscourse": [
+  {
+   "topic": "Craft for joy vs. craft as side hustle",
+   "source": "Substack essays, Business Insider coverage, Craft Industry Alliance predictions",
+   "tension": "Monetization pressure threatens the identity the hobby exists to protect",
+   "direction": "accelerating",
+   "sentiment": "mixed",
+   "stuckSide": "Hustle-culture framing that says any skill left unmonetized is wasted",
+   "actionSide": "'Keep your hobby a hobby' — reclaiming craft as unoptimizable personal space",
+   "convergenceStatus": "converged"
+  },
+  {
+   "topic": "Stash pleasure vs. stash guilt",
+   "source": "YouTube stash tours, Substack comment threads, Ravelry forums",
+   "tension": "The structural mismatch between buying and using — 'stash exceeds life expectancy'",
+   "direction": "stable",
+   "sentiment": "mixed",
+   "stuckSide": "Private shame about over-buying that suppresses participation and confession",
+   "actionSide": "Don't-buy lists, stash-busting, and UFO release as communal permission",
+   "convergenceStatus": "converged"
+  },
+  {
+   "topic": "The analog revival performed on screens",
+   "source": "TikTok/Shorts, Michaels trend data, national coverage of Gen Z analog hobbies",
+   "tension": "Screen-free identity discovered, adopted, and displayed through digital platforms",
+   "direction": "accelerating",
+   "sentiment": "positive",
+   "stuckSide": "Consuming analog aspiration content without ever leaving the feed",
+   "actionSide": "Building an analog bag, carrying portable craft, reclaiming attention",
+   "convergenceStatus": "converged"
+  },
+  {
+   "topic": "Authentic craft-as-sanity vs. retail 'Emotional Support Crafts'",
+   "source": "Michaels trend reports vs. community writing (The Barefoot Crafter)",
+   "tension": "The core's genuine wellness driver has been absorbed into category marketing",
+   "direction": "accelerating",
+   "sentiment": "mixed",
+   "stuckSide": "Co-opted wellness language that reads as brand positioning and breeds cynicism",
+   "actionSide": "Lived slow-craft practice that predates and outlasts the trend copy",
+   "convergenceStatus": "conflicted"
+  },
+  {
+   "topic": "Gatekeeping vs. permission-granting",
+   "source": "Community label debates vs. Modern Daily Knitting permission threads",
+   "tension": "The enthusiast layer polices 'real crafter' authenticity while the influential core welcomes dabblers",
+   "direction": "emerging",
+   "sentiment": "mixed",
+   "stuckSide": "Authenticity policing ('grandmacore' debates) that makes dabblers feel illegitimate",
+   "actionSide": "Anti-gatekeeping candor that defuses shame and onboards newcomers",
+   "convergenceStatus": "conflicted"
+  },
+  {
+   "topic": "The post-JOANN retail vacuum",
+   "source": "Placer.ai retail analysis, Craft Industry Alliance",
+   "tension": "The mid-market physical home for the casual crafter disappeared with ~800 store closures",
+   "direction": "emerging",
+   "sentiment": "negative",
+   "stuckSide": "Displaced shoppers with no default habitat and unresolved redirection",
+   "actionSide": "Polarization toward LYS/indie premium or Michaels mass scale",
+   "convergenceStatus": "converged"
+  }
+ ],
+ "culturalDepthCheck": [
+  {
+   "signal": "Anti-monetization / 'keep your hobby a hobby' stance",
+   "rationale": "Found independently by all three lenses from different source bases; side-hustle framing documented as fading and 'generating diminishing returns'; the stance generates the audience's most-engaged content and defines its identity boundary.",
+   "timeframe": "Multi-year — named the category's 'defining tension' with 2026 winners predicted to 'lead with connection, not commerce'",
+   "classification": "structural_force"
+  },
+  {
+   "signal": "Analog/screen-free revival",
+   "rationale": "Mass-scale validation (2.16M-view content, +136% portable analog hobby searches) sitting atop verified behavioral adoption in the micro layer ('embroidery kits in my analog bag') — momentum plus lived behavior, not just aesthetic.",
+   "timeframe": "Context lens places it near the beginning of a multi-year cycle",
+   "classification": "structural_force"
+  },
+  {
+   "signal": "Craft night as novelty",
+   "rationale": "Explosive search growth (+103%/+242%) with measurably shallow engagement at scale (43 comments on 746K views); the context lens itself flags 'craft night as novelty' as peaking. The underlying social-crafting behavior (recurring circles) is durable; the trend wrapper is not.",
+   "timeframe": "The viral format is peaking now; recurring-circle formats persist beneath it",
+   "classification": "surface_trend"
+  },
+  {
+   "signal": "Wellness / 'Emotional Support Crafts' framing",
+   "rationale": "The underlying driver is structural (Mintel: ~half of US adults craft for stress; core 'craft as sanity' writing predates retail adoption), but the retail language layer is a surface copy the core already detects — the driver outlasts the copy.",
+   "timeframe": "Driver is durable; the specific retail phrasing is lifecycle-limited",
+   "classification": "structural_force"
+  },
+  {
+   "signal": "Guided craft kits",
+   "rationale": "+86% sales growth with low participation depth — kits start journeys rather than sustain them; their durable role is as the core's gifting/onboarding tool rather than a category-defining format.",
+   "timeframe": "No lifespan evidence beyond the current growth cycle",
+   "classification": "surface_trend"
+  },
+  {
+   "signal": "Sustainability / stash-busting values alignment",
+   "rationale": "Both commercial lenses converge on demand (+144% visible mending searches, +27% eco-material adoption) and note it has become a baseline expectation, not a differentiator — connected directly to the structural stash-guilt loop.",
+   "timeframe": "Baseline expectation, ongoing",
+   "classification": "structural_force"
+  }
+ ],
+ "influenceSusceptibility": {
+  "channels": [
+   {
+    "score": 90,
+    "channel": "peer",
+    "description": "The dominant and near-exclusive reliable channel: the friend-who-crafts converts at near-total rates (credibility 10), LYS staff recommendations are followed and repeated ('she was right'), and peer-scale video channels show comments documenting direct project imitation."
+   },
+   {
+    "score": 45,
+    "channel": "creator",
+    "description": "Bifurcated: peer-scale hobbyist creators with candor credentials carry strong trust (5.6% comment ratios), but broadcast-scale craft influencers are losing both reach and trust, and sponsorship recalibrates standing the moment partnership arrives."
+   },
+   {
+    "score": 32,
+    "channel": "algorithm",
+    "description": "Algorithmic discovery (TikTok/Shorts) initiates awareness at mass scale but almost never completes conversion for the core — discoveries are routed through Ravelry verification and peer consultation before purchase."
+   },
+   {
+    "score": 15,
+    "channel": "brand",
+    "description": "Weakest channel by far: commercial framing is detected and discounted instantly, wellness language is recognized as positioning, and extractive moves trigger coordinated revolt (Cricut reversal within days)."
+   }
+  ],
+  "overallScore": 54,
+  "initiatorScore": 76,
+  "lowSusceptibility": [
+   "Sponsored endorsements and visibly commercial framing of any kind",
+   "Hustle/side-hustle and optimization language",
+   "Broadcast-scale influencer campaigns",
+   "'Buy more' and haul-culture messaging",
+   "Retail-copied wellness positioning ('Emotional Support Crafts' as marketing)"
+  ],
+  "highSusceptibility": [
+   "Recommendations from people with demonstrated experience and zero commercial stake",
+   "Material-specific finished-object proof from documented project histories",
+   "Permission-granting framing that resolves stash guilt and hustle pressure",
+   "Candor about imperfection — failure shares and UFO disclosure as credibility",
+   "Story-driven scarcity discovered experientially (indie dyer colorways, fiber festivals)"
+  ],
+  "trustTransferPaths": [
+   "Friend/sibling who crafts > LYS staff > Ravelry project logs > peer-scale creator > broadcast influencer > brand claim",
+   "Peer demonstration → community platform verification (Ravelry) → LYS staff consultation → social discovery last (brand-lens purchase hierarchy)",
+   "Core confession/permission content → base adoption in comments → copied intentionality rules and purchases",
+   "Event-based experiential discovery (fiber festivals) → core community reporting → LYS sell-through"
+  ]
+ }
+}

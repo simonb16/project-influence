@@ -6,10 +6,13 @@ import {
   runReconciliationAgent,
   runSynthesisAgent,
   runPeripheryAgent,
+  runEnrichmentAgent,
+  runVerifierLLMChecks,
   mergeSocialSignals,
   log,
   AllLensOutputs,
 } from "@/lib/agents";
+import { runVerifier } from "@/lib/verifier";
 import { ArchetypeReport } from "@/types";
 import {
   setRunRunning,
@@ -57,7 +60,7 @@ export async function executeRun(
   try {
     await setRunRunning(runId);
 
-    const totalAgents = 6;
+    const totalAgents = 8;
     let completed = 0;
     function onAgentComplete(name: string) {
       completed++;
@@ -78,21 +81,32 @@ export async function executeRun(
     // ── Batch 2: reconciliation & scoring (with platform data tools) ──
     progress("Reconciling findings across all three lenses & scoring signals...");
 
-    const reconciliation = await runReconciliationAgent(inputs, lenses, (message) => progress(message));
+    const { reconciliation, toolAudit } = await runReconciliationAgent(inputs, lenses, (message) =>
+      progress(message)
+    );
     onAgentComplete("Reconciliation & Scoring");
 
-    // ── Batches 3 + 4: synthesis and periphery in parallel ──
-    // Both depend only on reconciliation. Periphery is non-fatal: if it
-    // fails even after retry, ship the report without it.
-    progress("Synthesizing final report & mapping adjacencies...");
+    // ── Batch 3: synthesis, periphery, and enrichment in parallel ──
+    // All three depend only on reconciliation. Periphery and Enrichment are
+    // non-fatal: a periphery failure ships without the adjacency map; an
+    // enrichment failure ships with un-enriched signals (no targetables) and
+    // no findability section.
+    progress("Synthesizing final report, mapping adjacencies & deriving targetables...");
 
-    const [synthesis, periphery] = await Promise.all([
+    const [synthesis, periphery, enrichment] = await Promise.all([
       runSynthesisAgent(inputs, reconciliation).then((r) => { onAgentComplete("Synthesis"); return r; }),
       runPeripheryAgent(inputs, reconciliation)
         .then((r) => { onAgentComplete("Adjacency Mapping"); return r; })
         .catch((err) => {
           console.error("[pipeline] Periphery agent failed, continuing without periphery:", err);
           progress("Adjacency mapping unavailable — finishing report without it");
+          return undefined;
+        }),
+      runEnrichmentAgent(inputs, reconciliation)
+        .then((r) => { onAgentComplete("Findability & Enrichment"); return r; })
+        .catch((err) => {
+          console.error("[pipeline] Enrichment agent failed, continuing un-enriched:", err);
+          progress("Enrichment unavailable — finishing report with un-enriched signals");
           return undefined;
         }),
     ]);
@@ -107,9 +121,35 @@ export async function executeRun(
       generatedAt: new Date().toISOString(),
       peripheryData: periphery,
       dataSignals: reconciliation.dataSignals,
-      socialSignals: mergeSocialSignals(reconciliation.socialSignals, synthesis.socialSignals),
+      // Round 8: the merge guard now takes the Enrichment agent's output
+      // (was synthesis's). Same authority rule: reconciliation's fields win.
+      socialSignals: mergeSocialSignals(reconciliation.socialSignals, enrichment?.enrichedSignals),
       coreSize: reconciliation.coreSize,
+      // Findability now comes from the Enrichment agent; synthesis no longer
+      // produces it. Absent when enrichment failed — the UI tolerates that.
+      findability: enrichment?.findability,
     };
+
+    // ── Final stage: Verifier — non-fatal in BOTH directions ──
+    // A crash ships the report without a verifierReport; failed checks ship
+    // the report WITH the failures visible. The Verifier informs, never blocks.
+    progress("Verifying report integrity...");
+    try {
+      const verifierReport = await runVerifier(
+        { report, reconciliation: { socialSignals: reconciliation.socialSignals }, toolAudit },
+        runVerifierLLMChecks
+      );
+      report.verifierReport = verifierReport;
+      for (const c of verifierReport.checks) {
+        log(`Verifier check ${c.id}: ${c.status.toUpperCase()} — ${c.detail}`);
+      }
+      log(`Verifier — ${verifierReport.summary}`);
+      onAgentComplete("Verifier");
+      progress(`Integrity: ${verifierReport.passCount}/${verifierReport.totalCount} checks passed`);
+    } catch (err) {
+      log(`Verifier crashed (non-fatal) — shipping report without verifierReport: ${err instanceof Error ? err.message : String(err)}`);
+      progress("Integrity check unavailable — shipping report without it");
+    }
 
     try {
       await saveReportWithRetry(reportId, title, inputs.audience, inputs.brand, inputs.context, runBy, report);
