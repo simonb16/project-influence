@@ -7,6 +7,7 @@ import {
   checkSnapshotTraceability,
   checkCoreNameCoherence,
   checkNumberLogAudit,
+  checkExemplarLeakage,
   extractNumericTokens,
   runVerifier,
   runCodeChecks,
@@ -58,7 +59,7 @@ describe("verifier on the last good report (Aug 11 Home Crafters)", () => {
       reconciliation: reconBaseline(fixture),
       toolAudit: syntheticAudit(fixture),
     });
-    expect(vr.totalCount).toBe(6); // code checks only — no LLM runner injected
+    expect(vr.totalCount).toBe(7); // code checks only — no LLM runner injected
     expect(vr.passCount).toBeGreaterThan(0);
     expect(vr.passCount).toBeLessThanOrEqual(vr.totalCount);
     expect(vr.summary.length).toBeGreaterThan(0);
@@ -174,7 +175,7 @@ describe("graceful degradation", () => {
         throw new Error("model unavailable");
       }
     );
-    expect(vr.totalCount).toBe(9);
+    expect(vr.totalCount).toBe(10);
     const llmChecks = vr.checks.filter((c) =>
       ["paraphrase-number-audit", "basis-honesty", "targetable-groundedness"].includes(c.id)
     );
@@ -187,6 +188,45 @@ describe("graceful degradation", () => {
 });
 
 // ─── Numeric token extraction ─────────────────────────────────────────────────
+
+// ─── Exemplar-leakage drift guard (Round 8b, Part 8) ─────────────────────────
+
+describe("checkExemplarLeakage", () => {
+  it("passes clean report content (no exemplar phrases present)", () => {
+    const result = checkExemplarLeakage(fixture);
+    expect(result.status).toBe("pass");
+  });
+
+  it("FAILs a leaked exemplar phrase in a different-audience report", () => {
+    const corrupted = clone();
+    corrupted.audience = "Millennial natural wine enthusiasts who shop at Trader Joe's";
+    corrupted.summary = `${corrupted.summary} Their trust grammar is fixed.`;
+
+    const result = checkExemplarLeakage(corrupted);
+    expect(result.status).toBe("fail");
+    expect(result.detail).toContain("trust grammar");
+  });
+
+  it("WARNs (not fails) a leaked phrase in a same-audience re-run", () => {
+    const corrupted = clone(); // audience is still the crafting fixture's own audience
+    corrupted.summary = `${corrupted.summary} Their trust grammar is fixed.`;
+
+    const result = checkExemplarLeakage(corrupted);
+    expect(result.status).toBe("warn");
+    expect(result.detail).toContain("trust grammar");
+  });
+
+  it("catches multiple leaked n-grams at once", () => {
+    const corrupted = clone();
+    corrupted.audience = "Millennial natural wine enthusiasts";
+    corrupted.summary = `${corrupted.summary} The knit-night regular's trust grammar is fixed.`;
+
+    const result = checkExemplarLeakage(corrupted);
+    expect(result.status).toBe("fail");
+    expect(result.detail).toContain("trust grammar");
+    expect(result.detail).toContain("knit-night regular");
+  });
+});
 
 describe("extractNumericTokens", () => {
   it("extracts multi-digit numbers, decimals, and comma-separated numbers", () => {

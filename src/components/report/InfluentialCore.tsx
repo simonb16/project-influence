@@ -19,9 +19,10 @@ export function InfluentialCoreDescription({ data }: { data: InfluentialCoreType
       <div className="space-y-3">
         <p className="text-sm leading-relaxed text-[#E8EDF2]">{data.definition}</p>
         {data.profile && (
-          <p className="border-l-2 border-[#6366F1]/40 pl-3 text-sm leading-relaxed text-[#8B949E]">
-            {data.profile}
-          </p>
+          <div className="border-l-2 border-[#6366F1]/40 pl-3">
+            <p className="eyebrow mb-1.5">How They Differ From The Base</p>
+            <p className="text-sm leading-relaxed text-[#8B949E]">{data.profile}</p>
+          </div>
         )}
       </div>
     </Card>

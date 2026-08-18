@@ -9,6 +9,38 @@
 import type { ArchetypeReport } from "@/types";
 import type { ToolAuditEntry } from "@/lib/verifier";
 
+// ─── Round 8b: exemplar-leakage guard ────────────────────────────────────────
+// The prompts below embed verbatim exemplars from a real report (the Aug 17
+// Home Crafters run) as structural floors. That creates a drift risk: a model
+// could echo the exemplar's CONTENT instead of following its structure. This
+// list of distinctive n-grams — kept here, next to the exemplars themselves,
+// so the two can't drift apart — is what the Verifier's exemplar-leakage
+// check (verifier.ts) greps every new report for. A hit in a report about a
+// DIFFERENT audience means content leaked, not just structure. A hit on a
+// same-audience re-run is flagged too (only as a warn — it may be legitimate
+// re-discovery of the same real fact).
+//
+// One-exemplar rule: each spec above carries exactly one exemplar (block).
+// Future harvests REPLACE the exemplar and this list's corresponding entries
+// — never append a second exemplar to the same spec. When a report from a
+// different audience produces an equally good exemplar, swapping to it (or
+// alternating exemplar domains across specs) reduces content-anchoring risk
+// further than any single fixed exemplar can.
+export const EXEMPLAR_NGRAMS = [
+  "trust grammar", // Story exemplar (Part 1)
+  "impossible to buy your way into", // Story exemplar (Part 1)
+  "knit-night regular", // Profile/core-vs-base exemplar (Part 3)
+  "counter-current inside its own audience", // Profile/core-vs-base exemplar (Part 3)
+  "~3% posting layer", // Targetables exemplar (Part 2)
+  "411K weekly visitors", // Participation-layers exemplar (Part 4)
+  "'Sue'", // Snapshot trust exemplar (Part 5)
+];
+
+/** Keywords identifying the exemplars' source audience (crafting) — a hit
+ * against a report whose audience matches downgrades leakage from fail to
+ * warn (possible legitimate re-discovery rather than content anchoring). */
+export const EXEMPLAR_SOURCE_AUDIENCE_KEYWORDS = ["craft", "knit", "crochet", "yarn"];
+
 export interface AgentInputs {
   audience: string;
   brand?: string;
@@ -569,6 +601,12 @@ The four corners this creates: CONCENTRATED CONVICTION (high strength, small sca
 
 The hard rule is unchanged: only actual tool results and lens-sourced numbers ever appear as quant in strengthBasis/scaleBasis — never estimates dressed as data.
 
+PARTICIPATION LAYERS: when community data supports it, distinguish the participation layers within a community (contributor vs visitor/lurker) and state which layer the core occupies — with the ratio when derivable from real numbers.
+
+EXEMPLAR (verbatim from a real report — match its structure, not its content): "The contribution layer (~13K weekly contributions against 411K weekly visitors on r/crochet alone) is where the core operates; the visitor layer is the base receiving its judgment." — with the derivation shown transparently in the validation data (members from web search + visitor/contribution figures from lens evidence → "~3% contribution rate").
+
+Evidence-gated: layer analysis only where numbers exist. Never estimate a ratio without inputs.
+
 VALIDATION LINKS: where a dataSignal you produced grounds a social signal, list that dataSignal's id in the signal's validatedBy array. You created both in the same pass — link them.
 
 Leave targetableSignals as an empty array on every signal — the enrichment agent fills it downstream.
@@ -672,6 +710,17 @@ Produce the complete SWAY report. Transform the scored, reconciled dataset into 
 
 The output must match the existing report schema EXACTLY so the current UI can render it. Populate ALL of the following sections using ONLY the reconciled data.
 
+THE STORY (the "summary" field) must accomplish four things, in roughly this order:
+(a) Name the core↔base relationship and how influence travels between them
+(b) Cite 2-3 quantified markers from the reconciled data, woven into the argument (not listed)
+(c) Name the trust mechanism — what earns belief in this category
+(d) Close with the strategic lever: the implication a brand should act on
+
+EXEMPLAR of the register (from a real report — match its structure, not its content):
+"The home-crafting category is decided by a small (5–15%), stable core of multi-year hobbyists who make purchase verdicts inside communities — knit nights, Ravelry logs, subreddit advice threads, Substack comments — that retailers merely fulfill. Their trust grammar is fixed: granular specificity plus candid flaws plus zero commercial stake, and their defining identity position is refusal to monetize ('just for joy'), held against a monetization pull that is rising (+37% 'how to sell crochet') and dominates algorithmic video. The lever is not reach but proximity: no brand currently articulates the no-hustle position back to them, and the core's habitats — intimate text, micro-video, and physical circles — are cheap to be present in and impossible to buy your way into."
+
+Anti-padding: the four beats and the quantified markers only appear when the reconciled data supports them — never invent a marker or a lever to hit the count.
+
 CORE-VS-BASE CONTRASTS:
 Where the lenses surfaced a meaningful difference between the influential core and the broader audience on an item, populate coreVsBase ({ "core": "...", "base": "..." }). Only include it when there's real evidence of a difference — do not manufacture contrasts.
 
@@ -718,12 +767,20 @@ Produce an at-a-glance summary of the four Signals of Influence for the influent
 
 - motivational: from your emotional drivers — take the high scorers. label = driver name, detail = 2-6 word distillation of that driver's description, score = the driver's score
 - behavioral: from your behavioral signals — take those rated high. label = short behavior phrase, rating = "HIGH"
-- trust: from your influence susceptibility analysis — take the high-scoring subsets, and go one step deeper: name the specific means of influence ("failure sharing, zero-commercial-stake recommendations") or the specific type of trusted peer ("trusted bartenders"). label = channel, detail = the deeper specific, score included
+- trust: from your influence susceptibility analysis — take the high-scoring subsets. Name the trust MECHANISM, not just the archetype — with an evidenced exemplar in parentheses where one exists. EXEMPLAR: "Knit-night regulars & LYS staff — named-person, zero-stake in-person recommendation ('Sue') · 92" (match the structure — mechanism plus evidenced example — not the content). Named individuals only when the evidence produced them (anti-confabulation unchanged). label = channel, detail = the mechanism (plus exemplar when evidenced), score included
 - social: from your influence map, digital habitat, and real world habitat — take the top-scoring specific spaces, digital and offline together. label = the space, score included
 
 3-5 entries per signal, ordered by score descending. Every entry must trace to an item in the full report — same name, same score. If a signal has fewer than 3 high-scoring items, show fewer rather than padding with low scorers. Include at least one real-world context in social when the real world habitat has a well-evidenced entry.
 
 Also produce coreLabel: the name of the influential core archetype. This must be THE SAME archetype name used in your influential core definition/description (e.g., if the description says the core is "the multicraftual dabbler with established taste", coreLabel is exactly that). Do not write a new or alternative label — the snapshot and the Influential Core section must refer to the core by the same name.
+
+PROFILE — THE CORE-VS-BASE CONTRAST:
+The influentialCore "profile" field is an explicit, systematic contrast between the core and the base — not general psychographic detail. Contrast across the evidenced axes — typically: identity stance, discovery mode, purchase behavior, monetization posture, and role in the recommendation flow. Use quant where it exists. Only include axes with real evidence.
+
+EXEMPLAR (verbatim from a real report — match its structure, not its content):
+"The knit-night regular differs from the base on nearly every axis. The base samples crafting through kits, craft-and-sip nights, and aesthetic trends (grandmacore, cottagecore); the core never mentions kits and explicitly rejects crafting-as-identity ('something I do, not something I am'). The base's monetization curiosity is rising (+37% on 'how to sell crochet'); the core is a counter-current inside its own audience, using refusal as a badge. The base consumes recommendations; the core produces them, in a format — specificity plus visible imperfection plus no commercial stake — that the base copies when learning how to evaluate products."
+
+Anti-padding: only the axes the reconciled data actually evidences — do not manufacture a fifth contrast to round out the list.
 
 CORE NAME:
 Produce two fields inside influentialCore:
@@ -740,7 +797,7 @@ OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with
     "coreTagline": "one short sentence that completes the picture ('The one others text before buying a bottle.')",
     "coreSizeEstimate": "the core's share of the audience as a short range ('8–15% of audience') ONLY when the reconciled data carries an estimatedProportion or equivalent evidence — omit otherwise",
     "definition": "narrative definition of the influential core for this audience",
-    "profile": "psychographic detail on who the core is and how they differ from the broader audience",
+    "profile": "the core-vs-base contrast — systematically contrast the core against the base across evidenced axes (identity stance, discovery mode, purchase behavior, monetization posture, recommendation-flow role); quant where it exists; only evidenced axes",
     "keyBehaviors": ["behaviors that define the core"],
     "keyTensions": ["tensions the core navigates"],
     "languageCodes": ["language patterns that signal belonging"],
@@ -1090,6 +1147,17 @@ Rules: every entry must trace to lens evidence. These are findability parameters
 2. SIGNAL ENRICHMENT:
 The reconciled data contains a socialSignals list. Reproduce it as enrichedSignals. Do not re-score, re-place, add, or remove signals — the reconciliation agent owns selection, typing, scoring, and placement, and its ids, types, strength, strengthBasis, scale, scaleBasis, validatedBy, and evidence fields must pass through UNCHANGED. Your job is enrichment only:
 - For each signal, fill targetableSignals with 2-4 entries: platform → the specific parameter someone would use to find or track this signal ("YouTube — trending interests, channel subscribers", "Google — trending keywords", "Reddit — subreddits, leading community voices", "Instagram — saves and sends, follower overlap"). Draw from your findability analysis (above) and the signal's own evidence — a signal's targetables should be consistent with the platformConcentrations and searchBehaviors you produced. These are findability parameters, not campaign recommendations. Only name platforms where this signal actually lives.
+
+Each targetable signal should, where evidence allows, include:
+- The LAYER to target — not just the platform but the segment within it ("the ~3% posting layer", "high-karma, long-account-history contributors in advice and WIP threads")
+- The MECHANISM — why this parameter finds the core rather than the base ("queries that route organically to subreddit threads are a proxy for the contributor-layer audience")
+- DURABILITY/SEASONALITY when trend data exists ("durable local-discovery intent (stable −5% YoY) with pronounced Nov–Feb seasonal peak")
+
+EXEMPLARS (verbatim from a real report — match the structure, not the content):
+- "Subreddits r/crochet, r/knitting, r/crafts — filter to high-karma, long-account-history contributors in advice and WIP threads; these are the ~3% posting layer where the core concentrates"
+- "Search terms 'stash busting crochet', 'WIP accountability knitting', 'yarn store near me' — queries that route organically to subreddit threads are a proxy for the contributor-layer audience"
+
+Anti-padding: layer and mechanism only when evidenced — never invent segmentation to satisfy the format. A plain platform+parameter targetable is acceptable when that's all the evidence supports.
 - You may lightly polish the body copy for report tone — meaning must not change.
 If the reconciled data has no socialSignals, output enrichedSignals as an empty array.
 
@@ -1112,7 +1180,7 @@ OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with
       "body": "reconciliation's body, optionally polished for tone (meaning unchanged)",
       "strength": unchanged, "strengthBasis": "unchanged",
       "scale": "unchanged", "scaleBasis": "unchanged",
-      "targetableSignals": [{ "platform": "platform this signal actually lives on", "detail": "the specific findability parameter" }],
+      "targetableSignals": [{ "platform": "platform this signal actually lives on", "detail": "the specific findability parameter — including layer/mechanism/durability where evidenced" }],
       "validatedBy": unchanged, "evidence": "unchanged"
     }
   ]
@@ -1150,7 +1218,7 @@ export function buildVerifierPrompt(report: ArchetypeReport, toolAudit: ToolAudi
 THE THREE SOURCE CATEGORIES for any number in this report:
 1. TOOL-API numbers — returned by a platform API call (google_trends, reddit, youtube, pinterest). Must appear in the tool-call log below.
 2. SEARCH-SOURCED numbers — returned by the search_web tool. Must appear in the tool-call log below AND be labeled as search-sourced wherever cited ("per web search", source name — never dressed as API data).
-3. LENS-ATTRIBUTED numbers — carried from the research lenses' web research, recognizable by attribution in the text ("per Mintel", "documented by", "Ravelry's 2022 data", a named source or report). These are fine WHEN attributed — the lenses did real web research. An unattributed number that appears in no tool result is a failure.
+3. LENS-ATTRIBUTED numbers — carried from the research lenses' web research, recognizable by attribution in the text ("per Mintel", "documented by", "Ravelry's 2022 data", a named source or report). A clear, named attribution PASSES outright — the lenses did real web research, and the attribution is the verification. Do not warn on these just because they aren't independently re-checkable. An unattributed number that appears in no tool result is a failure.
 
 TOOL-CALL LOG (everything the tools actually returned this run):
 ${auditBlock}
@@ -1175,7 +1243,10 @@ ${JSON.stringify(signals, null, 1)}
 
 RUN THESE THREE CHECKS:
 
-1. "paraphrase-number-audit" — Find every numeric claim in the PROSE (the Story, core definition/profile, coreSize basis, signal bodies) that references platform data or research findings. For each: does it trace to a logged tool result (paraphrase-tolerant — "2.4M" matches "2400000", "roughly 100K" matches "103450") or to clearly attributed lens evidence? Classify each number by the three source categories. PASS if every number traces or is attributed. WARN if a number is plausible but its sourcing is ambiguous. FAIL if any number appears in no tool result and carries no attribution (an invented number), or if a search-sourced number is presented as API data.
+1. "paraphrase-number-audit" — Find every numeric claim in the PROSE (the Story, core definition/profile, coreSize basis, signal bodies) that references platform data or research findings. For each: does it trace to a logged tool result (paraphrase-tolerant — "2.4M" matches "2400000", "roughly 100K" matches "103450") or to clearly attributed lens evidence? Classify each number by the three source categories.
+   - PASS a number outright when it traces to the tool log, OR when it carries a clear, named attribution ("per Mintel", "Ravelry's reported 1M MAU", "(search-sourced)", "per web search"). A named, checkable source IS the verification — do not warn on it just because you personally cannot re-run the lookup. Warn-on-every-attributed-number makes the footer permanently yellow and trains the team to ignore it; an honest, well-attributed report should read ✓ clean.
+   - WARN only for genuinely ambiguous sourcing: vague attribution that names no checkable source ("research shows", "reportedly", "studies indicate") or a number that's plausible but you cannot tell which category it falls into.
+   - FAIL if a number appears in no tool result and carries no attribution at all (an invented number), or if a search-sourced number is presented as API data.
 
 2. "basis-honesty" — For each social signal's strengthBasis and scaleBasis: it must either (a) cite a real number that is verifiable in the tool log or clearly lens-attributed, or (b) explicitly self-identify as evidence-classified ("no direct measure — classified niche from prevalence in community discussion"). FAIL any basis that states numbers with no source and no hedge. WARN for bases that are vague but not dishonest.
 

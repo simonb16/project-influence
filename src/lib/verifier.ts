@@ -16,6 +16,11 @@ import {
   VerifierCheck,
   VerifierReport,
 } from "@/types";
+// Round 8b: the n-gram list lives next to the exemplars in prompt.ts so the
+// two can't drift apart. prompt.ts's own import from this module is
+// type-only (erased at compile time), so this does not create a runtime
+// circular dependency — verified by the build.
+import { EXEMPLAR_NGRAMS, EXEMPLAR_SOURCE_AUDIENCE_KEYWORDS } from "@/lib/prompt";
 
 /** One executed tool call, captured in memory by the reconciliation loop.
  * resultJson is the untruncated JSON returned to the model. */
@@ -403,6 +408,38 @@ export function checkNumberLogAudit(report: ArchetypeReport, toolAudit?: ToolAud
   return check("number-log-audit", failures, warns, `${audited} numeric claims all trace to tool results`);
 }
 
+// ─── Check 7 (drift guard): exemplar leakage ─────────────────────────────────
+// Round 8b embedded verbatim exemplars in the prompts as structural floors —
+// this check catches a model echoing an exemplar's CONTENT instead of its
+// structure. A hit in a report about a different audience is a real leak
+// (fail). A hit on a same-audience re-run may be legitimate re-discovery of
+// the same real-world fact (warn, not fail — visibility still matters).
+
+export function checkExemplarLeakage(report: ArchetypeReport): VerifierCheck {
+  const haystack = JSON.stringify(report).toLowerCase();
+  const hits = EXEMPLAR_NGRAMS.filter((ng) => haystack.includes(ng.toLowerCase()));
+
+  if (hits.length === 0) {
+    return { id: "exemplar-leakage", status: "pass", detail: "no in-prompt exemplar phrases found in report content" };
+  }
+
+  const audience = (report.audience ?? "").toLowerCase();
+  const sameAudience = EXEMPLAR_SOURCE_AUDIENCE_KEYWORDS.some((k) => audience.includes(k));
+
+  if (sameAudience) {
+    return {
+      id: "exemplar-leakage",
+      status: "warn",
+      detail: `same-audience re-run — possible legitimate re-discovery of: ${hits.join(", ")}`,
+    };
+  }
+  return {
+    id: "exemplar-leakage",
+    status: "fail",
+    detail: `exemplar phrase(s) leaked into a different-audience report: ${hits.join(", ")}`,
+  };
+}
+
 // ─── Assembly ─────────────────────────────────────────────────────────────────
 
 export function runCodeChecks(inputs: VerifierInputs): VerifierCheck[] {
@@ -413,6 +450,7 @@ export function runCodeChecks(inputs: VerifierInputs): VerifierCheck[] {
     checkSnapshotTraceability(inputs.report),
     checkCoreNameCoherence(inputs.report),
     checkNumberLogAudit(inputs.report, inputs.toolAudit),
+    checkExemplarLeakage(inputs.report),
   ];
 }
 
