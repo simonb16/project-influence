@@ -6,12 +6,23 @@ import {
   buildAudienceLensPrompt,
   buildBrandLensPrompt,
   buildContextLensPrompt,
+  buildEnrichmentPrompt,
   buildPeripheryPrompt,
   buildReconciliationPrompt,
   buildSynthesisPrompt,
+  buildVerifierPrompt,
 } from "@/lib/prompt";
-import { ArchetypeReport, CoreSize, DataSignalsSynthesis, PeripheryData, SocialSignal } from "@/types";
+import {
+  ArchetypeReport,
+  CoreSize,
+  DataSignalsSynthesis,
+  Findability,
+  PeripheryData,
+  SocialSignal,
+  VerifierCheck,
+} from "@/types";
 import { getAvailableTools, executeDataTool, MAX_TOOL_CALLS, DataToolSchema } from "@/lib/data-tools";
+import type { ToolAuditEntry } from "@/lib/verifier";
 
 export type { AgentInputs };
 
@@ -165,6 +176,30 @@ async function runLensAgent<T>(
 }
 
 /**
+ * Bounded Sonnet agents with no tools (enrichment, verifier LLM checks):
+ * single-turn JSON in/out — no search loop, no pause_turn to resume.
+ */
+async function runSonnetJsonAgent<T>(
+  prompt: string,
+  signal: AbortSignal,
+  maxTokens = 16000
+): Promise<T> {
+  const stream = client.messages.stream(
+    {
+      model: LENS_MODEL,
+      max_tokens: maxTokens,
+      messages: [{ role: "user", content: prompt }],
+    },
+    { signal }
+  );
+  const message = await stream.finalMessage();
+  if (message.stop_reason === "max_tokens") {
+    throw new Error(`output truncated at max_tokens (${maxTokens}) — JSON incomplete`);
+  }
+  return JSON.parse(extractJSON(textFromContent(message.content))) as T;
+}
+
+/**
  * Reasoning agents (reconciliation, synthesis): Fable 5.
  * Fable API rules: thinking is always on (no `thinking` param), no sampling params,
  * and safety classifiers can decline with stop_reason "refusal" — so we opt into a
@@ -197,11 +232,21 @@ async function runReasoningToolLoop<T>(
   tools: DataToolSchema[],
   onToolCall?: (message: string) => void,
   maxTokens = 32000
-): Promise<{ result: T; toolCallsUsed: number; quotaExhaustedTools: string[]; outputChars: number }> {
+): Promise<{
+  result: T;
+  toolCallsUsed: number;
+  quotaExhaustedTools: string[];
+  outputChars: number;
+  toolAudit: ToolAuditEntry[];
+}> {
   const messages: Array<{ role: "user" | "assistant"; content: unknown }> = [
     { role: "user", content: prompt },
   ];
   let toolCallCount = 0;
+  // Round 8: in-memory audit of every executed tool call, kept untruncated so
+  // the Verifier can check cited numbers against what the tools actually
+  // returned (the agent.log line is capped at 4000 chars; this is not).
+  const toolAudit: ToolAuditEntry[] = [];
   // Sticky failure: a hard failure deregisters a tool for the rest of the run,
   // and further requests for it are declined without burning budget. Timeouts
   // get one strike of grace (a single timeout can be transient); block pages,
@@ -313,6 +358,7 @@ async function runReasoningToolLoop<T>(
         const resultJson = JSON.stringify(payload);
         // Log the full-ish result so cited numbers can be audited against reality
         log(`Tool call ${toolCallCount}/${MAX_TOOL_CALLS} — ${tu.name}("${queryLabel}") → ${resultJson.slice(0, 4000)}`);
+        toolAudit.push({ tool: tu.name, query: queryLabel, resultJson });
         results.push({ type: "tool_result", tool_use_id: tu.id, content: resultJson });
       }
 
@@ -327,6 +373,7 @@ async function runReasoningToolLoop<T>(
       toolCallsUsed: toolCallCount,
       quotaExhaustedTools: [...quotaExhaustedTools],
       outputChars: text.length,
+      toolAudit,
     };
   }
   throw new Error(`tool-use loop did not finish within ${maxTurns} turns`);
@@ -421,13 +468,13 @@ export async function runReconciliationAgent(
   inputs: AgentInputs,
   lenses: AllLensOutputs,
   onProgress?: (message: string) => void
-): Promise<ReconciliationResult> {
+): Promise<{ reconciliation: ReconciliationResult; toolAudit: ToolAuditEntry[] }> {
   const tools = getAvailableTools();
   log(`Reconciliation agent — started (${tools.length} data tools: ${tools.map((t) => t.name).join(", ") || "none"})`);
   // Round 6b grew reconciliation's output (socialSignals + coreSize on top of
   // everything else) — ceiling raised 32K→48K preemptively per the brief's
   // raise-first guidance.
-  const { result, toolCallsUsed, quotaExhaustedTools, outputChars } = await withDeadline(
+  const { result, toolCallsUsed, quotaExhaustedTools, outputChars, toolAudit } = await withDeadline(
     "Reconciliation agent",
     RECONCILIATION_TIMEOUT_MS,
     (signal) =>
@@ -461,7 +508,7 @@ export async function runReconciliationAgent(
     `Reconciliation agent — complete (${result.reconciledSignals?.length ?? 0} signals scored, ${toolCallsUsed}/${MAX_TOOL_CALLS} platform lookups)`
   );
   onProgress?.(`Reconciliation complete — used ${toolCallsUsed}/${MAX_TOOL_CALLS} platform lookups`);
-  return result;
+  return { reconciliation: result, toolAudit };
 }
 
 // ─── Batch 3: Synthesis ──────────────────────────────────────────────────────
@@ -495,25 +542,26 @@ export async function runSynthesisAgent(
 /**
  * Round 6b enrichment boundary, enforced in code: reconciliation's signals are
  * authority for everything except targetableSignals and body polish, which are
- * taken from synthesis's version (matched by id). Any other change synthesis
- * attempted is logged as drift and overridden — the diff test observes the
- * model's behavior, the merge guarantees the invariant.
+ * taken from the enricher's version (matched by id). Any other change the
+ * enricher attempted is logged as drift and overridden — the diff test observes
+ * the model's behavior, the merge guarantees the invariant.
+ * Round 8: the enricher is now the dedicated Enrichment agent (was Synthesis).
  */
 export function mergeSocialSignals(
   recon: SocialSignal[] | undefined,
-  synth: SocialSignal[] | undefined
+  enriched: SocialSignal[] | undefined
 ): SocialSignal[] | undefined {
   if (!recon || recon.length === 0) return undefined;
-  const synthById = new Map((synth ?? []).map((s) => [s.id, s]));
+  const enrichedById = new Map((enriched ?? []).map((s) => [s.id, s]));
 
-  if (synth) {
-    if (synth.length !== recon.length) {
-      log(`Enrichment drift: synthesis returned ${synth.length} signals vs reconciliation's ${recon.length} (overridden)`);
+  if (enriched) {
+    if (enriched.length !== recon.length) {
+      log(`Enrichment drift: enricher returned ${enriched.length} signals vs reconciliation's ${recon.length} (overridden)`);
     }
     for (const r of recon) {
-      const s = synthById.get(r.id);
+      const s = enrichedById.get(r.id);
       if (!s) {
-        log(`Enrichment drift: synthesis dropped signal ${r.id} "${r.signal}" (restored)`);
+        log(`Enrichment drift: enricher dropped signal ${r.id} "${r.signal}" (restored)`);
         continue;
       }
       const drifts: string[] = [];
@@ -529,13 +577,43 @@ export function mergeSocialSignals(
   }
 
   return recon.map((r) => {
-    const s = synthById.get(r.id);
+    const s = enrichedById.get(r.id);
     return {
       ...r,
       targetableSignals: s?.targetableSignals?.length ? s.targetableSignals : (r.targetableSignals ?? []),
       body: s?.body?.trim() ? s.body : r.body,
     };
   });
+}
+
+// ─── Batch 3b: Enrichment (parallel with Synthesis + Periphery) ──────────────
+// Round 8: the first synthesis seam. Takes findability production and
+// per-signal targetables enrichment out of Synthesis — the two jobs are
+// derived together so the findability section (superset) and per-signal
+// targetables (its signal-specific projections) agree. Non-fatal: on failure
+// the report ships with un-enriched signals and no findability section.
+
+export interface EnrichmentResult {
+  findability?: Findability;
+  enrichedSignals?: SocialSignal[];
+}
+
+export async function runEnrichmentAgent(
+  inputs: AgentInputs,
+  reconciliation: ReconciliationResult
+): Promise<EnrichmentResult> {
+  log(`Enrichment agent — started`);
+  const result = await withDeadline("Enrichment agent", LENS_TIMEOUT_MS, (signal) =>
+    runSonnetJsonAgent<EnrichmentResult>(
+      buildEnrichmentPrompt(inputs, JSON.stringify(reconciliation, null, 2)),
+      signal,
+      16000
+    )
+  );
+  log(
+    `Enrichment agent — complete (findability: ${result.findability ? "yes" : "no"}, ${result.enrichedSignals?.length ?? 0} signals enriched)`
+  );
+  return result;
 }
 
 // ─── Batch 4: Periphery (parallel with Synthesis) ────────────────────────────
@@ -558,4 +636,38 @@ export async function runPeripheryAgent(
     `Periphery agent — complete (${result.peripheryMap?.innerRing?.length ?? 0} inner, ${result.peripheryMap?.outerRing?.length ?? 0} outer)`
   );
   return result;
+}
+
+// ─── Round 8: Verifier LLM checks (judgment checks 7-9) ──────────────────────
+// One Sonnet 4.6 call covering all three judgment checks. The mechanical
+// checks (1-6) are plain code in verifier.ts — this call is reserved for
+// paraphrase-tolerant number tracing, basis-honesty classification, and
+// targetable groundedness, which need reading comprehension.
+
+const VERIFIER_TIMEOUT_MS = 6 * 60 * 1000;
+const EXPECTED_LLM_CHECK_IDS = ["paraphrase-number-audit", "basis-honesty", "targetable-groundedness"];
+
+export async function runVerifierLLMChecks(
+  report: ArchetypeReport,
+  toolAudit: ToolAuditEntry[]
+): Promise<VerifierCheck[]> {
+  const { checks } = await withDeadline("Verifier LLM checks", VERIFIER_TIMEOUT_MS, (signal) =>
+    runSonnetJsonAgent<{ checks: VerifierCheck[] }>(
+      buildVerifierPrompt(report, toolAudit),
+      signal,
+      4000
+    )
+  );
+  // Normalize: exactly the three expected checks, in order, valid statuses.
+  return EXPECTED_LLM_CHECK_IDS.map((id) => {
+    const c = (checks ?? []).find((x) => x?.id === id);
+    if (!c || !["pass", "warn", "fail"].includes(c.status)) {
+      return { id, status: "warn" as const, detail: "check returned no usable verdict" };
+    }
+    // Keep the model's full reasoning — the pipeline logs this verbatim to
+    // agent.log regardless of UI display, and a 500-char cap was truncating
+    // exactly the part that explains a WARN/FAIL verdict. The footer UI
+    // wraps rather than clips, so there's no display reason to cap tighter.
+    return { id, status: c.status, detail: String(c.detail ?? "").slice(0, 2000) };
+  });
 }

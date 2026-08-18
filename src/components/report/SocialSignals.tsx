@@ -126,6 +126,7 @@ const SOURCE_LABELS: Record<string, string> = {
   reddit: "Reddit",
   youtube: "YouTube",
   pinterest: "Pinterest",
+  web_search: "Web search",
 };
 
 function nativeCards(report: ArchetypeReport): SocialSignalCard[] | null {

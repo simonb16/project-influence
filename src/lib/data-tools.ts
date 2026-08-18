@@ -8,6 +8,7 @@
 // activate automatically once their keys land in .env, no code changes.
 
 import googleTrends from "google-trends-api";
+import Anthropic from "@anthropic-ai/sdk";
 import fs from "fs";
 import path from "path";
 
@@ -31,9 +32,16 @@ const TOOL_TIMEOUT_MS = Number(process.env.DATA_TOOL_TIMEOUT_MS ?? 10_000);
 // >10s the next) and 10s cost us the tool twice in one run via the strike
 // system. The env override still governs both for forced-timeout tests.
 const TRENDS_TIMEOUT_MS = Number(process.env.DATA_TOOL_TIMEOUT_MS ?? 15_000);
+// search_web runs a bounded model call with server-side web search — a whole
+// different latency class than a REST lookup (typically 15-40s). Same env
+// override so forced-timeout tests still govern every tool.
+const SEARCH_WEB_TIMEOUT_MS = Number(process.env.DATA_TOOL_TIMEOUT_MS ?? 90_000);
 
-/** Hard cap on reconciliation tool calls per run — enforced in the agent loop. */
-export const MAX_TOOL_CALLS = 8;
+/** Hard cap on reconciliation tool calls per run — enforced in the agent loop.
+ * Round 8: raised 8 → 12. The 8-call cap was set defensively when single-
+ * connection timeouts were the operating fear; the Round 7 job model removed
+ * that constraint. Headroom flows mainly to placement-critical quantification. */
+export const MAX_TOOL_CALLS = 12;
 
 // Same log file the agents write to — keeps the tool audit trail in one place.
 const LOG_FILE = path.join(process.cwd(), "agent.log");
@@ -520,6 +528,88 @@ export async function searchPinterest(query: string): Promise<PinterestResult | 
   return withTimeout(pinterestInner(query), "pinterest");
 }
 
+// ─── Web search fallback (Round 8) ───────────────────────────────────────────
+// Targeted quant lookups for sources the platform APIs don't cover — especially
+// Reddit while its API registration is pending (subreddit sizes via
+// site:reddit.com queries). Uses the same Anthropic server-side web search the
+// lens agents use, wrapped as a client tool so the shared budget cap and
+// sticky-failure machinery apply uniformly. Results are SEARCH-SOURCED, never
+// API-sourced — the schema description and reconciliation prompt both enforce
+// the attribution rule, and the Verifier audits it.
+
+export interface WebSearchToolResult {
+  query: string;
+  source: "web_search";
+  findings: Array<{ fact: string; sourceTitle: string; url: string }>;
+  summary: string;
+}
+
+// Own client instance — importing from agents.ts would create an import cycle.
+const searchClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+const SEARCH_WEB_MODEL = "claude-sonnet-4-6";
+
+async function searchWebInner(query: string): Promise<WebSearchToolResult | ToolError> {
+  const response = await searchClient.messages.create({
+    model: SEARCH_WEB_MODEL,
+    max_tokens: 2000,
+    tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 3 }],
+    messages: [
+      {
+        role: "user",
+        content: `You are a factual lookup tool. Use web search to answer this query with specific facts and numbers:
+
+QUERY: ${query}
+
+Respond with ONLY this JSON (no prose):
+{
+  "findings": [{ "fact": "specific fact with its number(s)", "sourceTitle": "page/site name", "url": "source url" }],
+  "summary": "1-2 sentences: the direct answer"
+}
+
+Rules: report only what the search results actually state — never estimate or extrapolate. Up to 5 findings. If nothing relevant is found, return {"findings": [], "summary": "no reliable data found for this query"}.`,
+      },
+    ],
+  });
+
+  const text = (response.content as Array<{ type: string; text?: string }>)
+    .filter((b) => b.type === "text")
+    .map((b) => b.text ?? "")
+    .join("")
+    .trim();
+  const jsonStart = text.indexOf("{");
+  const jsonEnd = text.lastIndexOf("}");
+  if (jsonStart === -1 || jsonEnd === -1) {
+    return { error: `web_search returned no parseable result for "${query}"` };
+  }
+  let parsed: { findings?: WebSearchToolResult["findings"]; summary?: string };
+  try {
+    parsed = JSON.parse(text.slice(jsonStart, jsonEnd + 1));
+  } catch {
+    return { error: `web_search returned malformed JSON for "${query}"` };
+  }
+  return {
+    query,
+    source: "web_search",
+    findings: (parsed.findings ?? []).slice(0, 5).map((f) => ({
+      fact: truncate(f.fact, 300),
+      sourceTitle: truncate(f.sourceTitle, 100),
+      url: truncate(f.url, 200),
+    })),
+    summary: truncate(parsed.summary, 400),
+  };
+}
+
+export async function searchWeb(query: string): Promise<WebSearchToolResult | ToolError> {
+  const result = await withTimeout(searchWebInner(query), "web_search", SEARCH_WEB_TIMEOUT_MS);
+  if (isToolError(result)) {
+    log(`web_search("${query}") → FAILED: ${result.error}`);
+  } else {
+    log(`web_search("${query}") → ${result.findings.length} findings`);
+  }
+  return result;
+}
+
 // ─── Tool schemas + availability-gated registration ──────────────────────────
 
 export interface DataToolSchema {
@@ -585,6 +675,25 @@ const TOOL_SCHEMAS: Array<{ schema: DataToolSchema; isConfigured: () => boolean 
     },
   },
   {
+    isConfigured: () => process.env.DISABLE_DATA_TOOLS !== "1" && !!process.env.ANTHROPIC_API_KEY,
+    schema: {
+      name: "search_web",
+      description:
+        "General web search for targeted quant lookups. Returns specific facts with source titles and URLs. FALLBACK ONLY: prefer the dedicated API tool when one exists for the source; use this for sources the APIs don't cover — especially Reddit data while its API is unavailable (subreddit sizes, community existence, thread visibility — use site:reddit.com queries). Do NOT use it to re-verify what an API tool already answered. ATTRIBUTION RULE: numbers from this tool are search-sourced — in any basis field, dataSignal (source: \"web_search\"), or prose citation, label them as coming from web search, never as API data.",
+      input_schema: {
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description:
+              "Specific factual query: 'site:reddit.com r/knitting subscribers' or 'r/crochet subreddit member count 2026' — not broad research questions",
+          },
+        },
+        required: ["query"],
+      },
+    },
+  },
+  {
     isConfigured: () => process.env.DISABLE_DATA_TOOLS !== "1" && !!process.env.PINTEREST_ACCESS_TOKEN,
     schema: {
       name: "search_pinterest",
@@ -618,6 +727,8 @@ export async function executeDataTool(name: string, input: Record<string, unknow
       return searchYouTube(query, input.maxResults ? Number(input.maxResults) : undefined);
     case "search_pinterest":
       return searchPinterest(query);
+    case "search_web":
+      return searchWeb(query);
     default:
       return { error: `unknown tool: ${name}` };
   }

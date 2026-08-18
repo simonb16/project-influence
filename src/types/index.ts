@@ -202,10 +202,13 @@ export interface ArchetypeReport {
   signalsSnapshot?: SignalsSnapshot;
   // Round 5: validated platform data from the reconciliation agent's tool calls
   dataSignals?: DataSignalsSynthesis;
-  // Round 6b: native social signals (reconciliation-owned, synthesis-enriched)
+  // Round 6b: native social signals (reconciliation-owned, enrichment-enriched)
   // and the quantified core size. Absent on older reports → transitional mapping.
   socialSignals?: SocialSignal[];
   coreSize?: CoreSize;
+  // Round 8: integrity check results — absent on older reports and when the
+  // Verifier stage failed (it is non-fatal in both directions).
+  verifierReport?: VerifierReport;
 }
 
 // ─── Periphery types (Round 2 Periphery agent) ───────────────────────────────
@@ -327,7 +330,7 @@ export interface SignalsSnapshot {
 
 export interface DataSignal {
   id?: string; // Round 6b: stable id ("ds1"…) so socialSignals can reference via validatedBy
-  source: "google_trends" | "reddit" | "youtube" | "pinterest";
+  source: "google_trends" | "reddit" | "youtube" | "pinterest" | "web_search"; // web_search: Round 8 fallback — search-sourced, not API-sourced
   signalType: "motivational" | "behavioral" | "trust" | "social";
   metric: string; // headline number: "+103% YoY", "452K subscribers"
   subject: string; // what it's about: "'craft night' searches", "r/knitting"
@@ -365,6 +368,22 @@ export interface CoreSize {
   estimate: string; // "8-15%"
   basis: string; // what the evidence is
   confidence: "grounded" | "directional" | "speculative";
+}
+
+// ─── Round 8: Verifier report ────────────────────────────────────────────────
+
+export interface VerifierCheck {
+  id: string; // "schema-conformance", "number-log-audit", ...
+  status: "pass" | "warn" | "fail";
+  detail: string; // one line; on warn/fail, names the specific item
+}
+
+export interface VerifierReport {
+  ranAt: string;
+  checks: VerifierCheck[];
+  passCount: number;
+  totalCount: number;
+  summary: string; // one sentence
 }
 
 export interface CulturalConnector {

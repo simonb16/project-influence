@@ -129,3 +129,21 @@ workaround it needed (`/api/reports/latest`, `/api/logs`, the "Recover Last
 Run" button) are gone — the job model replaces both. A dropped browser tab
 no longer matters: the run keeps going server-side regardless, and reopening
 the homepage shows it in progress or complete.
+
+## The Verifier (Round 8)
+
+Every run ends with a Verifier stage: nine integrity checks (schema
+conformance, reference integrity, evidence traceability, number sourcing,
+and more) against the finished report. Results show as a quiet line in the
+report footer — "· ✓ N/N integrity checks" — that expands into a per-check
+panel on click. It's non-fatal in both directions: a Verifier crash ships
+the report with no `verifierReport` at all, and a failed check ships the
+report with the failure visible rather than blocking it.
+
+**Team norm: a report whose integrity footer shows any FAIL is not for
+external use — re-run it.** Runs are cheap; this norm is absolute, no
+judgment calls about whether "this particular FAIL probably doesn't
+matter." A FAIL means the Verifier found something it couldn't reconcile —
+a number with no source, a signal that drifted, a claim that doesn't trace
+back to evidence. WARNs are informational and don't block use on their own;
+FAILs do.

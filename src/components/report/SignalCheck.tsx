@@ -9,6 +9,7 @@ const sourceLabels: Record<DataSignal["source"], string> = {
   reddit: "Reddit",
   youtube: "YouTube",
   pinterest: "Pinterest",
+  web_search: "Web search",
 };
 
 // Signal-type colors match the badge palette used across the four signal sections

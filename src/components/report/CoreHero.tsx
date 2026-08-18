@@ -120,11 +120,16 @@ export function CoreHero({ report }: { report: ArchetypeReport }) {
   const name = core?.coreName ?? report.signalsSnapshot?.coreLabel ?? "The Influential Core";
   // Round 6b: the quantified coreSize field wins; older reports fall back to
   // the 6a chain (coreSizeEstimate → narrative parse).
+  // Round 8b: render the estimate verbatim — it may already carry its own
+  // denominator ("5-15% of self-identified crafters"). Only append "of
+  // audience" when the estimate is a bare percentage/range with nothing else,
+  // otherwise the two denominators double up ("...crafters of audience").
   const native = report.coreSize;
+  const isBarePercent = native ? /^\d+(\.\d+)?\s*[-–—]?\s*\d*(\.\d+)?%$/.test(native.estimate.trim()) : false;
   const coreSize = native
-    ? /audience/i.test(native.estimate)
-      ? native.estimate
-      : `${native.estimate} of audience`
+    ? isBarePercent
+      ? `${native.estimate} of audience`
+      : native.estimate
     : deriveCoreSize(core);
   const confidenceTag = native && native.confidence !== "grounded" ? native.confidence.toUpperCase() : null;
   const corePercent = parseCorePercent(coreSize ?? undefined);
