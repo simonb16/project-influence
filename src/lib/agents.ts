@@ -664,6 +664,10 @@ export async function runVerifierLLMChecks(
     if (!c || !["pass", "warn", "fail"].includes(c.status)) {
       return { id, status: "warn" as const, detail: "check returned no usable verdict" };
     }
-    return { id, status: c.status, detail: String(c.detail ?? "").slice(0, 500) };
+    // Keep the model's full reasoning — the pipeline logs this verbatim to
+    // agent.log regardless of UI display, and a 500-char cap was truncating
+    // exactly the part that explains a WARN/FAIL verdict. The footer UI
+    // wraps rather than clips, so there's no display reason to cap tighter.
+    return { id, status: c.status, detail: String(c.detail ?? "").slice(0, 2000) };
   });
 }
