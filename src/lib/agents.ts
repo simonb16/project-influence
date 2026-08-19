@@ -14,6 +14,7 @@ import {
 } from "@/lib/prompt";
 import {
   ArchetypeReport,
+  BucketedBehavioralSignal,
   CoreSize,
   DataSignalsSynthesis,
   Findability,
@@ -458,6 +459,7 @@ export interface ReconciliationResult {
   dataSignals?: DataSignalsSynthesis; // Round 5 — present only when tools ran usefully
   socialSignals?: SocialSignal[]; // Round 6b — reconciliation owns selection/scoring/placement
   coreSize?: CoreSize; // Round 6b — quantified core size with confidence
+  behavioralBuckets?: BucketedBehavioralSignal[]; // Round 9 — reconciliation owns selection/bucketing/evidence
 }
 
 // Tool turns add wall-clock time (up to 8 API calls + extra inference turns),
@@ -586,6 +588,51 @@ export function mergeSocialSignals(
   });
 }
 
+/**
+ * Round 9 merge guard: same authority pattern as mergeSocialSignals.
+ * Reconciliation owns id/bucket/signal/whatItSignals/reinforcingEvidence/
+ * strength; the Enrichment agent supplies exactly one field per item —
+ * targetableSignal. Any other change is logged as drift and overridden;
+ * dropped/added items are restored/discarded. On enrichment failure the
+ * buckets ship with empty targetables (graceful degradation).
+ */
+export function mergeBehavioralBuckets(
+  recon: BucketedBehavioralSignal[] | undefined,
+  enriched: BucketedBehavioralSignal[] | undefined
+): BucketedBehavioralSignal[] | undefined {
+  if (!recon || recon.length === 0) return undefined;
+  const enrichedById = new Map((enriched ?? []).map((s) => [s.id, s]));
+
+  if (enriched) {
+    if (enriched.length !== recon.length) {
+      log(`Bucket drift: enricher returned ${enriched.length} items vs reconciliation's ${recon.length} (overridden)`);
+    }
+    for (const r of recon) {
+      const e = enrichedById.get(r.id);
+      if (!e) {
+        log(`Bucket drift: enricher dropped item ${r.id} "${r.signal}" (restored)`);
+        continue;
+      }
+      const drifts: string[] = [];
+      if (e.bucket !== r.bucket) drifts.push(`bucket ${r.bucket}→${e.bucket}`);
+      if (e.signal !== r.signal) drifts.push("signal changed");
+      if (e.whatItSignals !== r.whatItSignals) drifts.push("whatItSignals changed");
+      if (e.strength !== r.strength) drifts.push(`strength ${r.strength}→${e.strength}`);
+      if (JSON.stringify(e.reinforcingEvidence) !== JSON.stringify(r.reinforcingEvidence)) {
+        drifts.push("reinforcingEvidence changed");
+      }
+      if (drifts.length > 0) {
+        log(`Bucket drift on ${r.id} (overridden): ${drifts.join(", ")}`);
+      }
+    }
+  }
+
+  return recon.map((r) => {
+    const e = enrichedById.get(r.id);
+    return { ...r, targetableSignal: e?.targetableSignal?.trim() ? e.targetableSignal : (r.targetableSignal ?? "") };
+  });
+}
+
 // ─── Batch 3b: Enrichment (parallel with Synthesis + Periphery) ──────────────
 // Round 8: the first synthesis seam. Takes findability production and
 // per-signal targetables enrichment out of Synthesis — the two jobs are
@@ -596,6 +643,7 @@ export function mergeSocialSignals(
 export interface EnrichmentResult {
   findability?: Findability;
   enrichedSignals?: SocialSignal[];
+  enrichedBehavioralSignals?: BucketedBehavioralSignal[]; // Round 9 — targetableSignal filled per item
 }
 
 export async function runEnrichmentAgent(
@@ -611,7 +659,7 @@ export async function runEnrichmentAgent(
     )
   );
   log(
-    `Enrichment agent — complete (findability: ${result.findability ? "yes" : "no"}, ${result.enrichedSignals?.length ?? 0} signals enriched)`
+    `Enrichment agent — complete (findability: ${result.findability ? "yes" : "no"}, ${result.enrichedSignals?.length ?? 0} signals enriched, ${result.enrichedBehavioralSignals?.length ?? 0} bucket targetables)`
   );
   return result;
 }

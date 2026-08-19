@@ -9,6 +9,7 @@ import {
   runEnrichmentAgent,
   runVerifierLLMChecks,
   mergeSocialSignals,
+  mergeBehavioralBuckets,
   log,
   AllLensOutputs,
 } from "@/lib/agents";
@@ -125,6 +126,12 @@ export async function executeRun(
       // (was synthesis's). Same authority rule: reconciliation's fields win.
       socialSignals: mergeSocialSignals(reconciliation.socialSignals, enrichment?.enrichedSignals),
       coreSize: reconciliation.coreSize,
+      // Round 9: four-bucket behavioral model — reconciliation owns the
+      // buckets, enrichment writes targetables, same guard pattern.
+      behavioralBuckets: mergeBehavioralBuckets(
+        reconciliation.behavioralBuckets,
+        enrichment?.enrichedBehavioralSignals
+      ),
       // Findability now comes from the Enrichment agent; synthesis no longer
       // produces it. Absent when enrichment failed — the UI tolerates that.
       findability: enrichment?.findability,

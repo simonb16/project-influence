@@ -32,18 +32,20 @@ import { TrustTransferPaths } from "./TrustTransferPaths";
 import { RealWorldHabitat } from "./RealWorldHabitat";
 import { SignalCheck } from "./SignalCheck";
 import { CulturalConnectors } from "./CulturalConnectors";
+import { BehavioralBuckets } from "./BehavioralBuckets";
+import { TabHeader } from "./TabHeader";
 
 interface ReportViewProps {
   report: ArchetypeReport;
   onReset: () => void;
 }
 
-// Round 6a: 9 tabs — the four signals around the core, plus Cultural,
-// Activation, Adjacencies, and the muted Graveyard for retired sections.
+// Round 9: 8 tabs — Trust retired (its sections park in the Graveyard pending
+// a Maria decision; the data keeps being produced). The three signal tabs
+// carry Maria's purpose-definition subtitles.
 type TabId =
   | "core"
   | "social"
-  | "trust"
   | "behavioral"
   | "motivational"
   | "cultural"
@@ -57,10 +59,9 @@ const TABS: Array<ReportTab<TabId>> = [
     label: "The Influential Core",
     sub: "The people within this audience who disproportionately influence what others believe, adopt and share.",
   },
-  { id: "social", label: "Social", sub: "The communities and conversations they participate in" },
-  { id: "trust", label: "Trust", sub: "Where they look for validation" },
-  { id: "behavioral", label: "Behavioral", sub: "How they behave" },
-  { id: "motivational", label: "Motivational", sub: "What motivates them" },
+  { id: "social", label: "Social", sub: "How influence moves" },
+  { id: "behavioral", label: "Behavioral", sub: "How the audience becomes findable" },
+  { id: "motivational", label: "Motivational", sub: "What motivates them to act" },
   { id: "cultural", label: "Cultural", sub: "The cultural discourse and forces informing them" },
   { id: "activation", label: "Activation", sub: "Plays for engaging the core" },
   { id: "adjacencies", label: "Adjacencies", sub: "Cultural adjacencies and overlaps" },
@@ -193,6 +194,11 @@ export function ReportView({ report, onReset }: ReportViewProps) {
         {/* ── Tab 2: Social — Signal Map + unified signal cards ── */}
         {activeTab === "social" && (
           <div className="space-y-5">
+            <TabHeader
+              title="Social"
+              purpose="How influence moves"
+              useIt="use it to find the right voices, communities and environments"
+            />
             <SocialSignals report={report} />
 
             {/* Language Codes at the bottom (moved from top) */}
@@ -218,47 +224,60 @@ export function ReportView({ report, onReset }: ReportViewProps) {
           </div>
         )}
 
-        {/* ── Tab 3: Trust ── */}
-        {activeTab === "trust" && (
-          <div className="space-y-5">
-            {core?.trustSignals?.length || report.trustedVoices?.length ? (
-              <>
-                <CoreListCard
-                  title="Trust Signals"
-                  icon="✓"
-                  intro="What earns belief with the influential core — the voices, evidence, and experiences that carry weight."
-                  items={core?.trustSignals}
-                />
-                {report.trustedVoices && <TrustedVoices data={report.trustedVoices} />}
-                <TrustTransferPaths paths={report.influenceSusceptibility?.trustTransferPaths} />
-              </>
-            ) : (
-              <EmptyTabNote message="No trust signal data in this report." />
-            )}
-          </div>
-        )}
-
-        {/* ── Tab 4: Behavioral ── */}
+        {/* ── Tab 3: Behavioral ── Round 9: four observable-behavior buckets.
+            Old reports (no behavioralBuckets) render the legacy layout — the
+            6a transitional pattern. */}
         {activeTab === "behavioral" && (
           <div className="space-y-5">
-            {report.entryPoints && report.entryPoints.length > 0 && (
-              <EntryPoints data={report.entryPoints} />
-            )}
-            {report.findability && <FindabilitySection data={report.findability} />}
-            {report.inMarketBehavior && <InMarketBehaviorSection data={report.inMarketBehavior} />}
-            <BehavioralSignals data={report.behavioralSignals} />
-            <CoreListCard
-              title="Habitual Behaviors"
-              icon="↻"
-              intro="Behaviors that define membership in the influential core."
-              items={core?.keyBehaviors}
+            <TabHeader
+              title="Behavioral"
+              purpose="How the audience becomes findable"
+              useIt="use it to build targetable audiences from observable behavior"
             />
+            {report.behavioralBuckets && report.behavioralBuckets.length > 0 ? (
+              <BehavioralBuckets data={report.behavioralBuckets} />
+            ) : (
+              <>
+                {report.findability && <FindabilitySection data={report.findability} />}
+                {report.inMarketBehavior && <InMarketBehaviorSection data={report.inMarketBehavior} />}
+                <BehavioralSignals data={report.behavioralSignals} />
+                <CoreListCard
+                  title="Habitual Behaviors"
+                  icon="↻"
+                  intro="Behaviors that define membership in the influential core."
+                  items={core?.keyBehaviors}
+                />
+              </>
+            )}
+            {/* Affinity Adjacencies stays at the bottom of Behavioral — it's
+                behavioral-adjacent and Maria didn't flag it. */}
+            {report.behavioralBuckets && report.behavioralBuckets.length > 0 &&
+              report.findability?.affinityAdjacencies && report.findability.affinityAdjacencies.length > 0 && (
+              <div className="rounded-xl border border-[#1C2333] bg-[#0D1117] p-5">
+                <p className="eyebrow mb-1.5 !text-[11px] !tracking-[0.18em] !text-[#6366F1]">Affinity Adjacencies</p>
+                <p className="mb-3.5 text-xs text-[#6E7681]">Non-obvious interest overlaps usable for lookalike or affinity targeting.</p>
+                <ul className="space-y-2">
+                  {report.findability.affinityAdjacencies.map((a, i) => (
+                    <li key={i} className="rounded-lg border border-[#1C2333] bg-[#080B0F] p-3 text-sm">
+                      <span className="font-medium text-[#E8EDF2]">{a.interest}</span>
+                      <span className="text-[#8B949E]"> — {a.rationale}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         )}
 
-        {/* ── Tab 5: Motivational ── */}
+        {/* ── Tab 4: Motivational ── content unchanged this round (Maria's
+            messaging framework is TBD) — the header sets the destination. */}
         {activeTab === "motivational" && (
           <div className="space-y-5">
+            <TabHeader
+              title="Motivational"
+              purpose="What motivates them to act"
+              useIt="use it to inform messaging"
+            />
             <EmotionalDrivers data={report.emotionalDrivers} />
             <CoreListCard
               title="Key Tensions"
@@ -278,14 +297,18 @@ export function ReportView({ report, onReset }: ReportViewProps) {
           </div>
         )}
 
-        {/* ── Tab 7: Activation ── */}
+        {/* ── Tab 6: Activation ── Round 9: Entry Points (with Approach/Avoid)
+            moved here from Behavioral — unchanged content, new home. */}
         {activeTab === "activation" && (
           <div className="space-y-5">
+            {report.entryPoints && report.entryPoints.length > 0 && (
+              <EntryPoints data={report.entryPoints} />
+            )}
             {core?.activationRecommendations && core.activationRecommendations.length > 0 ? (
               <ActivationPlaybook recommendations={core.activationRecommendations} />
-            ) : (
+            ) : !report.entryPoints?.length ? (
               <EmptyTabNote message="No activation recommendations in this report." />
-            )}
+            ) : null}
           </div>
         )}
 
@@ -306,13 +329,75 @@ export function ReportView({ report, onReset }: ReportViewProps) {
           </div>
         )}
 
-        {/* ── Tab 9: Graveyard — retired sections, kept renderable ── */}
+        {/* ── Tab 8: Graveyard — retired sections, kept renderable ── */}
         {activeTab === "graveyard" && (
           <div className="space-y-5">
             <div>
               <p className="eyebrow mb-1.5">Graveyard</p>
               <p className="text-sm text-[#E8EDF2]/45">Retired sections — kept for reference.</p>
             </div>
+
+            {/* Round 9: the Trust tab's three sections park here AS-IS — a
+                park, not a deletion. Resurrection (e.g. Trusted Voices inside
+                Social) is a pending Maria decision; the data keeps being
+                produced so that would be a UI-only move. */}
+            {(core?.trustSignals?.length || report.trustedVoices?.length ||
+              report.influenceSusceptibility?.trustTransferPaths?.length) ? (
+              <>
+                {core?.trustSignals && core.trustSignals.length > 0 && (
+                  <GraveyardPlot formerly="Trust tab">
+                    <CoreListCard
+                      title="Trust Signals"
+                      icon="✓"
+                      intro="What earns belief with the influential core — the voices, evidence, and experiences that carry weight."
+                      items={core.trustSignals}
+                    />
+                  </GraveyardPlot>
+                )}
+                {report.trustedVoices && report.trustedVoices.length > 0 && (
+                  <GraveyardPlot formerly="Trust tab">
+                    <TrustedVoices data={report.trustedVoices} />
+                  </GraveyardPlot>
+                )}
+                {report.influenceSusceptibility?.trustTransferPaths?.length ? (
+                  <GraveyardPlot formerly="Trust tab">
+                    <TrustTransferPaths paths={report.influenceSusceptibility.trustTransferPaths} />
+                  </GraveyardPlot>
+                ) : null}
+              </>
+            ) : null}
+
+            {/* Round 9: sections that left the Behavioral tab when the
+                four-bucket layout replaced them (new reports only — old
+                reports still render these on Behavioral itself). */}
+            {report.behavioralBuckets && report.behavioralBuckets.length > 0 && (
+              <>
+                <GraveyardPlot formerly="Behavioral tab">
+                  <BehavioralSignals data={report.behavioralSignals} />
+                </GraveyardPlot>
+                {core?.keyBehaviors && core.keyBehaviors.length > 0 && (
+                  <GraveyardPlot formerly="Behavioral tab">
+                    <CoreListCard
+                      title="Habitual Behaviors"
+                      icon="↻"
+                      intro="Behaviors that define membership in the influential core."
+                      items={core.keyBehaviors}
+                    />
+                  </GraveyardPlot>
+                )}
+                {report.inMarketBehavior && (
+                  <GraveyardPlot formerly="Behavioral tab">
+                    <InMarketBehaviorSection data={report.inMarketBehavior} />
+                  </GraveyardPlot>
+                )}
+                {report.findability && (
+                  <GraveyardPlot formerly="Behavioral tab">
+                    <FindabilitySection data={report.findability} />
+                  </GraveyardPlot>
+                )}
+              </>
+            )}
+
             {report.researchDepth && (
               <GraveyardPlot formerly="The Influential Core tab">
                 <ResearchDepth data={report.researchDepth} />
