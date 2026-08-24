@@ -135,11 +135,35 @@ export function checkSchemaConformance(report: ArchetypeReport): VerifierCheck {
     }
   }
 
+  // Round 9: behavioral buckets. Reconciliation-owned fields empty → fail;
+  // targetableSignal is enrichment-owned, so ALL empty means enrichment was
+  // down (graceful degradation → warn), while a PARTIAL gap is a real
+  // conformance failure.
+  const buckets = report.behavioralBuckets;
+  if (buckets && buckets.length > 0) {
+    const BUCKETS = ["search", "consume", "buy", "go"];
+    for (const b of buckets) {
+      if (!BUCKETS.includes(b.bucket)) failures.push(`${b.id}: bucket "${String(b.bucket)}" invalid`);
+      if (!b.signal?.trim()) failures.push(`${b.id}: signal is empty`);
+      if (!b.whatItSignals?.trim()) failures.push(`${b.id}: whatItSignals is empty`);
+      if (!["high", "medium"].includes(b.strength)) failures.push(`${b.id}: strength "${String(b.strength)}" invalid`);
+      for (const [i, ev] of (b.reinforcingEvidence ?? []).entries()) {
+        if (!ev.source?.trim()) failures.push(`${b.id}: reinforcingEvidence[${i}] has no source (bare evidence)`);
+      }
+    }
+    const emptyTargets = buckets.filter((b) => !b.targetableSignal?.trim());
+    if (emptyTargets.length === buckets.length) {
+      warns.push("all bucket targetableSignals empty — enrichment unavailable this run");
+    } else if (emptyTargets.length > 0) {
+      failures.push(`targetableSignal empty on: ${emptyTargets.map((b) => b.id).join(", ")}`);
+    }
+  }
+
   return check(
     "schema-conformance",
     failures,
     warns,
-    `${signals.length} signals, all types present, WHERE/WHO/strength/scale valid`
+    `${signals.length} signals, all types present, WHERE/WHO/strength/scale valid${buckets?.length ? `; ${buckets.length} bucket items conform` : ""}`
   );
 }
 
@@ -366,12 +390,23 @@ function nearSomeLogNumber(token: string, nums: number[]): boolean {
   return nums.some((m) => candidates.some((c) => m > 0 && Math.abs(c - m) / m <= 0.15));
 }
 
+/** Round 9: reinforcing-evidence entries whose source declares tool or search
+ * origin must trace to the tool log like dataSignals do. Lens-attributed
+ * entries (named lens source) are the LLM check's domain — a lens number is
+ * legitimately absent from the tool log. */
+const TOOL_SOURCE_RE = /google[\s_]?trends|youtube|pinterest|reddit\s+(api|tool)|web[\s_]?search|search[-\s]sourced|serpapi|tool\s+(call|result)/i;
+
 export function checkNumberLogAudit(report: ArchetypeReport, toolAudit?: ToolAuditEntry[]): VerifierCheck {
   if (!toolAudit || toolAudit.length === 0) {
     return { id: "number-log-audit", status: "pass", detail: "skipped — no tool audit available for this run" };
   }
   const dataSignals = report.dataSignals?.signals ?? [];
-  if (dataSignals.length === 0) {
+  const toolSourcedEvidence = (report.behavioralBuckets ?? []).flatMap((b) =>
+    (b.reinforcingEvidence ?? [])
+      .filter((ev) => TOOL_SOURCE_RE.test(ev.source ?? ""))
+      .map((ev) => ({ owner: b.id, text: ev.evidence }))
+  );
+  if (dataSignals.length === 0 && toolSourcedEvidence.length === 0) {
     return { id: "number-log-audit", status: "pass", detail: "no dataSignals to audit" };
   }
 
@@ -402,6 +437,18 @@ export function checkNumberLogAudit(report: ArchetypeReport, toolAudit?: ToolAud
         if (derivedLooking) warns.push(`${msg} (looks derived — see paraphrase audit)`);
         else failures.push(msg);
       }
+    }
+  }
+
+  // Round 9: tool/search-sourced reinforcing evidence gets the same treatment.
+  for (const { owner, text } of toolSourcedEvidence) {
+    for (const token of extractNumericTokens(text ?? "")) {
+      audited++;
+      if (tokenInLog(token, logText)) continue;
+      const derivedLooking = nearSomeLogNumber(token, nums) || DERIVATION_MARKERS.test(text ?? "");
+      const msg = `${owner}: "${token}" (reinforcingEvidence) not found in any tool result`;
+      if (derivedLooking) warns.push(`${msg} (looks derived — see paraphrase audit)`);
+      else failures.push(msg);
     }
   }
 

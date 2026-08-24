@@ -209,6 +209,9 @@ export interface ArchetypeReport {
   // Round 8: integrity check results — absent on older reports and when the
   // Verifier stage failed (it is non-fatal in both directions).
   verifierReport?: VerifierReport;
+  // Round 9: four-bucket behavioral model (Search/Consume/Buy/Go). Absent on
+  // older reports → the Behavioral tab renders its legacy layout.
+  behavioralBuckets?: BucketedBehavioralSignal[];
 }
 
 // ─── Periphery types (Round 2 Periphery agent) ───────────────────────────────
@@ -368,6 +371,29 @@ export interface CoreSize {
   estimate: string; // "8-15%"
   basis: string; // what the evidence is
   confidence: "grounded" | "directional" | "speculative";
+}
+
+// ─── Round 9: Behavioral buckets (Maria's four observable-behavior categories) ─
+// NOTE: named `behavioralBuckets` (not `behavioralSignals`) because the legacy
+// behavioralSignals field ("Behaviors and Triggers") continues to be produced
+// for backward compat — the brief's interface sketch predated noticing the
+// field-name collision.
+
+export type BehavioralBucket = "search" | "consume" | "buy" | "go";
+
+export interface ReinforcingEvidence {
+  evidence: string; // "'visible mending' searches +25% YoY", "1.8M members, ~3% contribution layer"
+  source: string; // attribution per existing rules: tool result, search-sourced, or named lens evidence
+}
+
+export interface BucketedBehavioralSignal {
+  id: string;
+  bucket: BehavioralBucket;
+  signal: string; // the exact observable: "Stash-busting pattern searches", "LYS sit-and-stitch hours"
+  targetableSignal: string; // the actionable version — written by Enrichment, same authority rules as socialSignals targetables
+  whatItSignals: string; // ONE sentence: what this behavior reveals about the Influential Core
+  reinforcingEvidence: ReinforcingEvidence[]; // per-item "why act on this one?" — the ✓ VALIDATED machinery, itemized
+  strength: "high" | "medium";
 }
 
 // ─── Round 8: Verifier report ────────────────────────────────────────────────

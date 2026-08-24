@@ -189,6 +189,129 @@ describe("graceful degradation", () => {
 
 // ─── Numeric token extraction ─────────────────────────────────────────────────
 
+// ─── Round 9: behavioral-bucket conformance + evidence audit ─────────────────
+
+function withBuckets(overrides?: Partial<import("@/types").BucketedBehavioralSignal>[]): ArchetypeReport {
+  const base = clone();
+  base.behavioralBuckets = [
+    {
+      id: "bb1",
+      bucket: "search",
+      signal: "Stash-reduction query cluster",
+      targetableSignal: "searching 'yarn stash organization' on Google",
+      whatItSignals: "The core manages accumulation guilt through planning behavior.",
+      reinforcingEvidence: [
+        { evidence: "'stash busting' searches +40% (12m)", source: "google_trends tool result" },
+        { evidence: "recurring stash-guilt threads", source: "audience lens community evidence" },
+      ],
+      strength: "high",
+    },
+    {
+      id: "bb2",
+      bucket: "go",
+      signal: "Local yarn store visits",
+      targetableSignal: "Google local search 'yarn store near me'",
+      whatItSignals: "The core's purchase decisions form at physical trust nodes.",
+      reinforcingEvidence: [{ evidence: "steady 'yarn store near me' intent (-5% YoY, stable)", source: "google_trends tool result" }],
+      strength: "high",
+    },
+    ...(overrides ?? []).map((o, i) => ({
+      id: `bbx${i}`,
+      bucket: "consume" as const,
+      signal: "x",
+      targetableSignal: "x",
+      whatItSignals: "x",
+      reinforcingEvidence: [],
+      strength: "medium" as const,
+      ...o,
+    })),
+  ];
+  return base;
+}
+
+describe("behavioral-bucket schema conformance (Round 9)", () => {
+  it("passes well-formed buckets", () => {
+    const result = checkSchemaConformance(withBuckets());
+    expect(result.status).not.toBe("fail");
+    expect(result.detail).toContain("bucket items conform");
+  });
+
+  it("fails a blanked whatItSignals", () => {
+    const result = checkSchemaConformance(withBuckets([{ whatItSignals: "" }]));
+    expect(result.status).toBe("fail");
+    expect(result.detail).toContain("whatItSignals is empty");
+  });
+
+  it("fails a bare reinforcing-evidence entry (no source)", () => {
+    const result = checkSchemaConformance(
+      withBuckets([{ reinforcingEvidence: [{ evidence: "searches +80%", source: "" }] }])
+    );
+    expect(result.status).toBe("fail");
+    expect(result.detail).toContain("no source (bare evidence)");
+  });
+
+  it("fails an invalid bucket value", () => {
+    const result = checkSchemaConformance(
+      withBuckets([{ bucket: "platforms" as unknown as import("@/types").BehavioralBucket }])
+    );
+    expect(result.status).toBe("fail");
+    expect(result.detail).toContain('bucket "platforms" invalid');
+  });
+
+  it("warns (not fails) when ALL targetables are empty — enrichment down", () => {
+    const report = withBuckets();
+    for (const b of report.behavioralBuckets!) b.targetableSignal = "";
+    const result = checkSchemaConformance(report);
+    expect(result.status).toBe("warn");
+    expect(result.detail).toContain("enrichment unavailable");
+  });
+
+  it("fails a PARTIAL targetable gap", () => {
+    const report = withBuckets();
+    report.behavioralBuckets![0].targetableSignal = "";
+    const result = checkSchemaConformance(report);
+    expect(result.status).toBe("fail");
+    expect(result.detail).toContain("targetableSignal empty on: bb1");
+  });
+});
+
+describe("reinforcing-evidence number audit (Round 9)", () => {
+  const audit: ToolAuditEntry[] = [
+    { tool: "search_google_trends", query: "stash busting", resultJson: '{"timeRange":"12m","percentChange":"+40%","trend":"rising"}' },
+    { tool: "search_google_trends", query: "yarn store near me", resultJson: '{"timeRange":"12m","percentChange":"-5%","trend":"stable"}' },
+  ];
+
+  it("passes tool-sourced evidence whose numbers trace to the log", () => {
+    const report = withBuckets();
+    report.dataSignals = undefined;
+    const result = checkNumberLogAudit(report, audit);
+    expect(result.status).toBe("pass");
+  });
+
+  it("fails a tool-sourced evidence number found nowhere in the log", () => {
+    const report = withBuckets();
+    report.dataSignals = undefined;
+    report.behavioralBuckets![0].reinforcingEvidence[0] = {
+      evidence: "'stash busting' searches +85% (12m)",
+      source: "google_trends tool result",
+    };
+    const result = checkNumberLogAudit(report, audit);
+    expect(result.status).toBe("fail");
+    expect(result.detail).toContain("85");
+    expect(result.detail).toContain("reinforcingEvidence");
+  });
+
+  it("skips lens-attributed evidence numbers (LLM check's domain)", () => {
+    const report = withBuckets();
+    report.dataSignals = undefined;
+    report.behavioralBuckets![0].reinforcingEvidence = [
+      { evidence: "Mintel: 71% of US adults did a craft project", source: "context lens (Mintel)" },
+    ];
+    const result = checkNumberLogAudit(report, audit);
+    expect(result.status).toBe("pass");
+  });
+});
+
 // ─── Exemplar-leakage drift guard (Round 8b, Part 8) ─────────────────────────
 
 describe("checkExemplarLeakage", () => {

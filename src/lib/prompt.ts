@@ -27,13 +27,16 @@ import type { ToolAuditEntry } from "@/lib/verifier";
 // alternating exemplar domains across specs) reduces content-anchoring risk
 // further than any single fixed exemplar can.
 export const EXEMPLAR_NGRAMS = [
-  "trust grammar", // Story exemplar (Part 1)
-  "impossible to buy your way into", // Story exemplar (Part 1)
-  "knit-night regular", // Profile/core-vs-base exemplar (Part 3)
-  "counter-current inside its own audience", // Profile/core-vs-base exemplar (Part 3)
-  "~3% posting layer", // Targetables exemplar (Part 2)
-  "411K weekly visitors", // Participation-layers exemplar (Part 4)
-  "'Sue'", // Snapshot trust exemplar (Part 5)
+  "trust grammar", // Story exemplar (8b Part 1)
+  "impossible to buy your way into", // Story exemplar (8b Part 1)
+  "knit-night regular", // Profile/core-vs-base exemplar (8b Part 3)
+  "counter-current inside its own audience", // Profile/core-vs-base exemplar (8b Part 3)
+  "~3% posting layer", // Targetables exemplar (8b Part 2)
+  "411K weekly visitors", // Participation-layers exemplar (8b Part 4)
+  "'Sue'", // Snapshot trust exemplar (8b Part 5)
+  "beginner craft kit", // Behavioral-bucket format exemplar (R9 Part 6) — covers the plural via substring
+  "stash-busting pattern searches", // Bucket signal examples in the reconciliation prompt (R9)
+  "lys sit-and-stitch hours", // Bucket signal examples in the reconciliation prompt (R9)
 ];
 
 /** Keywords identifying the exemplars' source audience (crafting) — a hit
@@ -119,6 +122,26 @@ const CORE_SIZE_EVIDENCE_INSTRUCTION = `CORE SIZE EVIDENCE: Collect any evidence
 
 const CORE_SIZE_EVIDENCE_SCHEMA = `  "coreSizeEvidence": ["evidence strings about the core's share of the audience, each with its number and source — empty array when none found"],`;
 
+// Round 9: Maria's four-category behavioral look-for lists (her spec, slide 5).
+const BEHAVIORAL_EVIDENCE_INSTRUCTION = `BEHAVIORAL EVIDENCE — collect observations in four categories as you research:
+
+SEARCH — specific search terms and query clusters; "how to", "best", "near me", "versus" and review searches; problems/needs expressed as questions; recurring seasonal searches; rising or accelerating search behaviors; searches connecting the audience to adjacent categories.
+
+CONSUME — videos and topics watched; named channels and creators; websites, apps, newsletters, podcasts; recurring thread topics; tutorials, reviews, comparison content; formats producing unusually strong engagement; repeated consumption across multiple platforms.
+
+BUY — products and categories being researched; brands and retailers being considered; recent or repeated purchases; repurchase and replenishment patterns; secondhand and resale purchasing; delayed or intentionally avoided purchases (avoidance is a purchase behavior).
+
+GO — stores and retailer types mentioned; events and conferences; community and cultural spaces; venues visited; recurring local gatherings; places appearing across multiple conversations or sources.
+
+Report the exact observable (the query, the channel, the product, the venue) with its evidence — not a summary of the category.`;
+
+const BEHAVIORAL_EVIDENCE_SCHEMA = `  "behavioralEvidence": {
+    "search": [{ "observable": "the exact query/cluster", "evidence": "what you found", "sourceUrl": "URL if available" }],
+    "consume": [{ "observable": "the exact channel/format/topic", "evidence": "what you found", "sourceUrl": "URL if available" }],
+    "buy": [{ "observable": "the exact product/brand/avoidance", "evidence": "what you found", "sourceUrl": "URL if available" }],
+    "go": [{ "observable": "the exact venue/event/space", "evidence": "what you found", "sourceUrl": "URL if available" }]
+  },`;
+
 // ─── Lens 1: Audience ─────────────────────────────────────────────────────────
 
 export function buildAudienceLensPrompt(inputs: AgentInputs): string {
@@ -144,6 +167,8 @@ RESEARCH STRATEGY (use up to 15 web searches):
 ${SEARCH_SPECIFICITY}
 
 ${REAL_WORLD_CONTEXTS_INSTRUCTION}
+
+${BEHAVIORAL_EVIDENCE_INSTRUCTION}
 
 ${CORE_SIZE_EVIDENCE_INSTRUCTION}
 
@@ -213,6 +238,7 @@ OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with
     "whatDestroysCredibility": "description of what makes this audience skeptical",
     "proofFormats": ["types of proof they respond to — e.g., before/after, data, personal testimony"]
   },
+${BEHAVIORAL_EVIDENCE_SCHEMA}
 ${REAL_WORLD_CONTEXTS_SCHEMA}
 ${CORE_SIZE_EVIDENCE_SCHEMA.replace(/,$/, "")}
 }
@@ -254,11 +280,14 @@ ${SEARCH_SPECIFICITY}
 
 ${REAL_WORLD_CONTEXTS_INSTRUCTION}
 
+${BEHAVIORAL_EVIDENCE_INSTRUCTION}
+
 ${CORE_SIZE_EVIDENCE_INSTRUCTION}
 
 OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with {):
 {
   "lens": "brand",
+${BEHAVIORAL_EVIDENCE_SCHEMA}
 ${REAL_WORLD_CONTEXTS_SCHEMA}
 ${CORE_SIZE_EVIDENCE_SCHEMA}
   "brandLandscape": {
@@ -351,11 +380,14 @@ ${SEARCH_SPECIFICITY}
 
 ${REAL_WORLD_CONTEXTS_INSTRUCTION}
 
+${BEHAVIORAL_EVIDENCE_INSTRUCTION}
+
 ${CORE_SIZE_EVIDENCE_INSTRUCTION}
 
 OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with {):
 {
   "lens": "context",
+${BEHAVIORAL_EVIDENCE_SCHEMA}
 ${REAL_WORLD_CONTEXTS_SCHEMA}
 ${CORE_SIZE_EVIDENCE_SCHEMA}
   "contextOverview": {
@@ -607,6 +639,28 @@ EXEMPLAR (verbatim from a real report — match its structure, not its content):
 
 Evidence-gated: layer analysis only where numbers exist. Never estimate a ratio without inputs.
 
+BEHAVIORAL BUCKETS — YOU OWN SELECTION, BUCKETING, AND EVIDENCE:
+From the lenses' behavioralEvidence collections (and any other behavioral findings), produce behavioralBuckets — the observable behaviors that make this audience findable, organized into exactly four buckets:
+
+- "search" — WHAT THEY SEARCH: specific queries and query clusters
+- "consume" — WHAT THEY CONSUME: channels, creators, formats, platforms, newsletters, podcasts, recurring content
+- "buy" — WHAT THEY BUY: purchases, purchase considerations, repurchase patterns, and deliberate avoidances (avoidance is a purchase behavior). Buy is about the PURCHASE relationship with a product/brand — a product they watch videos about but aren't buying belongs in consume, not buy.
+- "go" — WHERE THEY GO: physical stores, events, venues, gatherings, community spaces. Go is PLACES AND EVENTS — platforms, websites, and apps belong in consume, never in go.
+
+For each item:
+- signal: the exact observable — "Stash-busting pattern searches", "Ravelry project logs", "LYS sit-and-stitch hours" — not a category summary
+- whatItSignals: ONE sentence on what this behavior reveals about the Influential Core
+- reinforcingEvidence: 1-4 entries answering a marketer's "why should I act on this one?" — search growth numbers, community-size/layer data, convergence composites, documented behavioral evidence. Each entry is { evidence, source } where source follows the attribution rules in full: it cites a tool result (name the tool), is marked search-sourced ("per web search"), or names its lens source. NOTHING BARE — an evidence line without a source does not go in.
+- strength: "high" | "medium" per the existing rating conventions
+- Leave targetableSignal as an empty string on every item — the enrichment agent writes it downstream.
+
+FORMAT EXEMPLAR (from Maria's spec — match the structure, not the content):
+Signal: Beginner craft kits (the exact observable purchase)
+Targetable Signal: searching for beginner craft kits on Google, watching beginner crafting tutorials on YT
+What it signals: [one sentence on what the behavior reveals about the Influential Core]
+
+Aim for 3-6 signals per bucket, evidence permitting. A thin bucket (especially buy) shows fewer items — NEVER pad a bucket to hit a count. Anti-padding applies in full: every item traces to lens evidence or tool data.
+
 VALIDATION LINKS: where a dataSignal you produced grounds a social signal, list that dataSignal's id in the signal's validatedBy array. You created both in the same pass — link them.
 
 Leave targetableSignals as an empty array on every signal — the enrichment agent fills it downstream.
@@ -633,6 +687,19 @@ OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with
     }
   ],
   "coreSize": { "estimate": "8-15%", "basis": "what the evidence is", "confidence": "grounded" | "directional" | "speculative" },
+  "behavioralBuckets": [
+    {
+      "id": "bb1",
+      "bucket": "search" | "consume" | "buy" | "go",
+      "signal": "the exact observable",
+      "targetableSignal": "",
+      "whatItSignals": "one sentence on what this reveals about the Influential Core",
+      "reinforcingEvidence": [
+        { "evidence": "the number/fact that makes this worth acting on", "source": "tool result name, 'per web search', or named lens source — never bare" }
+      ],
+      "strength": "high" | "medium"
+    }
+  ],
   "reconciledSignals": [
     {
       "signal": "description of the finding",
@@ -1161,6 +1228,11 @@ Anti-padding: layer and mechanism only when evidenced — never invent segmentat
 - You may lightly polish the body copy for report tone — meaning must not change.
 If the reconciled data has no socialSignals, output enrichedSignals as an empty array.
 
+3. BEHAVIORAL BUCKET TARGETABLES:
+The reconciled data may contain a behavioralBuckets list (four observable-behavior buckets: search/consume/buy/go). Reproduce it as enrichedBehavioralSignals. You may not add, remove, or re-bucket items — reconciliation owns selection, bucketing, signal, whatItSignals, reinforcingEvidence, and strength; those fields pass through UNCHANGED. Your job on each item is exactly one field:
+- targetableSignal: the actionable version of the observable — how someone would actually target or track this behavior ("searching 'stash busting crochet' on Google; 'no buy year' query cluster", "watching beginner crafting tutorials on YT"). The same layer/mechanism/durability standards as social-signal targetables apply where evidence allows; a plain platform+parameter phrasing is acceptable when that's all the evidence supports. Keep it consistent with the findability profile you produced above.
+If the reconciled data has no behavioralBuckets, output enrichedBehavioralSignals as an empty array.
+
 OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with {):
 {
   "findability": {
@@ -1182,6 +1254,14 @@ OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with
       "scale": "unchanged", "scaleBasis": "unchanged",
       "targetableSignals": [{ "platform": "platform this signal actually lives on", "detail": "the specific findability parameter — including layer/mechanism/durability where evidenced" }],
       "validatedBy": unchanged, "evidence": "unchanged"
+    }
+  ],
+  "enrichedBehavioralSignals": [
+    {
+      "id": "unchanged from reconciliation",
+      "bucket": "unchanged", "signal": "unchanged", "whatItSignals": "unchanged",
+      "reinforcingEvidence": unchanged, "strength": "unchanged",
+      "targetableSignal": "the actionable version — how someone would target or track this behavior"
     }
   ]
 }
@@ -1241,7 +1321,10 @@ ${JSON.stringify(report.dataSignals?.signals ?? [], null, 1)}
 SOCIAL SIGNALS (bodies, bases, targetables):
 ${JSON.stringify(signals, null, 1)}
 
-RUN THESE THREE CHECKS:
+BEHAVIORAL BUCKETS (signals, what-it-signals, targetables, reinforcing evidence):
+${JSON.stringify(report.behavioralBuckets ?? [], null, 1)}
+
+RUN THESE THREE CHECKS (behavioral-bucket reinforcingEvidence entries are in scope for checks 1 and 2 — each entry's source field must name a tool result, be marked search-sourced, or name a lens source; treat targetableSignal fields as in scope for check 3):
 
 1. "paraphrase-number-audit" — Find every numeric claim in the PROSE (the Story, core definition/profile, coreSize basis, signal bodies) that references platform data or research findings. For each: does it trace to a logged tool result (paraphrase-tolerant — "2.4M" matches "2400000", "roughly 100K" matches "103450") or to clearly attributed lens evidence? Classify each number by the three source categories.
    - PASS a number outright when it traces to the tool log, OR when it carries a clear, named attribution ("per Mintel", "Ravelry's reported 1M MAU", "(search-sourced)", "per web search"). A named, checkable source IS the verification — do not warn on it just because you personally cannot re-run the lookup. Warn-on-every-attributed-number makes the footer permanently yellow and trains the team to ignore it; an honest, well-attributed report should read ✓ clean.
