@@ -34,6 +34,7 @@ import { SignalCheck } from "./SignalCheck";
 import { CulturalConnectors } from "./CulturalConnectors";
 import { BehavioralBuckets } from "./BehavioralBuckets";
 import { TabHeader } from "./TabHeader";
+import { buildBucketInventory } from "@/lib/bucketInventory";
 
 interface ReportViewProps {
   report: ArchetypeReport;
@@ -235,7 +236,9 @@ export function ReportView({ report, onReset }: ReportViewProps) {
               useIt="use it to build targetable audiences from observable behavior"
             />
             {report.behavioralBuckets && report.behavioralBuckets.length > 0 ? (
-              <BehavioralBuckets data={report.behavioralBuckets} />
+              // Round 10: the inventory layer — existing findability/habitat
+              // data rendered inside its home bucket, beneath the analysis.
+              <BehavioralBuckets data={report.behavioralBuckets} inventory={buildBucketInventory(report)} />
             ) : (
               <>
                 {report.findability && <FindabilitySection data={report.findability} />}
@@ -390,11 +393,10 @@ export function ReportView({ report, onReset }: ReportViewProps) {
                     <InMarketBehaviorSection data={report.inMarketBehavior} />
                   </GraveyardPlot>
                 )}
-                {report.findability && (
-                  <GraveyardPlot formerly="Behavioral tab">
-                    <FindabilitySection data={report.findability} />
-                  </GraveyardPlot>
-                )}
+                {/* Round 10: Findability retired from the Graveyard for
+                    post-Round-9 reports — its content now lives in the bucket
+                    inventory layer. Pre-Round-9 reports (which never reach this
+                    branch) keep it via the legacy Behavioral layout. */}
               </>
             )}
 

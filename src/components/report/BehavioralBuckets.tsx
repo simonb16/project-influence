@@ -1,9 +1,15 @@
 import { BucketedBehavioralSignal, BehavioralBucket } from "@/types";
+import { BucketInventory, InventoryEntry, isInventoryEmpty } from "@/lib/bucketInventory";
 
 // Round 9: the rebuilt Behavioral tab — Maria's four observable-behavior
 // buckets. Each item: Signal → What it signals → Targetable signal →
 // Reinforcing evidence. All four bucket headers render even when a bucket is
 // thin (1-2 items) or empty; a padded bucket is a review failure, not a goal.
+//
+// Round 10 Part 0: each bucket carries a second, visually lighter INVENTORY
+// layer beneath the analyzed signals — the existing findability/habitat data
+// mapped into its home bucket ("just a simpler way to organize the same
+// analysis"). Analysis on top, inventory beneath; neither replaces the other.
 
 const BUCKET_META: Array<{ key: BehavioralBucket; label: string; icon: string; intro: string }> = [
   { key: "search", label: "What They Search", icon: "⌕", intro: "Queries and query clusters the audience actually types." },
@@ -62,7 +68,38 @@ function BucketItem({ item }: { item: BucketedBehavioralSignal }) {
   );
 }
 
-export function BehavioralBuckets({ data }: { data: BucketedBehavioralSignal[] }) {
+function InventoryRow({ entry }: { entry: InventoryEntry }) {
+  return (
+    <li className="text-[12px] leading-relaxed text-[#E8EDF2]/50">
+      <span className="text-[#E8EDF2]/70">{entry.label}</span>
+      {entry.meta && <span className="font-mono text-[10px] text-[#E8EDF2]/30"> · {entry.meta}</span>}
+      {entry.note && <span className="text-[#E8EDF2]/40"> — {entry.note}</span>}
+    </li>
+  );
+}
+
+function InventoryBlock({ entries }: { entries: InventoryEntry[] }) {
+  if (entries.length === 0) return null;
+  return (
+    <div className="mt-3 rounded-[10px] border border-white/[0.05] bg-white/[0.008] px-4 py-3">
+      <p className="eyebrow mb-2 !text-[9px] !tracking-[0.16em] !text-[#6E7681]">Inventory</p>
+      <ul className="space-y-1.5">
+        {entries.map((entry, i) => (
+          <InventoryRow key={i} entry={entry} />
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export function BehavioralBuckets({
+  data,
+  inventory,
+}: {
+  data: BucketedBehavioralSignal[];
+  inventory?: BucketInventory;
+}) {
+  const inventoryEmpty = inventory != null && isInventoryEmpty(inventory);
   return (
     <div className="space-y-8">
       {BUCKET_META.map((bucket) => {
@@ -85,9 +122,15 @@ export function BehavioralBuckets({ data }: { data: BucketedBehavioralSignal[] }
                 No evidenced signals in this bucket this run — thin beats padded.
               </p>
             )}
+            {inventory && <InventoryBlock entries={inventory[bucket.key]} />}
           </section>
         );
       })}
+      {inventoryEmpty && (
+        <p className="text-xs text-[#3D444D]">
+          Inventory unavailable this run (enrichment stage failed) — re-run for the full layer.
+        </p>
+      )}
     </div>
   );
 }
