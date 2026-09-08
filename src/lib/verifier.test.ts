@@ -134,6 +134,30 @@ describe("seeded-error detection", () => {
     expect(result.detail.toLowerCase()).toContain("trust");
   });
 
+  it("downgrades to warn when the exact score exists in the source pool but the label match caught a sibling", () => {
+    // Real production case (espresso run 31b57ef1): snapshot "Vetted creators"
+    // @84 traced exactly to trustedVoices "the evidence-based creator tier"
+    // @84, but the label matcher missed it (0.5 token overlap) and instead
+    // matched the one-token susceptibility channel "creator" (different score)
+    // via substring containment.
+    const corrupted = clone();
+    corrupted.trustedVoices = [
+      ...(corrupted.trustedVoices ?? []),
+      {
+        voice: "James Hoffmann and Lance Hedrick — the evidence-based tier",
+        trustWeight: 84,
+        whyTrusted: "methodology over sponsorship",
+        fragility: "low",
+        proofFormats: ["long-form review"],
+      },
+    ];
+    corrupted.signalsSnapshot!.trust.push({ label: "Vetted creators", score: 84, detail: "evidence-based methodology" });
+
+    const result = checkSnapshotTraceability(corrupted);
+    expect(result.status).not.toBe("fail");
+    expect(result.detail).toContain("label match missed");
+  });
+
   it("flags an incoherent coreName (warn, not fail)", () => {
     const corrupted = clone();
     corrupted.influentialCore!.coreName = "Quantum Yak Overlord";

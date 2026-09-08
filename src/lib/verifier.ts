@@ -274,7 +274,17 @@ export function checkSnapshotTraceability(report: ArchetypeReport): VerifierChec
       // strings), the label trace stands and there is nothing to contradict.
       const scored = matches.filter((m) => typeof m.score === "number");
       if (typeof e.score === "number" && scored.length > 0 && !scored.some((m) => m.score === e.score)) {
-        failures.push(`${box}: "${e.label}" score ${e.score} does not match source (${scored.map((m) => m.score).join("/")})`);
+        // Short generic source labels ("peer", "creator") can out-match the
+        // true multi-word source of a distilled snapshot label. If the exact
+        // score exists anywhere in this box's source pool, the score itself
+        // traces — that's a label-match miss, not a fabricated number.
+        if (sources.some((s) => typeof s.score === "number" && s.score === e.score)) {
+          warns.push(
+            `${box}: "${e.label}" score ${e.score} traces to a source the label match missed (label-matched: ${scored.map((m) => m.score).join("/")})`
+          );
+        } else {
+          failures.push(`${box}: "${e.label}" score ${e.score} does not match source (${scored.map((m) => m.score).join("/")})`);
+        }
       }
     }
   };
