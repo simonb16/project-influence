@@ -26,23 +26,32 @@ import type { ToolAuditEntry } from "@/lib/verifier";
 // different audience produces an equally good exemplar, swapping to it (or
 // alternating exemplar domains across specs) reduces content-anchoring risk
 // further than any single fixed exemplar can.
-export const EXEMPLAR_NGRAMS = [
-  "trust grammar", // Story exemplar (8b Part 1)
-  "impossible to buy your way into", // Story exemplar (8b Part 1)
-  "knit-night regular", // Profile/core-vs-base exemplar (8b Part 3)
-  "counter-current inside its own audience", // Profile/core-vs-base exemplar (8b Part 3)
-  "~3% posting layer", // Targetables exemplar (8b Part 2)
-  "411K weekly visitors", // Participation-layers exemplar (8b Part 4)
-  "'Sue'", // Snapshot trust exemplar (8b Part 5)
-  "beginner craft kit", // Behavioral-bucket format exemplar (R9 Part 6) — covers the plural via substring
-  "stash-busting pattern searches", // Bucket signal examples in the reconciliation prompt (R9)
-  "lys sit-and-stitch hours", // Bucket signal examples in the reconciliation prompt (R9)
-];
+/** Keywords identifying an exemplar's source audience — a hit against a
+ * report whose audience matches its exemplar's keywords downgrades leakage
+ * from fail to warn (possible legitimate re-discovery rather than content
+ * anchoring). Round 10 made this per-ngram: the distinctive exemplars now
+ * come from two source audiences (crafting + home espresso). */
+const CRAFT = ["craft", "knit", "crochet", "yarn"];
+const ESPRESSO = ["espresso", "coffee", "barista"];
 
-/** Keywords identifying the exemplars' source audience (crafting) — a hit
- * against a report whose audience matches downgrades leakage from fail to
- * warn (possible legitimate re-discovery rather than content anchoring). */
-export const EXEMPLAR_SOURCE_AUDIENCE_KEYWORDS = ["craft", "knit", "crochet", "yarn"];
+export const EXEMPLAR_NGRAMS: Array<{ ngram: string; sourceKeywords: string[] }> = [
+  { ngram: "trust grammar", sourceKeywords: CRAFT }, // Story exemplar (8b Part 1)
+  { ngram: "impossible to buy your way into", sourceKeywords: CRAFT }, // Story exemplar (8b Part 1)
+  { ngram: "knit-night regular", sourceKeywords: CRAFT }, // Profile/core-vs-base exemplar (8b Part 3)
+  { ngram: "counter-current inside its own audience", sourceKeywords: CRAFT }, // Profile/core-vs-base exemplar (8b Part 3)
+  { ngram: "~3% posting layer", sourceKeywords: CRAFT }, // Targetables exemplar (8b Part 2)
+  { ngram: "411K weekly visitors", sourceKeywords: CRAFT }, // Participation-layers exemplar (8b Part 4)
+  { ngram: "'Sue'", sourceKeywords: CRAFT }, // Snapshot trust exemplar (8b Part 5)
+  { ngram: "beginner craft kit", sourceKeywords: CRAFT }, // Behavioral-bucket format exemplar (R9 Part 6) — covers the plural via substring
+  { ngram: "stash-busting pattern searches", sourceKeywords: CRAFT }, // Bucket signal examples in the reconciliation prompt (R9)
+  { ngram: "lys sit-and-stitch hours", sourceKeywords: CRAFT }, // Bucket signal examples in the reconciliation prompt (R9)
+  // Round 10 distinctive exemplars (swap-test register reference)
+  { ngram: "don't-buy restraint", sourceKeywords: CRAFT },
+  { ngram: "anti-hustle tonal code", sourceKeywords: CRAFT },
+  { ngram: "frogging stories as credibility", sourceKeywords: CRAFT },
+  { ngram: "parameter-specific proof format", sourceKeywords: ESPRESSO },
+  { ngram: "community-trust secondary market", sourceKeywords: ESPRESSO },
+];
 
 export interface AgentInputs {
   audience: string;
@@ -614,7 +623,24 @@ Each social signal is one of three types:
 - "digital" — a digital space or platform community where the core participates ("Substack newsletter ecosystem", "expert-peer Instagram accounts")
 - "physical" — a real-world space or gathering where influence moves ("independent bottle shops", "dinner parties", "fairs and salons")
 
-Produce 8-14 signals total with a mix of all three types. Consolidate from your influence map, digital habitat, and real world habitat analyses — one signal per distinct influence mechanism, not one per data source. The same community must not appear as multiple signals. WHERE and WHO are required on every signal: where it happens, and who the specific voices/actors are (named entities only with evidence; archetypes otherwise).
+Produce 8-14 signals total. Types follow the evidence — a typical list has all three, but do not manufacture a signal to fill a type. An audience whose influence is overwhelmingly physical may produce few content signals, and that is a finding. Consolidate from your influence map, digital habitat, and real world habitat analyses — one signal per distinct influence mechanism, not one per data source. The same community must not appear as multiple signals. WHERE and WHO are required on every signal: where it happens, and who the specific voices/actors are (named entities only with evidence; archetypes otherwise).
+
+THE SWAP TEST: Before finalizing your signal list, apply this test to each signal: "Could this exact signal, as written, appear in a report about a completely different audience?" A signal that survives the swap is inventory, not intelligence.
+
+Your list must contain AT LEAST 4 signals that FAIL the swap test — signals that would be nonsense for any other audience: this audience's tonal codes, proof formats, identity rituals, named institutions, peculiar behaviors. The obvious platforms (the big subreddits, YouTube niches, newsletter ecosystems) are table stakes — include them, but they are the floor of the list, not its point. The report's value concentrates in the signals only this audience could produce.
+
+For each swap-test-failing signal, populate whyOnlyThisAudience: one sentence naming what makes it peculiar to this audience. Leave the field out of signals that are honest inventory. Anti-padding applies in full: a distinctive signal still needs real evidence — if the research genuinely surfaced fewer than 4 peculiar signals, say so in the list you produce rather than inventing peculiarity.
+
+DISTINCTIVE EXEMPLARS (register reference from real reports — match the specificity, not the content):
+- "Deinfluencing / don't-buy restraint content" — a counter-commercial identity ranked as the audience's #1 influence signal
+- "The 'just for me' anti-hustle tonal code — permission-giving as influence"
+- "Honest WIP/UFO show-and-tell as proof format — frogging stories as credibility"
+- "Parameter-specific proof format — numbers, mods, and long-term follow-ups as the price of being believed"
+- "Community-trust secondary market — buying used gear from known forum participants with care records"
+
+LICENSE FOR SPICE: A signal with no platform quant but vivid qualitative evidence MAY outrank a measurable one. Measurability is a property of the evidence, not of the signal's importance — do not let "can I score this precisely" leak into "should I select this." Score unquantifiable signals from evidence density and mark the basis evidence-classified, as the rules already allow.
+
+Single-lens signals are admissible when the evidence is specific and vivid — label them with their convergence status honestly (the existing confidence machinery). A distinctive single-lens signal with real evidence beats a converged platitude.
 
 STRENGTH (0-100): how forcefully this signal shapes what the core believes, adopts, and shares.
 Two components, weighed together:
@@ -683,7 +709,8 @@ OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with
       "scaleBasis": "the quant that drove the classification, or explicit evidence-classified note",
       "targetableSignals": [],
       "validatedBy": ["ds1"] (dataSignal ids that ground this signal — omit or empty when none),
-      "evidence": "key supporting evidence"
+      "evidence": "key supporting evidence",
+      "whyOnlyThisAudience": "one sentence naming what makes this peculiar to this audience — ONLY on swap-test-failing signals; omit on inventory signals"
     }
   ],
   "coreSize": { "estimate": "8-15%", "basis": "what the evidence is", "confidence": "grounded" | "directional" | "speculative" },
@@ -1291,6 +1318,7 @@ export function buildVerifierPrompt(report: ArchetypeReport, toolAudit: ToolAudi
     scaleBasis: s.scaleBasis,
     targetableSignals: s.targetableSignals,
     evidence: s.evidence,
+    whyOnlyThisAudience: s.whyOnlyThisAudience,
   }));
 
   return `You are the Verifier. You audit a market-research report for integrity: do its numeric claims trace to real sources, are its basis statements honest, are its targetables grounded? You do NOT judge the quality of the analysis — only whether claims are properly sourced and honestly framed.
@@ -1324,7 +1352,7 @@ ${JSON.stringify(signals, null, 1)}
 BEHAVIORAL BUCKETS (signals, what-it-signals, targetables, reinforcing evidence):
 ${JSON.stringify(report.behavioralBuckets ?? [], null, 1)}
 
-RUN THESE THREE CHECKS (behavioral-bucket reinforcingEvidence entries are in scope for checks 1 and 2 — each entry's source field must name a tool result, be marked search-sourced, or name a lens source; treat targetableSignal fields as in scope for check 3):
+RUN THESE FOUR CHECKS (behavioral-bucket reinforcingEvidence entries are in scope for checks 1 and 2 — each entry's source field must name a tool result, be marked search-sourced, or name a lens source; treat targetableSignal fields as in scope for check 3):
 
 1. "paraphrase-number-audit" — Find every numeric claim in the PROSE (the Story, core definition/profile, coreSize basis, signal bodies) that references platform data or research findings. For each: does it trace to a logged tool result (paraphrase-tolerant — "2.4M" matches "2400000", "roughly 100K" matches "103450") or to clearly attributed lens evidence? Classify each number by the three source categories.
    - PASS a number outright when it traces to the tool log, OR when it carries a clear, named attribution ("per Mintel", "Ravelry's reported 1M MAU", "(search-sourced)", "per web search"). A named, checkable source IS the verification — do not warn on it just because you personally cannot re-run the lookup. Warn-on-every-attributed-number makes the footer permanently yellow and trains the team to ignore it; an honest, well-attributed report should read ✓ clean.
@@ -1335,12 +1363,19 @@ RUN THESE THREE CHECKS (behavioral-bucket reinforcingEvidence entries are in sco
 
 3. "targetable-groundedness" — Spot-check the targetableSignals: does each reference platforms/spaces that the signal's own evidence, body, or where-field actually mentions? Generic filler ("social media — engagement") → WARN. Targetables naming platforms with no connection to the signal's evidence → FAIL.
 
+4. "genericity-audit" — Read the socialSignals list. Assess: (a) do at least 4 signals fail the swap test (their signal/body, as written, would be nonsense for a completely different audience)? (b) could the list as a whole, with the audience name redacted, be attributed to the correct audience by a knowledgeable reader?
+   - Fewer than 4 swap-test failures → WARN naming the interchangeable signals.
+   - List reads as fully interchangeable → FAIL.
+   - whyOnlyThisAudience populated on distinctive signals with real reasoning (not a restated title) → contributes to PASS.
+   This is the genericity counterpart of the leakage guard: leakage catches borrowed specificity; this catches missing specificity. It is NOT a fabrication license — a peculiarity claim unsupported by the signal's own evidence counts against, not toward, the audit.
+
 OUTPUT (respond with ONLY this valid JSON object — no prose, start with {):
 {
   "checks": [
     { "id": "paraphrase-number-audit", "status": "pass" | "warn" | "fail", "detail": "one line; on warn/fail name the specific number/signal and why" },
     { "id": "basis-honesty", "status": "pass" | "warn" | "fail", "detail": "one line; on warn/fail name the specific signal and its basis problem" },
-    { "id": "targetable-groundedness", "status": "pass" | "warn" | "fail", "detail": "one line; on warn/fail name the specific signal and targetable" }
+    { "id": "targetable-groundedness", "status": "pass" | "warn" | "fail", "detail": "one line; on warn/fail name the specific signal and targetable" },
+    { "id": "genericity-audit", "status": "pass" | "warn" | "fail", "detail": "one line; on warn name the interchangeable signals; on pass name the strongest distinctive signals" }
   ]
 }
 

@@ -20,7 +20,7 @@ import {
 // two can't drift apart. prompt.ts's own import from this module is
 // type-only (erased at compile time), so this does not create a runtime
 // circular dependency — verified by the build.
-import { EXEMPLAR_NGRAMS, EXEMPLAR_SOURCE_AUDIENCE_KEYWORDS } from "@/lib/prompt";
+import { EXEMPLAR_NGRAMS } from "@/lib/prompt";
 
 /** One executed tool call, captured in memory by the reconciliation loop.
  * resultJson is the untruncated JSON returned to the model. */
@@ -474,26 +474,28 @@ export function checkNumberLogAudit(report: ArchetypeReport, toolAudit?: ToolAud
 
 export function checkExemplarLeakage(report: ArchetypeReport): VerifierCheck {
   const haystack = JSON.stringify(report).toLowerCase();
-  const hits = EXEMPLAR_NGRAMS.filter((ng) => haystack.includes(ng.toLowerCase()));
+  const hits = EXEMPLAR_NGRAMS.filter((e) => haystack.includes(e.ngram.toLowerCase()));
 
   if (hits.length === 0) {
     return { id: "exemplar-leakage", status: "pass", detail: "no in-prompt exemplar phrases found in report content" };
   }
 
+  // Round 10: source keywords are per-ngram — a hit only downgrades to warn
+  // when the report's audience matches THAT exemplar's source audience.
   const audience = (report.audience ?? "").toLowerCase();
-  const sameAudience = EXEMPLAR_SOURCE_AUDIENCE_KEYWORDS.some((k) => audience.includes(k));
+  const crossAudience = hits.filter((e) => !e.sourceKeywords.some((k) => audience.includes(k)));
 
-  if (sameAudience) {
+  if (crossAudience.length > 0) {
     return {
       id: "exemplar-leakage",
-      status: "warn",
-      detail: `same-audience re-run — possible legitimate re-discovery of: ${hits.join(", ")}`,
+      status: "fail",
+      detail: `exemplar phrase(s) leaked into a different-audience report: ${crossAudience.map((e) => e.ngram).join(", ")}`,
     };
   }
   return {
     id: "exemplar-leakage",
-    status: "fail",
-    detail: `exemplar phrase(s) leaked into a different-audience report: ${hits.join(", ")}`,
+    status: "warn",
+    detail: `same-audience re-run — possible legitimate re-discovery of: ${hits.map((e) => e.ngram).join(", ")}`,
   };
 }
 
@@ -511,7 +513,7 @@ export function runCodeChecks(inputs: VerifierInputs): VerifierCheck[] {
   ];
 }
 
-const LLM_CHECK_IDS = ["paraphrase-number-audit", "basis-honesty", "targetable-groundedness"];
+const LLM_CHECK_IDS = ["paraphrase-number-audit", "basis-honesty", "targetable-groundedness", "genericity-audit"];
 
 export async function runVerifier(
   inputs: VerifierInputs,

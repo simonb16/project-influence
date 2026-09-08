@@ -687,13 +687,19 @@ export async function runPeripheryAgent(
 }
 
 // ─── Round 8: Verifier LLM checks (judgment checks 7-9) ──────────────────────
-// One Sonnet 4.6 call covering all three judgment checks. The mechanical
-// checks (1-6) are plain code in verifier.ts — this call is reserved for
-// paraphrase-tolerant number tracing, basis-honesty classification, and
-// targetable groundedness, which need reading comprehension.
+// One Sonnet 4.6 call covering all four judgment checks. The mechanical
+// checks are plain code in verifier.ts — this call is reserved for
+// paraphrase-tolerant number tracing, basis-honesty classification,
+// targetable groundedness, and the genericity audit (R10), which need
+// reading comprehension.
 
 const VERIFIER_TIMEOUT_MS = 6 * 60 * 1000;
-const EXPECTED_LLM_CHECK_IDS = ["paraphrase-number-audit", "basis-honesty", "targetable-groundedness"];
+const EXPECTED_LLM_CHECK_IDS = [
+  "paraphrase-number-audit",
+  "basis-honesty",
+  "targetable-groundedness",
+  "genericity-audit",
+];
 
 export async function runVerifierLLMChecks(
   report: ArchetypeReport,
@@ -706,7 +712,7 @@ export async function runVerifierLLMChecks(
       4000
     )
   );
-  // Normalize: exactly the three expected checks, in order, valid statuses.
+  // Normalize: exactly the expected checks, in order, valid statuses.
   return EXPECTED_LLM_CHECK_IDS.map((id) => {
     const c = (checks ?? []).find((x) => x?.id === id);
     if (!c || !["pass", "warn", "fail"].includes(c.status)) {

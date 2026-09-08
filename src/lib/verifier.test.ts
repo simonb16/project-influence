@@ -199,11 +199,11 @@ describe("graceful degradation", () => {
         throw new Error("model unavailable");
       }
     );
-    expect(vr.totalCount).toBe(10);
+    expect(vr.totalCount).toBe(11); // 7 code + 4 LLM (genericity-audit added R10)
     const llmChecks = vr.checks.filter((c) =>
-      ["paraphrase-number-audit", "basis-honesty", "targetable-groundedness"].includes(c.id)
+      ["paraphrase-number-audit", "basis-honesty", "targetable-groundedness", "genericity-audit"].includes(c.id)
     );
-    expect(llmChecks).toHaveLength(3);
+    expect(llmChecks).toHaveLength(4);
     for (const c of llmChecks) {
       expect(c.status).toBe("warn");
       expect(c.detail).toContain("model unavailable");
@@ -361,6 +361,27 @@ describe("checkExemplarLeakage", () => {
     const result = checkExemplarLeakage(corrupted);
     expect(result.status).toBe("warn");
     expect(result.detail).toContain("trust grammar");
+  });
+
+  // Round 10: source keywords are per-ngram — an espresso-sourced exemplar
+  // leaking into the craft fixture must FAIL even though craft exemplars
+  // would only warn there.
+  it("FAILs an espresso-sourced exemplar phrase in a craft-audience report", () => {
+    const corrupted = clone();
+    corrupted.summary = `${corrupted.summary} Their parameter-specific proof format rules.`;
+
+    const result = checkExemplarLeakage(corrupted);
+    expect(result.status).toBe("fail");
+    expect(result.detail).toContain("parameter-specific proof format");
+  });
+
+  it("WARNs an espresso-sourced exemplar phrase in an espresso-audience report", () => {
+    const corrupted = clone();
+    corrupted.audience = "Home espresso enthusiasts with semi-automatic machines";
+    corrupted.summary = `${corrupted.summary} Their parameter-specific proof format rules.`;
+
+    const result = checkExemplarLeakage(corrupted);
+    expect(result.status).toBe("warn");
   });
 
   it("catches multiple leaked n-grams at once", () => {

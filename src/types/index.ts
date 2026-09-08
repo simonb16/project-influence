@@ -365,6 +365,7 @@ export interface SocialSignal {
   targetableSignals: Array<{ platform: string; detail: string }>; // synthesis enrichment
   validatedBy?: string[]; // dataSignal ids that ground this signal
   evidence: string;
+  whyOnlyThisAudience?: string; // R10: present on swap-test-failing (distinctive) signals only
 }
 
 export interface CoreSize {
