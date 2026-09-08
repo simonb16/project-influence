@@ -652,10 +652,15 @@ export async function runEnrichmentAgent(
 ): Promise<EnrichmentResult> {
   log(`Enrichment agent — started`);
   const result = await withDeadline("Enrichment agent", LENS_TIMEOUT_MS, (signal) =>
+    // 32000, not the 16000 default: since Round 9 this one response carries
+    // three jobs (enriched signals + findability + bucket targetables) and
+    // content-rich runs deterministically overflowed 16000 — the truncated-
+    // JSON failures behind the missing targetables on the Aug 24 re-run and
+    // the first Round 10 test run.
     runSonnetJsonAgent<EnrichmentResult>(
       buildEnrichmentPrompt(inputs, JSON.stringify(reconciliation, null, 2)),
       signal,
-      16000
+      32000
     )
   );
   log(
