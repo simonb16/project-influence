@@ -222,6 +222,17 @@ export async function getReport(id: string): Promise<ArchetypeReport | null> {
   return res.rows[0].report_json;
 }
 
+/** Round 11A Part 6: merge manual inputs into report_json. The only write
+ * path to a stored report — a shallow jsonb_set on the manualInputs key, so
+ * agent output is never touched. */
+export async function setManualInputs(id: string, manualInputs: unknown): Promise<boolean> {
+  const res = await pool!.query(
+    `UPDATE reports SET report_json = jsonb_set(report_json, '{manualInputs}', $2::jsonb, true) WHERE id = $1`,
+    [id, JSON.stringify(manualInputs)]
+  );
+  return (res.rowCount ?? 0) > 0;
+}
+
 export async function listReports(limit = 200): Promise<ReportSummary[]> {
   const res = await pool!.query(
     `SELECT id, title, audience, run_by, created_at FROM reports ORDER BY created_at DESC LIMIT $1`,
