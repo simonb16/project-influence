@@ -1,7 +1,7 @@
 "use client";
 
 import { ArchetypeReport } from "@/types";
-import { BriefingPageId } from "./BriefingView";
+import type { BriefingPageId } from "./BriefingView";
 import { BlockHead, Card, Chip, ChipRow, Cols2, StatBox } from "./primitives";
 import {
   deriveAdjacencyChips,
