@@ -212,6 +212,22 @@ export interface ArchetypeReport {
   // Round 9: four-bucket behavioral model (Search/Consume/Buy/Go). Absent on
   // older reports → the Behavioral tab renders its legacy layout.
   behavioralBuckets?: BucketedBehavioralSignal[];
+  // Round 11A: hand-entered values (the one small write path). Stored inside
+  // report_json; rendered with basis label + date, never validated beyond that.
+  manualInputs?: ManualInputs;
+}
+
+// ─── Round 11A: manual inputs (slot-not-plumbing — 11C may automate) ─────────
+
+export interface ManualPlatformReach {
+  platform: string; // e.g. "Meta Ads Manager"
+  value: string; // stored as entered — "4.2M", "~3,800,000"
+  dateChecked: string; // ISO date the number was read off the platform
+  enteredBy?: string; // email attribution, same no-auth model as runs
+}
+
+export interface ManualInputs {
+  platformReach?: ManualPlatformReach;
 }
 
 // ─── Periphery types (Round 2 Periphery agent) ───────────────────────────────
