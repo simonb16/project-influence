@@ -129,7 +129,7 @@ const SOURCE_LABELS: Record<string, string> = {
   web_search: "Web search",
 };
 
-function nativeCards(report: ArchetypeReport): SocialSignalCard[] | null {
+export function nativeCards(report: ArchetypeReport): SocialSignalCard[] | null {
   const signals = report.socialSignals;
   if (!signals || signals.length === 0) return null;
   const dataSignals = report.dataSignals?.signals ?? [];
@@ -180,7 +180,9 @@ function plotSignals(cards: SocialSignalCard[]) {
   });
 }
 
-function SignalMap({
+// Round 11A: exported — the briefing view renders the map on a dark plate
+// (chart internals untouched per the brief).
+export function SignalMap({
   cards,
   onSelect,
 }: {
