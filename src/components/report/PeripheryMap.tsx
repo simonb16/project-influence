@@ -17,15 +17,90 @@ const OUTER_R2 = 250;
 const LABEL_R = 270;
 
 type SegmentKey = "mindset" | "lifestyle" | "interest" | "entertainment";
+type MapVariant = "dark" | "light";
 
 const SEGMENTS = [
-  { key: "mindset" as SegmentKey,       label: "MINDSET",       color: "#6366F1", start: -85, end: -5  },
-  { key: "lifestyle" as SegmentKey,     label: "LIFESTYLE",     color: "#10B981", start:   5, end:  85  },
-  { key: "interest" as SegmentKey,      label: "INTEREST",      color: "#F59E0B", start:  95, end: 175  },
-  { key: "entertainment" as SegmentKey, label: "ENTERTAINMENT", color: "#EC4899", start: 185, end: 265  },
+  { key: "mindset" as SegmentKey,       label: "MINDSET",       start: -85, end: -5  },
+  { key: "lifestyle" as SegmentKey,     label: "LIFESTYLE",     start:   5, end:  85  },
+  { key: "interest" as SegmentKey,      label: "INTEREST",      start:  95, end: 175  },
+  { key: "entertainment" as SegmentKey, label: "ENTERTAINMENT", start: 185, end: 265  },
 ] as const;
 
 const SEGMENT_MAP = Object.fromEntries(SEGMENTS.map(s => [s.key, s])) as Record<SegmentKey, typeof SEGMENTS[number]>;
+
+// Segment hues per variant. "dark" is the legacy 6a set, unchanged. "light" is
+// the Round 11A briefing set, validated for the #FAF8F3 surface across ALL
+// segment pairs (the ring makes every pair spatially adjacent): CVD-safe,
+// chroma floor, ≥3:1 contrast.
+const SEGMENT_COLORS: Record<MapVariant, Record<SegmentKey, string>> = {
+  dark:  { mindset: "#6366F1", lifestyle: "#10B981", interest: "#F59E0B", entertainment: "#EC4899" },
+  light: { mindset: "#4F4899", lifestyle: "#1E9E64", interest: "#A16207", entertainment: "#8E2553" },
+};
+
+// Neutral chrome per variant. Dark values are the legacy rendering verbatim;
+// light draws from the briefing theme (bone/paper/ink/hairline/iris).
+const THEMES = {
+  dark: {
+    desc: "text-[#6E7681]",
+    ring: "#1C2333",
+    ringLabel: "#3D444D",
+    adjText: "#E8EDF2",
+    segLabelIdle: 0.65,
+    centerFill: "#080B0F",
+    centerStroke: "#1C2333",
+    centerAccent: "#6366F1",
+    centerText: "#E8EDF2",
+    centerSub: "#6E7681",
+    legendNeutral: "text-[#3D444D]",
+    legendSwatch: "bg-[#1C2333]",
+    rule: "border-[#1C2333]",
+    sub: "text-[#6E7681]",
+    closeBtn: "text-[#6E7681] hover:text-[#E8EDF2]",
+    adjCard: "border-[#1C2333] bg-[#080B0F]",
+    title: "text-[#E8EDF2]",
+    value: "text-[#8B949E]",
+    body: "text-[#E8EDF2]",
+    evidence: "text-[#8B949E]",
+    infCard: "bg-[#0D1117]",
+    infBorder: "border-[#1C2333]",
+    infDashed: "border-dashed border-[#2A3040] opacity-80",
+    unverifiedChip: "border-[#3D444D] text-[#6E7681]",
+    platformChip: "bg-[#1C2333] text-[#8B949E]",
+    link: "text-[#6366F1]/50 hover:text-[#6366F1]",
+    reach: "text-[#6E7681]",
+    role: "text-[#6366F1]/70",
+  },
+  light: {
+    desc: "text-[#4A453E]",
+    ring: "#DDD7CB",
+    ringLabel: "#8A8378",
+    adjText: "#191613",
+    segLabelIdle: 0.85,
+    centerFill: "#FAF8F3",
+    centerStroke: "#DDD7CB",
+    centerAccent: "#4F4899",
+    centerText: "#191613",
+    centerSub: "#8A8378",
+    legendNeutral: "text-[#8A8378]",
+    legendSwatch: "bg-[#DDD7CB]",
+    rule: "border-[#DDD7CB]",
+    sub: "text-[#8A8378]",
+    closeBtn: "text-[#8A8378] hover:text-[#191613]",
+    adjCard: "border-[#DDD7CB] bg-[#F2EFE8]",
+    title: "text-[#191613]",
+    value: "text-[#4A453E]",
+    body: "text-[#191613]",
+    evidence: "text-[#4A453E]",
+    infCard: "bg-[#FAF8F3]",
+    infBorder: "border-[#DDD7CB]",
+    infDashed: "border-dashed border-[#C9C2B4] opacity-80",
+    unverifiedChip: "border-[#C9C2B4] text-[#8A8378]",
+    platformChip: "bg-[#ECE7DC] text-[#4A453E]",
+    link: "text-[#4F4899]/60 hover:text-[#4F4899]",
+    reach: "text-[#8A8378]",
+    role: "text-[#4F4899]/80",
+  },
+};
 
 function toRad(deg: number) { return (deg * Math.PI) / 180; }
 
@@ -66,10 +141,15 @@ function getTextPositions(items: NormalizedAdjacency[], r1: number, r2: number, 
 interface PeripheryMapProps {
   archetype: string;
   data: NormalizedPeriphery;
+  /** "dark" = legacy 6a rendering (default); "light" = Round 11A briefing theme. */
+  variant?: MapVariant;
 }
 
-export function PeripheryMap({ archetype, data }: PeripheryMapProps) {
+export function PeripheryMap({ archetype, data, variant = "dark" }: PeripheryMapProps) {
   const [selected, setSelected] = useState<SegmentKey | null>(null);
+
+  const T = THEMES[variant];
+  const C = SEGMENT_COLORS[variant];
 
   const selectedSegment = selected ? SEGMENT_MAP[selected] : null;
   const selectedAdjacencies = selected
@@ -92,14 +172,9 @@ export function PeripheryMap({ archetype, data }: PeripheryMapProps) {
   const cLineCount = Math.min(centerLines.length, 3);
   const cStartY = CY - (cLineCount - 1) * 8;
 
-  return (
-    <Card glow>
-      <CardHeader>
-        <span className="text-lg">◎</span>
-        <CardTitle>Adjacency Map</CardTitle>
-      </CardHeader>
-
-      <p className="mb-6 text-xs text-[#6E7681]">
+  const inner = (
+    <>
+      <p className={`mb-6 text-xs ${T.desc}`}>
         Adjacent territories where this audience over-indexes beyond the core topic.
         Inner ring = very high overlap (80–100%). Outer ring = moderate overlap (50–80%).
         Click any segment to explore.
@@ -113,20 +188,21 @@ export function PeripheryMap({ archetype, data }: PeripheryMapProps) {
           style={{ minWidth: 320 }}
         >
           {/* Subtle ring separators */}
-          <circle cx={CX} cy={CY} r={OUTER_R2} fill="none" stroke="#1C2333" strokeWidth="1" />
-          <circle cx={CX} cy={CY} r={OUTER_R1 - 1} fill="none" stroke="#1C2333" strokeWidth="0.5" strokeDasharray="3 4" />
-          <circle cx={CX} cy={CY} r={INNER_R2 + 1} fill="none" stroke="#1C2333" strokeWidth="0.5" strokeDasharray="3 4" />
-          <circle cx={CX} cy={CY} r={INNER_R1 - 1} fill="none" stroke="#1C2333" strokeWidth="1" />
+          <circle cx={CX} cy={CY} r={OUTER_R2} fill="none" stroke={T.ring} strokeWidth="1" />
+          <circle cx={CX} cy={CY} r={OUTER_R1 - 1} fill="none" stroke={T.ring} strokeWidth="0.5" strokeDasharray="3 4" />
+          <circle cx={CX} cy={CY} r={INNER_R2 + 1} fill="none" stroke={T.ring} strokeWidth="0.5" strokeDasharray="3 4" />
+          <circle cx={CX} cy={CY} r={INNER_R1 - 1} fill="none" stroke={T.ring} strokeWidth="1" />
 
           {/* Ring depth labels — placed in the east gap between segments */}
-          <text x={CX + INNER_R1 + 6} y={CY + 4} fill="#3D444D" fontSize="7" fontWeight="500" letterSpacing="0.5">INNER</text>
-          <text x={CX + OUTER_R1 + 6} y={CY + 4} fill="#3D444D" fontSize="7" fontWeight="500" letterSpacing="0.5">OUTER</text>
+          <text x={CX + INNER_R1 + 6} y={CY + 4} fill={T.ringLabel} fontSize="7" fontWeight="500" letterSpacing="0.5">INNER</text>
+          <text x={CX + OUTER_R1 + 6} y={CY + 4} fill={T.ringLabel} fontSize="7" fontWeight="500" letterSpacing="0.5">OUTER</text>
 
           {/* Segment arcs */}
           {SEGMENTS.map(seg => {
             const isSelected = selected === seg.key;
             const isOther = selected !== null && !isSelected;
             const midAngle = (seg.start + seg.end) / 2;
+            const segColor = C[seg.key];
 
             const innerAdjs = (data[seg.key] ?? []).filter(a => a.ring === "inner");
             const outerAdjs = (data[seg.key] ?? []).filter(a => a.ring === "outer");
@@ -144,18 +220,18 @@ export function PeripheryMap({ archetype, data }: PeripheryMapProps) {
                 {/* Inner arc */}
                 <path
                   d={arcPath(INNER_R1, INNER_R2, seg.start, seg.end)}
-                  fill={seg.color}
+                  fill={segColor}
                   fillOpacity={isSelected ? 0.32 : isOther ? 0.06 : 0.16}
-                  stroke={seg.color}
+                  stroke={segColor}
                   strokeOpacity={isSelected ? 0.65 : isOther ? 0.15 : 0.38}
                   strokeWidth="1"
                 />
                 {/* Outer arc */}
                 <path
                   d={arcPath(OUTER_R1, OUTER_R2, seg.start, seg.end)}
-                  fill={seg.color}
+                  fill={segColor}
                   fillOpacity={isSelected ? 0.2 : isOther ? 0.04 : 0.09}
-                  stroke={seg.color}
+                  stroke={segColor}
                   strokeOpacity={isSelected ? 0.45 : isOther ? 0.1 : 0.25}
                   strokeWidth="1"
                 />
@@ -167,7 +243,7 @@ export function PeripheryMap({ archetype, data }: PeripheryMapProps) {
                     x={tp.x} y={tp.y}
                     textAnchor="middle"
                     dominantBaseline="middle"
-                    fill="#E8EDF2"
+                    fill={T.adjText}
                     fillOpacity={isSelected ? 0.92 : 0.72}
                     fontSize="7.5"
                     fontWeight={isSelected ? "600" : "400"}
@@ -185,7 +261,7 @@ export function PeripheryMap({ archetype, data }: PeripheryMapProps) {
                     x={tp.x} y={tp.y}
                     textAnchor="middle"
                     dominantBaseline="middle"
-                    fill="#E8EDF2"
+                    fill={T.adjText}
                     fillOpacity={isSelected ? 0.88 : 0.62}
                     fontSize="7.5"
                     fontWeight={isSelected ? "600" : "400"}
@@ -202,8 +278,8 @@ export function PeripheryMap({ archetype, data }: PeripheryMapProps) {
                   y={lp.y}
                   textAnchor={isRight ? "start" : "end"}
                   dominantBaseline="middle"
-                  fill={seg.color}
-                  fillOpacity={isSelected ? 1 : isOther ? 0.25 : 0.65}
+                  fill={segColor}
+                  fillOpacity={isSelected ? 1 : isOther ? 0.25 : T.segLabelIdle}
                   fontSize="9.5"
                   fontWeight="700"
                   letterSpacing="1.2"
@@ -215,8 +291,8 @@ export function PeripheryMap({ archetype, data }: PeripheryMapProps) {
           })}
 
           {/* Center circle */}
-          <circle cx={CX} cy={CY} r={CENTER_R} fill="#080B0F" stroke="#1C2333" strokeWidth="1.5" />
-          <circle cx={CX} cy={CY} r={CENTER_R} fill="none" stroke="#6366F1" strokeWidth="0.5" strokeOpacity="0.3" />
+          <circle cx={CX} cy={CY} r={CENTER_R} fill={T.centerFill} stroke={T.centerStroke} strokeWidth="1.5" />
+          <circle cx={CX} cy={CY} r={CENTER_R} fill="none" stroke={T.centerAccent} strokeWidth="0.5" strokeOpacity="0.3" />
 
           {/* Center text — archetype name */}
           {centerLines.slice(0, 3).map((ln, i) => (
@@ -226,7 +302,7 @@ export function PeripheryMap({ archetype, data }: PeripheryMapProps) {
               y={cStartY + i * 14}
               textAnchor="middle"
               dominantBaseline="middle"
-              fill="#E8EDF2"
+              fill={T.centerText}
               fontSize="10"
               fontWeight="600"
             >
@@ -238,7 +314,7 @@ export function PeripheryMap({ archetype, data }: PeripheryMapProps) {
             y={cStartY + cLineCount * 14 + 4}
             textAnchor="middle"
             dominantBaseline="middle"
-            fill="#6E7681"
+            fill={T.centerSub}
             fontSize="7"
             letterSpacing="0.5"
           >
@@ -255,41 +331,41 @@ export function PeripheryMap({ archetype, data }: PeripheryMapProps) {
             onClick={() => setSelected(prev => prev === seg.key ? null : seg.key)}
             className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider transition-opacity"
             style={{
-              color: seg.color,
+              color: C[seg.key],
               opacity: selected === null || selected === seg.key ? 1 : 0.35,
             }}
           >
-            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: seg.color }} />
+            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: C[seg.key] }} />
             {seg.label}
           </button>
         ))}
-        <span className="flex items-center gap-1.5 text-[10px] text-[#3D444D]">
-          <span className="inline-block h-3 w-5 rounded-sm bg-[#1C2333]" />
+        <span className={`flex items-center gap-1.5 text-[10px] ${T.legendNeutral}`}>
+          <span className={`inline-block h-3 w-5 rounded-sm ${T.legendSwatch}`} />
           inner = 80–100%
         </span>
-        <span className="flex items-center gap-1.5 text-[10px] text-[#3D444D]">
-          <span className="inline-block h-3 w-5 rounded-sm bg-[#1C2333] opacity-50" />
+        <span className={`flex items-center gap-1.5 text-[10px] ${T.legendNeutral}`}>
+          <span className={`inline-block h-3 w-5 rounded-sm opacity-50 ${T.legendSwatch}`} />
           outer = 50–80%
         </span>
       </div>
 
       {/* Detail panel */}
       {selected && selectedSegment && selectedAdjacencies.length > 0 && (
-        <div className="mt-6 border-t border-[#1C2333] pt-6">
+        <div className={`mt-6 border-t pt-6 ${T.rule}`}>
           <div className="mb-5 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: selectedSegment.color }} />
+              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: C[selected] }} />
               <h4
                 className="text-sm font-semibold uppercase tracking-widest"
-                style={{ color: selectedSegment.color }}
+                style={{ color: C[selected] }}
               >
                 {selectedSegment.label}
               </h4>
-              <span className="text-xs text-[#6E7681]">— Adjacent Territories</span>
+              <span className={`text-xs ${T.sub}`}>— Adjacent Territories</span>
             </div>
             <button
               onClick={() => setSelected(null)}
-              className="text-xs text-[#6E7681] transition-colors hover:text-[#E8EDF2]"
+              className={`text-xs transition-colors ${T.closeBtn}`}
             >
               ✕ close
             </button>
@@ -297,35 +373,50 @@ export function PeripheryMap({ archetype, data }: PeripheryMapProps) {
 
           <div className="space-y-4">
             {selectedAdjacencies.map((adj, i) => (
-              <div key={i} className="rounded-lg border border-[#1C2333] bg-[#080B0F] p-4">
+              <div key={i} className={`rounded-lg border p-4 ${T.adjCard}`}>
                 <div className="mb-3 flex items-start justify-between gap-3">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-semibold text-[#E8EDF2]">{adj.name}</span>
+                    <span className={`font-semibold ${T.title}`}>{adj.name}</span>
                     <span
                       className="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
                       style={{
-                        backgroundColor: `${selectedSegment.color}1A`,
-                        color: selectedSegment.color,
+                        backgroundColor: `${C[selected]}1A`,
+                        color: C[selected],
                       }}
                     >
                       {adj.ring} ring
                     </span>
                   </div>
-                  <span className="shrink-0 font-mono text-xs font-semibold text-[#8B949E]">
+                  <span className={`shrink-0 font-mono text-xs font-semibold ${T.value}`}>
                     {adj.overlapLabel ?? `${adj.overlapPct}%`}
                   </span>
                 </div>
 
                 <div className="mb-3">
-                  <ScoreBar score={adj.overlapPct} label="Overlap Strength" />
+                  {variant === "dark" ? (
+                    <ScoreBar score={adj.overlapPct} label="Overlap Strength" />
+                  ) : (
+                    <div className="w-full">
+                      <div className="mb-1.5 flex justify-between text-xs">
+                        <span className="text-[#8A8378]">Overlap Strength</span>
+                        <span className="font-mono font-semibold text-[#4A453E]">{adj.overlapPct}</span>
+                      </div>
+                      <div className="h-1 w-full rounded-full bg-[#E3DDD1]">
+                        <div
+                          className="h-1 rounded-full transition-all duration-700 ease-out"
+                          style={{ width: `${adj.overlapPct}%`, backgroundColor: C[selected] }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                {adj.description && <p className="mb-2 text-xs text-[#E8EDF2]">{adj.description}</p>}
-                <p className="mb-3 text-xs text-[#8B949E]">{adj.evidence}</p>
+                {adj.description && <p className={`mb-2 text-xs ${T.body}`}>{adj.description}</p>}
+                <p className={`mb-3 text-xs ${T.evidence}`}>{adj.evidence}</p>
 
                 {adj.topInfluences && adj.topInfluences.length > 0 && (
                   <div>
-                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[#6E7681]">
+                    <p className={`mb-2 text-[10px] font-semibold uppercase tracking-wider ${T.sub}`}>
                       Top Influences in This Space
                     </p>
                     <div className="space-y-2">
@@ -333,39 +424,40 @@ export function PeripheryMap({ archetype, data }: PeripheryMapProps) {
                         <div
                           key={j}
                           className={[
-                            "rounded border bg-[#0D1117] p-2.5",
-                            inf.unverified ? "border-dashed border-[#2A3040] opacity-80" : "border-[#1C2333]",
+                            "rounded border p-2.5",
+                            T.infCard,
+                            inf.unverified ? T.infDashed : T.infBorder,
                           ].join(" ")}
                         >
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-semibold text-[#E8EDF2]">{inf.name}</span>
+                              <span className={`text-xs font-semibold ${T.title}`}>{inf.name}</span>
                               {inf.sourceUrl && (
                                 <a
                                   href={inf.sourceUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-[10px] text-[#6366F1]/50 transition-colors hover:text-[#6366F1]"
+                                  className={`text-[10px] transition-colors ${T.link}`}
                                   title="View source"
                                 >
                                   ↗
                                 </a>
                               )}
                               {inf.unverified && (
-                                <span className="rounded border border-dashed border-[#3D444D] px-1 py-px text-[9px] text-[#6E7681]">
+                                <span className={`rounded border border-dashed px-1 py-px text-[9px] ${T.unverifiedChip}`}>
                                   unverified
                                 </span>
                               )}
                             </div>
-                            <span className="rounded bg-[#1C2333] px-1.5 py-0.5 font-mono text-[10px] text-[#8B949E]">
+                            <span className={`rounded px-1.5 py-0.5 font-mono text-[10px] ${T.platformChip}`}>
                               {inf.platform}
                             </span>
                           </div>
                           {inf.reach && (
-                            <p className="mt-1 text-[10px] text-[#6E7681]">{inf.reach}</p>
+                            <p className={`mt-1 text-[10px] ${T.reach}`}>{inf.reach}</p>
                           )}
                           {inf.role && (
-                            <p className="mt-1 text-[10px] italic text-[#6366F1]/70">↳ {inf.role}</p>
+                            <p className={`mt-1 text-[10px] italic ${T.role}`}>↳ {inf.role}</p>
                           )}
                         </div>
                       ))}
@@ -377,6 +469,20 @@ export function PeripheryMap({ archetype, data }: PeripheryMapProps) {
           </div>
         </div>
       )}
+    </>
+  );
+
+  if (variant === "light") {
+    return <div className="rounded-[10px] border border-[#DDD7CB] bg-[#FAF8F3] p-5">{inner}</div>;
+  }
+
+  return (
+    <Card glow>
+      <CardHeader>
+        <span className="text-lg">◎</span>
+        <CardTitle>Adjacency Map</CardTitle>
+      </CardHeader>
+      {inner}
     </Card>
   );
 }

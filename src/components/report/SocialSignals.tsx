@@ -180,36 +180,83 @@ function plotSignals(cards: SocialSignalCard[]) {
   });
 }
 
-// Round 11A: exported — the briefing view renders the map on a dark plate
-// (chart internals untouched per the brief).
+// Per-variant chart chrome. "dark" is the legacy 6a rendering, unchanged.
+// "light" is the Round 11A briefing theme (bone/paper/ink, iris accent) with
+// mark colors validated for the #FAF8F3 surface (CVD-safe, ≥3:1 contrast):
+// iris #4F4899 / cyan #0E7FA6 / ochre #A16207.
+const MAP_THEMES = {
+  dark: {
+    typeColor: { content: "#818CF8", digital: "#38BDF8", physical: "#FBBF24" } as Record<SignalType, string>,
+    frame: "rounded-[10px] border border-white/[0.08] bg-white/[0.014] p-5 pb-3.5",
+    desc: "text-[#E8EDF2]/45",
+    axis: "rgba(255,255,255,.09)",
+    grid: "rgba(255,255,255,.05)",
+    midline: "rgba(255,255,255,.07)",
+    tick: "rgba(232,237,242,.32)",
+    cornerHot: "rgba(129,140,248,.6)",
+    cornerDim: "rgba(232,237,242,.28)",
+    cornerFaint: "rgba(232,237,242,.2)",
+    dotRing: "none",
+    tooltip: "border-[#1C2333] bg-[#0D1117]",
+    tooltipTitle: "text-[#E8EDF2]",
+    tooltipSub: undefined as string | undefined, // series-colored (legacy)
+    legendText: "text-[#E8EDF2]/45",
+    legendNote: "text-[#E8EDF2]/28",
+    legendRule: "border-white/[0.06]",
+  },
+  light: {
+    typeColor: { content: "#4F4899", digital: "#0E7FA6", physical: "#A16207" } as Record<SignalType, string>,
+    frame: "rounded-[10px] border border-[#DDD7CB] bg-[#FAF8F3] p-5 pb-3.5",
+    desc: "text-[#4A453E]",
+    axis: "rgba(25,22,19,.18)",
+    grid: "rgba(25,22,19,.07)",
+    midline: "rgba(25,22,19,.11)",
+    tick: "rgba(25,22,19,.45)",
+    cornerHot: "rgba(79,72,153,.75)",
+    cornerDim: "rgba(25,22,19,.34)",
+    cornerFaint: "rgba(25,22,19,.28)",
+    dotRing: "#FAF8F3",
+    tooltip: "border-[#DDD7CB] bg-[#FAF8F3]",
+    tooltipTitle: "text-[#191613]",
+    tooltipSub: "#4A453E",
+    legendText: "text-[#8A8378]",
+    legendNote: "text-[#8A8378]/70",
+    legendRule: "border-[#DDD7CB]",
+  },
+};
+
+// Round 11A: exported — the briefing view renders the map in its light
+// editorial theme (variant="light"); legacy reports keep the dark default.
 export function SignalMap({
   cards,
   onSelect,
+  variant = "dark",
 }: {
   cards: SocialSignalCard[];
   onSelect: (id: string) => void;
+  variant?: "dark" | "light";
 }) {
   const [hovered, setHovered] = useState<number | null>(null);
   const plotted = useMemo(() => plotSignals(cards), [cards]);
   if (plotted.length === 0) return null;
 
-  const cornerLabel = "font-mono text-[9px] font-medium tracking-[0.14em]";
+  const T = MAP_THEMES[variant];
 
   return (
     <div className="pb-8">
-      <p className="eyebrow mb-2">Signal Map</p>
-      <p className="mb-4 text-[13.5px] text-[#E8EDF2]/45">
+      {variant === "dark" && <p className="eyebrow mb-2">Signal Map</p>}
+      <p className={`mb-4 text-[13.5px] ${T.desc}`}>
         Signal strength against signal scale. Color is signal type. Click a dot to jump to the signal.
       </p>
-      <div className="rounded-[10px] border border-white/[0.08] bg-white/[0.014] p-5 pb-3.5">
+      <div className={T.frame}>
         <div className="relative overflow-x-auto">
           <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ minWidth: 480 }}>
             {/* Frame + gridlines */}
-            <line x1={PAD.left} y1={PAD.top} x2={PAD.left} y2={PAD.top + PLOT_H} stroke="rgba(255,255,255,.09)" />
-            <line x1={PAD.left} y1={PAD.top + PLOT_H} x2={PAD.left + PLOT_W} y2={PAD.top + PLOT_H} stroke="rgba(255,255,255,.09)" />
-            <line x1={PAD.left} y1={PAD.top + PLOT_H * 0.333} x2={PAD.left + PLOT_W} y2={PAD.top + PLOT_H * 0.333} stroke="rgba(255,255,255,.05)" />
-            <line x1={PAD.left} y1={PAD.top + PLOT_H * 0.666} x2={PAD.left + PLOT_W} y2={PAD.top + PLOT_H * 0.666} stroke="rgba(255,255,255,.05)" />
-            <line x1={PAD.left + PLOT_W / 2} y1={PAD.top} x2={PAD.left + PLOT_W / 2} y2={PAD.top + PLOT_H} stroke="rgba(255,255,255,.07)" />
+            <line x1={PAD.left} y1={PAD.top} x2={PAD.left} y2={PAD.top + PLOT_H} stroke={T.axis} />
+            <line x1={PAD.left} y1={PAD.top + PLOT_H} x2={PAD.left + PLOT_W} y2={PAD.top + PLOT_H} stroke={T.axis} />
+            <line x1={PAD.left} y1={PAD.top + PLOT_H * 0.333} x2={PAD.left + PLOT_W} y2={PAD.top + PLOT_H * 0.333} stroke={T.grid} />
+            <line x1={PAD.left} y1={PAD.top + PLOT_H * 0.666} x2={PAD.left + PLOT_W} y2={PAD.top + PLOT_H * 0.666} stroke={T.grid} />
+            <line x1={PAD.left + PLOT_W / 2} y1={PAD.top} x2={PAD.left + PLOT_W / 2} y2={PAD.top + PLOT_H} stroke={T.midline} />
 
             {/* Y labels */}
             {[100, 80, 60, 40].map((v) => (
@@ -218,7 +265,7 @@ export function SignalMap({
                 x={PAD.left - 8}
                 y={PAD.top + (1 - (v - MIN_STRENGTH) / (100 - MIN_STRENGTH)) * PLOT_H + 3}
                 textAnchor="end"
-                fill="rgba(232,237,242,.32)"
+                fill={T.tick}
                 fontSize="9"
                 fontFamily="var(--font-jetbrains-mono), monospace"
               >
@@ -227,10 +274,10 @@ export function SignalMap({
             ))}
 
             {/* Corner labels */}
-            <text x={PAD.left + 12} y={PAD.top + 14} fill="rgba(129,140,248,.6)" fontSize="9" letterSpacing="1.3" fontFamily="var(--font-jetbrains-mono), monospace">CONCENTRATED CONVICTION</text>
-            <text x={PAD.left + PLOT_W - 12} y={PAD.top + 14} textAnchor="end" fill="rgba(232,237,242,.28)" fontSize="9" letterSpacing="1.3" fontFamily="var(--font-jetbrains-mono), monospace">SCALED MOMENTUM</text>
-            <text x={PAD.left + 12} y={PAD.top + PLOT_H - 8} fill="rgba(232,237,242,.2)" fontSize="9" letterSpacing="1.3" fontFamily="var(--font-jetbrains-mono), monospace">BACKGROUND ACTIVITY</text>
-            <text x={PAD.left + PLOT_W - 12} y={PAD.top + PLOT_H - 8} textAnchor="end" fill="rgba(232,237,242,.2)" fontSize="9" letterSpacing="1.3" fontFamily="var(--font-jetbrains-mono), monospace">WIDESPREAD INTEREST</text>
+            <text x={PAD.left + 12} y={PAD.top + 14} fill={T.cornerHot} fontSize="9" letterSpacing="1.3" fontFamily="var(--font-jetbrains-mono), monospace">CONCENTRATED CONVICTION</text>
+            <text x={PAD.left + PLOT_W - 12} y={PAD.top + 14} textAnchor="end" fill={T.cornerDim} fontSize="9" letterSpacing="1.3" fontFamily="var(--font-jetbrains-mono), monospace">SCALED MOMENTUM</text>
+            <text x={PAD.left + 12} y={PAD.top + PLOT_H - 8} fill={T.cornerFaint} fontSize="9" letterSpacing="1.3" fontFamily="var(--font-jetbrains-mono), monospace">BACKGROUND ACTIVITY</text>
+            <text x={PAD.left + PLOT_W - 12} y={PAD.top + PLOT_H - 8} textAnchor="end" fill={T.cornerFaint} fontSize="9" letterSpacing="1.3" fontFamily="var(--font-jetbrains-mono), monospace">WIDESPREAD INTEREST</text>
 
             {/* X-axis scale labels */}
             {SCALE_ORDER.map((level, i) => (
@@ -239,7 +286,7 @@ export function SignalMap({
                 x={PAD.left + ((i + 0.5) / 4) * PLOT_W}
                 y={H - 10}
                 textAnchor="middle"
-                fill="rgba(232,237,242,.32)"
+                fill={T.tick}
                 fontSize="9"
                 letterSpacing="1.1"
                 fontFamily="var(--font-jetbrains-mono), monospace"
@@ -248,15 +295,18 @@ export function SignalMap({
               </text>
             ))}
 
-            {/* Dots */}
+            {/* Dots — the light surface gets a 2px surface ring so overlapping
+                marks stay separable */}
             {plotted.map(({ card, x, y }, i) => (
               <circle
                 key={card.id}
                 cx={x}
                 cy={y}
                 r={hovered === i ? 8 : 6}
-                fill={TYPE_META[card.type].color}
+                fill={T.typeColor[card.type]}
                 fillOpacity={hovered === i ? 1 : 0.85}
+                stroke={T.dotRing}
+                strokeWidth={T.dotRing === "none" ? 0 : 2}
                 style={{ cursor: "pointer", transition: "r 120ms" }}
                 onClick={() => onSelect(card.id)}
                 onMouseEnter={() => setHovered(i)}
@@ -273,15 +323,15 @@ export function SignalMap({
             const nearLeft = x < W * 0.28;
             return (
               <div
-                className="pointer-events-none absolute z-10 w-56 rounded-lg border border-[#1C2333] bg-[#0D1117] p-3 shadow-xl"
+                className={`pointer-events-none absolute z-10 w-56 rounded-lg border p-3 shadow-xl ${T.tooltip}`}
                 style={{
                   left: `${(x / W) * 100}%`,
                   top: `${(y / H) * 100}%`,
                   transform: `translate(${nearRight ? "-100%" : nearLeft ? "0%" : "-50%"}, ${preferAbove ? "calc(-100% - 12px)" : "12px"})`,
                 }}
               >
-                <p className="text-xs font-semibold text-[#E8EDF2]">{card.title}</p>
-                <p className="mt-1 font-mono text-[11px]" style={{ color: TYPE_META[card.type].color }}>
+                <p className={`text-xs font-semibold ${T.tooltipTitle}`}>{card.title}</p>
+                <p className="mt-1 font-mono text-[11px]" style={{ color: T.tooltipSub ?? T.typeColor[card.type] }}>
                   strength {card.strength} · {card.scale}
                 </p>
               </div>
@@ -290,16 +340,16 @@ export function SignalMap({
         </div>
 
         {/* Legend */}
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-4 border-t border-white/[0.06] pt-3">
+        <div className={`mt-3 flex flex-wrap items-center justify-between gap-4 border-t pt-3 ${T.legendRule}`}>
           <div className="flex flex-wrap gap-4">
             {(Object.keys(TYPE_META) as SignalType[]).map((t) => (
-              <span key={t} className="flex items-center gap-2 font-mono text-[9px] font-medium tracking-[0.1em] text-[#E8EDF2]/45">
-                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: TYPE_META[t].color }} />
+              <span key={t} className={`flex items-center gap-2 font-mono text-[9px] font-medium tracking-[0.1em] ${T.legendText}`}>
+                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: T.typeColor[t] }} />
                 {t.toUpperCase()}
               </span>
             ))}
           </div>
-          <span className="font-mono text-[9px] font-medium tracking-[0.12em] text-[#E8EDF2]/28">
+          <span className={`font-mono text-[9px] font-medium tracking-[0.12em] ${T.legendNote}`}>
             ↑ SIGNAL STRENGTH · SCALE →
           </span>
         </div>

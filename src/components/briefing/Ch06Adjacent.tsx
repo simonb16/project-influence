@@ -3,7 +3,7 @@
 import { ArchetypeReport } from "@/types";
 import { normalizePeriphery } from "@/lib/periphery";
 import { PeripheryMap } from "@/components/report/PeripheryMap";
-import { ChapterHeader, Card, Cols2, EvidenceDisclosure, MutedNote, Plate, Row, RowGroup } from "./primitives";
+import { ChapterHeader, Card, Cols2, EvidenceDisclosure, MutedNote, Row, RowGroup } from "./primitives";
 import { overlapWord, scoreWord } from "./scoreWords";
 
 // Chapter 06: Who they're next to — absorbs the Periphery in full: adjacency
@@ -32,9 +32,12 @@ export function Ch06Adjacent({ report }: { report: ArchetypeReport }) {
       />
 
       {periphery && (
-        <Plate label="PERIPHERY MAP">
-          <PeripheryMap archetype={report.archetype} data={periphery} />
-        </Plate>
+        <section style={{ margin: "22px 0 26px" }}>
+          <div className="mono" style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.16em", color: "var(--b-ink3)", marginBottom: 10 }}>
+            PERIPHERY MAP
+          </div>
+          <PeripheryMap archetype={report.archetype} data={periphery} variant="light" />
+        </section>
       )}
 
       {(inner.length > 0 || outer.length > 0) && (
