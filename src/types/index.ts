@@ -275,8 +275,27 @@ export interface ManualPlatformReach {
   enteredBy?: string; // email attribution, same no-auth model as runs
 }
 
+// Round 11B Part 3: per-plan-line manual reach — keyed by PlanLine.id.
+// Numbers from different platforms never aggregate (overlapping humans).
+export interface ManualPlanReach {
+  value: string; // stored as entered
+  dateChecked: string; // ISO date the number was read off the platform
+  enteredBy?: string;
+}
+
+// Round 11B Part 4: human adjustment of the split hypothesis. The system's
+// proposal is never overwritten — this renders BESIDE it with attribution.
+export interface ManualSplitOverride {
+  value: string; // as entered, e.g. "20–30%"
+  note?: string;
+  dateChecked: string;
+  enteredBy?: string;
+}
+
 export interface ManualInputs {
   platformReach?: ManualPlatformReach;
+  planReach?: Record<string, ManualPlanReach>;
+  splitOverride?: ManualSplitOverride;
 }
 
 // ─── Periphery types (Round 2 Periphery agent) ───────────────────────────────

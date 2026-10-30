@@ -72,8 +72,13 @@ export function SummaryPage({
           <div className="serif" style={{ fontWeight: 500, fontSize: 36, lineHeight: 1.05, marginBottom: 4 }}>
             {report.archetype}
           </div>
-          {/* Subtitle deliberately omitted until the planned audienceTagline
-              synthesis field exists (punchlist 1 — Simon's call). */}
+          {/* Round 11B rider: the synthesized audienceTagline is the real fix
+              for the deleted 11A extraction. Old reports keep the bare hero. */}
+          {report.audienceTagline && (
+            <div className="serif" style={{ fontStyle: "italic", color: "var(--b-ink2)", fontSize: 17 }}>
+              {report.audienceTagline}
+            </div>
+          )}
         </div>
         <div style={{ marginLeft: "auto", display: "flex", gap: 12, flexShrink: 0 }}>
           <StatBox n={estReach ?? "—"} label="Est. reach" basis={estReach ? "triangulated" : "no size evidence"} empty={!estReach} />
@@ -100,6 +105,7 @@ export function SummaryPage({
             ["Messaging & creative", "ch4", "04"],
             ["Content & participation", "ch5", "05"],
             ["Partnerships", "ch6", "06"],
+            ...(report.plan ? ([["Planning spend", "ch7", "07"]] as Array<[string, BriefingPageId, string]>) : []),
           ] as Array<[string, BriefingPageId, string]>
         ).map(([label, page, num]) => (
           <span key={page} style={{ whiteSpace: "nowrap" }}>
@@ -220,6 +226,21 @@ export function SummaryPage({
               </Chip>
             ))}
           </ChipRow>
+        </div>
+      )}
+
+      {/* ── 07 — one-line plan block (11B): soWhat + line count by class.
+            Absent entirely on pre-11B reports. ── */}
+      {report.plan && (
+        <div style={{ marginBottom: 28 }}>
+          <BlockHead num="07" title="The plan" link="full chapter →" onNavigate={() => onNavigate("ch7")} />
+          <p style={{ fontSize: 14.5, color: "var(--b-ink2)", lineHeight: 1.6, margin: 0 }}>
+            {report.plan.soWhat}{" "}
+            <span className="mono" style={{ fontSize: 11, color: "var(--b-ink3)" }}>
+              · {report.plan.lines.filter((l) => l.role === "core-seed").length} core-seed ·{" "}
+              {report.plan.lines.filter((l) => l.role === "reach").length} reach
+            </span>
+          </p>
         </div>
       )}
 

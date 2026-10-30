@@ -14,6 +14,7 @@ import { EvidencePage } from "./EvidencePage";
 import { RetiredPage } from "./RetiredPage";
 import { InputsPage } from "./InputsPage";
 import { CulturalPage } from "./CulturalPage";
+import { PlanPage } from "./PlanPage";
 
 // Round 11A: the briefing view — the six-question restructure over the same
 // pipeline output. Post-Round-9 reports render here; pre-Round-9 reports keep
@@ -28,6 +29,7 @@ export type BriefingPageId =
   | "ch4"
   | "ch5"
   | "ch6"
+  | "ch7"
   | "evidence"
   | "retired"
   | "inputs"
@@ -41,6 +43,7 @@ const CHAPTERS: Array<{ id: BriefingPageId; num: string; label: string }> = [
   { id: "ch4", num: "04", label: "How to move them" },
   { id: "ch5", num: "05", label: "How to engage them" },
   { id: "ch6", num: "06", label: "Who they're next to" },
+  { id: "ch7", num: "07", label: "The plan" },
 ];
 
 // "Cultural context" is a provisional utility home: the Cultural tab's
@@ -175,11 +178,12 @@ export function BriefingView({
       <main style={{ flex: 1, maxWidth: 920, padding: "44px 56px 90px" }}>
         {page === "summary" && <SummaryPage report={report} onNavigate={setPage} />}
         {page === "ch1" && <Ch01Who report={report} />}
-        {page === "ch2" && <Ch02Media report={report} />}
+        {page === "ch2" && <Ch02Media report={report} onNavigate={setPage} />}
         {page === "ch3" && <Ch03Where report={report} />}
         {page === "ch4" && <Ch04Move report={report} />}
         {page === "ch5" && <Ch05Engage report={report} />}
         {page === "ch6" && <Ch06Adjacent report={report} />}
+        {page === "ch7" && <PlanPage report={report} reportId={reportId} />}
         {page === "evidence" && <EvidencePage report={report} />}
         {page === "retired" && <RetiredPage report={report} />}
         {page === "inputs" && <InputsPage report={report} reportId={reportId} />}

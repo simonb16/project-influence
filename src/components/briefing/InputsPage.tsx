@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ArchetypeReport, ManualPlatformReach } from "@/types";
+import { ArchetypeReport, ManualInputs, ManualPlatformReach, PlanLine } from "@/types";
+import { getEmail } from "@/lib/storage";
 import { Card, MutedNote } from "./primitives";
 
 // Report inputs (utility) — the run's inputs plus the Part 6 manual-entry
@@ -111,7 +112,77 @@ export function InputsPage({ report, reportId }: { report: ArchetypeReport; repo
         </Card>
       </div>
 
+      {(report.plan?.lines?.length ?? 0) > 0 && (
+        <div style={{ marginTop: 16 }}>
+          <Card title="Plan-line reach — manual entry (Round 11B)">
+            <p style={{ fontSize: 12.5, color: "var(--b-ink3)", marginBottom: 12 }}>
+              One value per plan line, rendered on the Plan page with the line's reach-basis label and date.
+              Values from different platforms never aggregate — they count overlapping humans.
+            </p>
+            {report.plan!.lines.map((line) => (
+              <PlanReachEntry key={line.id} line={line} report={report} reportId={reportId} />
+            ))}
+          </Card>
+        </div>
+      )}
+
       <MutedNote>Slot, not plumbing — if this field earns its keep by hand, Round 11C automates it.</MutedNote>
+    </div>
+  );
+}
+
+function PlanReachEntry({ line, report, reportId }: { line: PlanLine; report: ArchetypeReport; reportId: string }) {
+  const [current, setCurrent] = useState(report.manualInputs?.planReach?.[line.id]);
+  const [value, setValue] = useState(current?.value ?? "");
+  const [date, setDate] = useState(current?.dateChecked ?? new Date().toISOString().slice(0, 10));
+  const [state, setState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+  async function save() {
+    setState("saving");
+    try {
+      const res = await fetch(`/api/reports/${reportId}/manual`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          planReach: { lineId: line.id, value, dateChecked: date, enteredBy: getEmail() || undefined },
+        }),
+      });
+      if (!res.ok) throw new Error();
+      const body = (await res.json()) as { manualInputs: ManualInputs };
+      report.manualInputs = body.manualInputs;
+      setCurrent(body.manualInputs.planReach?.[line.id]);
+      setState("saved");
+    } catch {
+      setState("error");
+    }
+  }
+
+  return (
+    <div style={{ display: "flex", gap: 10, alignItems: "center", padding: "8px 0", borderTop: "1px solid var(--b-line)", fontSize: 13 }}>
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <b style={{ color: "var(--b-ink)" }}>{line.channel}</b>{" "}
+        <span className="mono" style={{ fontSize: 10, color: "var(--b-ink3)" }}>· {line.reachBasis}</span>
+      </span>
+      <input
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="value"
+        style={{ width: 90, fontSize: 12.5, padding: "3px 7px", border: "1px solid var(--b-line)", borderRadius: 4, background: "var(--b-paper)", fontFamily: "inherit" }}
+      />
+      <input
+        type="date"
+        value={date}
+        onChange={(e) => setDate(e.target.value)}
+        style={{ fontSize: 12.5, padding: "3px 7px", border: "1px solid var(--b-line)", borderRadius: 4, background: "var(--b-paper)", fontFamily: "inherit" }}
+      />
+      <button
+        onClick={save}
+        disabled={state === "saving" || !value.trim()}
+        style={{ fontSize: 12.5, color: "var(--b-accent)", fontWeight: 600, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}
+      >
+        {state === "saving" ? "…" : state === "saved" ? "saved ✓" : current ? "update" : "save"}
+      </button>
+      {state === "error" && <span style={{ fontSize: 12, color: "#A33D3D" }}>failed</span>}
     </div>
   );
 }

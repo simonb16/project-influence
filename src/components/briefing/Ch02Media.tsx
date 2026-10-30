@@ -1,6 +1,7 @@
 "use client";
 
 import { ArchetypeReport, BucketedBehavioralSignal } from "@/types";
+import type { BriefingPageId } from "./BriefingView";
 import { ChapterHeader, Card, EvidenceDisclosure, Featured, FeaturedStrip, MutedNote, Row, RowGroup } from "./primitives";
 import { buildBucketInventory, InventoryEntry } from "@/lib/bucketInventory";
 import { bucketStrengthWord } from "./scoreWords";
@@ -75,7 +76,53 @@ function InventoryRows({ entries }: { entries: InventoryEntry[] }) {
   );
 }
 
-export function Ch02Media({ report }: { report: ArchetypeReport }) {
+/** Round 11B Part 2: the compact plan-preview table from the mockup — top
+ * 3–4 lines (core-seed first), role chips, reach column, linking to 07. */
+function PlanPreview({ report, onNavigate }: { report: ArchetypeReport; onNavigate?: (p: BriefingPageId) => void }) {
+  const plan = report.plan;
+  if (!plan || plan.lines.length === 0) return null;
+  const lines = [...plan.lines].sort((a, b) => (a.role === b.role ? 0 : a.role === "core-seed" ? -1 : 1)).slice(0, 4);
+  const reachFor = (id: string) => report.manualInputs?.planReach?.[id]?.value;
+  return (
+    <div className="b-card" style={{ padding: "14px 18px", margin: "0 0 28px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+        <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", color: "var(--b-ink3)", textTransform: "uppercase" }}>
+          The plan — top lines
+        </span>
+        {onNavigate && (
+          <button
+            onClick={() => onNavigate("ch7")}
+            style={{ fontSize: 12.5, color: "var(--b-accent)", fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}
+          >
+            full plan → 07
+          </button>
+        )}
+      </div>
+      {lines.map((l) => (
+        <div key={l.id} style={{ display: "flex", gap: 10, alignItems: "baseline", padding: "7px 0", borderTop: "1px solid var(--b-line)", fontSize: 13 }}>
+          <span
+            className="mono"
+            style={{
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: "0.12em",
+              flexShrink: 0,
+              color: l.role === "core-seed" ? "var(--b-accent)" : "var(--b-ink3)",
+            }}
+          >
+            {l.role === "core-seed" ? "CORE SEED" : "REACH"}
+          </span>
+          <span style={{ fontWeight: 600, color: "var(--b-ink)", flex: 1 }}>{l.channel}</span>
+          <span className="mono" style={{ fontSize: 11, color: "var(--b-ink3)", flexShrink: 0 }}>
+            {reachFor(l.id) ?? `— ${l.reachBasis}`}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function Ch02Media({ report, onNavigate }: { report: ArchetypeReport; onNavigate?: (p: BriefingPageId) => void }) {
   const buckets = report.behavioralBuckets ?? [];
   const inventory = buildBucketInventory(report);
   const featured = selectBucketFeatured(buckets);
@@ -92,6 +139,8 @@ export function Ch02Media({ report }: { report: ArchetypeReport }) {
         useIt="build targeting stacks — core lines for precision, reach lines for scale."
         absorbs="Behavioral tab (Search · Consume · Buy + inventory layer) · targetable signals · In-Market Behavior"
       />
+
+      <PlanPreview report={report} onNavigate={onNavigate} />
 
       {featured.map((item) => (
         <Featured key={item.id} eyebrow={`Core signal · ${item.bucket}`} title={item.signal} why={item.whatItSignals}>
