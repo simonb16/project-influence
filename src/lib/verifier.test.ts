@@ -59,7 +59,7 @@ describe("verifier on the last good report (Aug 11 Home Crafters)", () => {
       reconciliation: reconBaseline(fixture),
       toolAudit: syntheticAudit(fixture),
     });
-    expect(vr.totalCount).toBe(7); // code checks only — no LLM runner injected
+    expect(vr.totalCount).toBe(9); // code checks only (7 + 2 plan checks, 11B) — no LLM runner injected
     expect(vr.passCount).toBeGreaterThan(0);
     expect(vr.passCount).toBeLessThanOrEqual(vr.totalCount);
     expect(vr.summary.length).toBeGreaterThan(0);
@@ -199,7 +199,7 @@ describe("graceful degradation", () => {
         throw new Error("model unavailable");
       }
     );
-    expect(vr.totalCount).toBe(11); // 7 code + 4 LLM (genericity-audit added R10)
+    expect(vr.totalCount).toBe(13); // 9 code (incl. 11B plan checks) + 4 LLM (genericity-audit added R10)
     const llmChecks = vr.checks.filter((c) =>
       ["paraphrase-number-audit", "basis-honesty", "targetable-groundedness", "genericity-audit"].includes(c.id)
     );

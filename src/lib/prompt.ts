@@ -1418,6 +1418,27 @@ ${JSON.stringify(signals, null, 1)}
 BEHAVIORAL BUCKETS (signals, what-it-signals, targetables, reinforcing evidence):
 ${JSON.stringify(report.behavioralBuckets ?? [], null, 1)}
 
+THE PLAN (Round 11B media-plan scaffold — absent on older reports):
+${
+  report.plan
+    ? JSON.stringify(
+        {
+          soWhat: report.plan.soWhat,
+          splitRationale: report.plan.splitHypothesis?.rationale,
+          lines: (report.plan.lines ?? []).map((l) => ({
+            id: l.id,
+            channel: l.channel,
+            role: l.role,
+            targetingStack: l.targetingStack,
+            rationale: l.rationale,
+          })),
+        },
+        null,
+        1
+      )
+    : "(no plan — pre-11B report)"
+}
+
 RUN THESE FOUR CHECKS (behavioral-bucket reinforcingEvidence entries are in scope for checks 1 and 2 — each entry's source field must name a tool result, be marked search-sourced, or name a lens source; treat targetableSignal fields as in scope for check 3):
 
 1. "paraphrase-number-audit" — Find every numeric claim in the PROSE (the Story, core definition/profile, coreSize basis, signal bodies) that references platform data or research findings. For each: does it trace to a logged tool result (paraphrase-tolerant — "2.4M" matches "2400000", "roughly 100K" matches "103450") or to clearly attributed lens evidence? Classify each number by the three source categories.
@@ -1429,7 +1450,7 @@ RUN THESE FOUR CHECKS (behavioral-bucket reinforcingEvidence entries are in scop
 
 3. "targetable-groundedness" — Spot-check the targetableSignals: does each reference platforms/spaces that the signal's own evidence, body, or where-field actually mentions? Generic filler ("social media — engagement") → WARN. Targetables naming platforms with no connection to the signal's evidence → FAIL.
 
-4. "genericity-audit" — Read the socialSignals list. Assess: (a) do at least 4 signals fail the swap test (their signal/body, as written, would be nonsense for a completely different audience)? (b) could the list as a whole, with the audience name redacted, be attributed to the correct audience by a knowledgeable reader?
+4. "genericity-audit" — Read the socialSignals list. Assess: (a) do at least 4 signals fail the swap test (their signal/body, as written, would be nonsense for a completely different audience)? (b) could the list as a whole, with the audience name redacted, be attributed to the correct audience by a knowledgeable reader? (c) when THE PLAN is present: apply the swap test to spend — could the plan's core-seed lines (channels, targeting stacks, rationales), as written, serve any audience? A generic plan for a distinctive audience is the failure mode; core-seed lines should be recognizably this audience's distinctive signals turned into placements. Weigh (c) into the same verdict and name interchangeable plan lines explicitly.
    - Fewer than 4 swap-test failures → WARN naming the interchangeable signals.
    - List reads as fully interchangeable → FAIL.
    - whyOnlyThisAudience populated on distinctive signals with real reasoning (not a restated title) → contributes to PASS.
