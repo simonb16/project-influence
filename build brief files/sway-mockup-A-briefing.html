@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SWAY — Mockup A v4: Full Chapter Walkthrough</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F2EFE8; --paper:#FAF8F3; --ink:#191613; --ink2:#4A453E; --ink3:#8A8378;
+    --line:#DDD7CB; --accent:#4F4899; --accent-soft:#EAE7F5; --plate:#161419; --plate-ink:#EDEBE6;
+    --good:#5A6B45;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',sans-serif;font-size:15px;line-height:1.55}
+  .tag{position:fixed;top:10px;right:12px;background:var(--ink);color:var(--paper);font:600 10px 'Hanken Grotesk';letter-spacing:.12em;padding:5px 10px;border-radius:3px;z-index:99}
+  .app{display:flex;min-height:100vh}
+
+  .spine{width:250px;flex-shrink:0;border-right:1px solid var(--line);padding:26px 20px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column}
+  .brand{font:600 13px 'Hanken Grotesk';letter-spacing:.2em;margin-bottom:4px}
+  .report-name{font-family:'EB Garamond',serif;font-size:17px;font-style:italic;color:var(--ink2);margin-bottom:26px}
+  .chapters{list-style:none;flex:1}
+  .chapters li{margin-bottom:2px}
+  .chapters a{display:block;text-decoration:none;color:var(--ink2);padding:7px 10px;border-radius:6px;font-size:14px}
+  .chapters a:hover{background:var(--paper)}
+  .chapters .on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+  .chnum{font-family:'JetBrains Mono',monospace;font-size:10.5px;margin-right:8px;color:var(--ink3)}
+  .utility{border-top:1px solid var(--line);padding-top:14px;font-size:12.5px;color:var(--ink3)}
+  .utility a{color:var(--ink3);text-decoration:none;display:block;padding:3px 0}
+  .integrity{color:var(--good);font-weight:600;font-size:12px;margin-top:8px}
+
+  .main{flex:1;max-width:920px;padding:44px 56px 90px}
+
+  .sumhead{display:flex;align-items:flex-start;gap:24px;margin-bottom:8px}
+  .kicker{font:600 11px 'Hanken Grotesk';letter-spacing:.18em;color:var(--ink3);text-transform:uppercase;margin-bottom:10px}
+  .pagetitle{font-family:'EB Garamond',serif;font-weight:500;font-size:36px;line-height:1.05;margin-bottom:4px}
+  .pagesub{font-family:'EB Garamond',serif;font-style:italic;color:var(--ink2);font-size:17px}
+  .headstats{margin-left:auto;display:flex;gap:12px;flex-shrink:0}
+  .hstat{border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:10px 16px;text-align:center}
+  .hstat .n{font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:500}
+  .hstat .l{font-size:10px;letter-spacing:.1em;color:var(--ink3);text-transform:uppercase;margin-top:2px}
+  .hstat .b{font-size:9.5px;color:var(--ink3);margin-top:2px;font-style:italic}
+  .hstat.core .n{color:var(--accent)}
+  .hstat.empty{border-style:dashed}
+  .hstat.empty .n{color:var(--ink3)}
+
+  .router{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 16px;margin:20px 0 30px;font-size:12.5px;color:var(--ink3);display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline}
+  .router b{color:var(--ink2);font-weight:600}
+  .router .rt{white-space:nowrap}
+  .router .rt a{color:var(--accent);text-decoration:none;font-weight:600}
+
+  .block{margin-bottom:28px}
+  .blockhead{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;border-bottom:1px solid var(--line);padding-bottom:7px}
+  .blocknum{font-family:'JetBrains Mono',monospace;color:var(--ink3);font-size:11px}
+  .blocktitle{font-weight:700;font-size:13.5px;letter-spacing:.08em;text-transform:uppercase}
+  .blocklink{margin-left:auto;font-size:12px;color:var(--accent);text-decoration:none;font-weight:600}
+
+  .who{display:flex;gap:20px}
+  .whobase{flex:1;font-size:14.5px;color:var(--ink2);line-height:1.6}
+  .whobase .lbl,.whocore .lbl{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+  .whobase .lbl{color:var(--ink3)}
+  .whobase b{color:var(--ink)}
+  .whocore{flex:1.2;background:var(--paper);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:16px 20px}
+  .whocore .lbl{color:var(--accent)}
+  .whocore .nm{font-family:'EB Garamond',serif;font-size:23px;font-weight:500;line-height:1.1}
+  .whocore .tg{font-family:'EB Garamond',serif;font-style:italic;font-size:15px;color:var(--ink2);margin:4px 0 10px}
+  .whocore .df{font-size:13px;color:var(--ink2);line-height:1.5}
+  .whocore .df b{color:var(--ink)}
+
+  .cols2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 18px}
+  .card h5{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px}
+  .card ul{list-style:none}
+  .card li{font-size:13px;color:var(--ink2);padding:4.5px 0;border-top:1px solid var(--line);line-height:1.4}
+  .card li:first-of-type{border-top:none}
+  .card li b{color:var(--ink);font-weight:600}
+  .card li.hot b{color:var(--accent)}
+  .chiprow{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:6px 13px;font-size:12.5px;color:var(--ink2)}
+  .chip b{color:var(--ink);font-weight:600}
+  .chip.core{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
+  .legend{font-size:11.5px;color:var(--ink3);margin-top:9px}
+  .legend .sw{display:inline-block;width:9px;height:9px;border-radius:3px;vertical-align:-1px;margin:0 4px 0 10px}
+
+  .verdict{background:var(--ink);color:var(--paper);border-radius:12px;padding:18px 24px;font-family:'EB Garamond',serif;font-size:17.5px;line-height:1.5;margin:34px 0}
+  .verdict em{color:#CDC7F0}
+
+  .divider{border:none;border-top:1px solid var(--line);margin:52px 0 48px}
+
+  h1.ch{font-family:'EB Garamond',serif;font-weight:500;font-size:34px;margin-bottom:4px}
+  .tagline{font-family:'EB Garamond',serif;font-style:italic;font-size:18px;color:var(--ink2);margin-bottom:14px}
+  .usenote{font-size:14.5px;color:var(--ink2);margin-bottom:30px}
+  .usenote em{font-family:'EB Garamond',serif;font-style:italic}
+  .wasnote{font-size:11.5px;color:var(--ink3);margin:-22px 0 26px;font-family:'JetBrains Mono',monospace}
+
+  .plate{background:var(--plate);color:var(--plate-ink);border-radius:12px;padding:26px;margin:22px 0 34px;text-align:center}
+  .plate .plabel{font:500 10px 'JetBrains Mono',monospace;letter-spacing:.16em;color:#8B87A8;margin-bottom:10px}
+  .plate .pbody{font-size:13px;color:#6E6A85;padding:52px 0}
+  .featured{border-left:3px solid var(--accent);background:var(--paper);border-radius:0 10px 10px 0;padding:22px 26px;margin-bottom:16px}
+  .featured .eyebrow{font-size:11px;font-weight:600;letter-spacing:.14em;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+  .featured h3{font-family:'EB Garamond',serif;font-weight:500;font-size:24px;line-height:1.2;margin-bottom:8px}
+  .featured .why{font-family:'EB Garamond',serif;font-style:italic;font-size:16.5px;color:var(--ink2);line-height:1.5;margin-bottom:10px}
+  .featured .fbody{font-size:14px;color:var(--ink2);line-height:1.55;max-width:600px}
+  .featured .strip{display:flex;gap:16px;margin-top:14px;font-size:12px;color:var(--ink3)}
+  .featured .strip b{color:var(--ink2)}
+  .evd{margin-top:12px}
+  .evd summary{cursor:pointer;font-size:12.5px;color:var(--accent);font-weight:600;list-style:none}
+  .evd summary::before{content:"▸ "}
+  .evd[open] summary::before{content:"▾ "}
+  .evd .receipts{margin-top:10px;background:var(--bg);border-radius:8px;padding:12px 14px;font-size:12.5px;color:var(--ink2);line-height:1.5}
+  .evd .receipts .src{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--ink3)}
+  .rows{margin-top:26px}
+  .rowhead{font-size:12px;font-weight:600;letter-spacing:.1em;color:var(--ink3);text-transform:uppercase;margin-bottom:8px}
+  details.row{border-top:1px solid var(--line)}
+  details.row:last-of-type{border-bottom:1px solid var(--line)}
+  details.row summary{display:flex;align-items:baseline;gap:14px;padding:13px 4px;cursor:pointer;list-style:none}
+  details.row summary::-webkit-details-marker{display:none}
+  .rtitle{font-weight:600;font-size:14.5px;flex-shrink:0}
+  .rline{color:var(--ink3);font-size:13.5px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rstr{font-size:12px;color:var(--ink2);flex-shrink:0}
+  .rbody{padding:2px 4px 18px;max-width:620px;font-size:14px;color:var(--ink2);line-height:1.55}
+
+  /* page-per-chapter navigation */
+  .page{display:none}
+  .page.show{display:block}
+
+  /* ch01 extras */
+  .corering{width:110px;height:110px;flex-shrink:0;border:1px dashed var(--ink3);border-radius:50%;position:relative;margin:6px 18px 0 0}
+  .corering .dot{position:absolute;width:46px;height:46px;background:var(--accent);border-radius:50%;left:32px;top:32px}
+  .corering .rlabel{position:absolute;bottom:-22px;width:100%;text-align:center;font-size:10.5px;color:var(--ink3)}
+  .factgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px 22px;font-size:13.5px;color:var(--ink2);margin-top:10px}
+  .factgrid b{color:var(--ink);font-weight:600}
+
+  /* ch02 inventory */
+  .inv{margin-top:8px}
+  .invnote{font-size:12px;color:var(--ink3);margin-bottom:8px;font-style:italic}
+  .invrow{display:flex;gap:10px;align-items:baseline;padding:7px 0;border-top:1px solid var(--line);font-size:13px}
+  .invrow .iw{font-weight:600;color:var(--ink);flex-shrink:0;min-width:160px}
+  .invrow .in{color:var(--ink2)}
+
+  /* plan-line preview (11B teaser) */
+  .planline{display:flex;gap:14px;align-items:baseline;padding:10px 4px;border-top:1px solid var(--line);font-size:13px}
+  .planline .pl-ch{font-weight:600;min-width:190px}
+  .planline .pl-role{font-family:'JetBrains Mono',monospace;font-size:10.5px;padding:2px 8px;border-radius:99px}
+  .planline .core-r{background:var(--accent-soft);color:var(--accent)}
+  .planline .reach-r{background:var(--paper);border:1px solid var(--line);color:var(--ink3)}
+  .planline .pl-reach{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink2)}
+  .planline .pl-basis{font-size:10.5px;color:var(--ink3);font-style:italic}
+</style>
+</head>
+<body>
+<div class="tag">MOCKUP A v4 · ALL CHAPTERS</div>
+<div class="app">
+
+  <nav class="spine">
+    <div class="brand">SWAY</div>
+    <div class="report-name">Home crafters</div>
+    <ul class="chapters">
+      <li><a class="on" href="#top"><span class="chnum">S</span>Summary</a></li>
+      <li><a href="#ch1"><span class="chnum">01</span>Who are they</a></li>
+      <li><a href="#ch2"><span class="chnum">02</span>How to find them in media</a></li>
+      <li><a href="#ch3"><span class="chnum">03</span>Where to find them</a></li>
+      <li><a href="#ch4"><span class="chnum">04</span>How to move them</a></li>
+      <li><a href="#ch5"><span class="chnum">05</span>How to engage them</a></li>
+      <li><a href="#ch6"><span class="chnum">06</span>Who they're next to</a></li>
+    </ul>
+    <div class="utility">
+      <a href="#">Evidence &amp; sources</a>
+      <a href="#">Retired sections</a>
+      <a href="#">Report inputs</a>
+      <div class="integrity">✓ Verified · 11 integrity checks</div>
+    </div>
+  </nav>
+
+  <main class="main" id="top">
+
+    <section class="page show" id="pg-summary">
+    <!-- ============ SUMMARY ============ -->
+    <div class="kicker">Audience report · Sep 8, 2026 · ✓ verified · by Significant</div>
+    <div class="sumhead">
+      <div>
+        <div class="pagetitle">Home crafters</div>
+        <div class="pagesub">People who craft for the joy of it — and flee anything that smells like homework.</div>
+      </div>
+      <div class="headstats">
+        <div class="hstat"><div class="n">~12M</div><div class="l">Est. reach</div><div class="b">triangulated</div></div>
+        <div class="hstat core"><div class="n">5–10%</div><div class="l">Influential core</div><div class="b">evidence-based</div></div>
+        <div class="hstat empty"><div class="n">—</div><div class="l">Platform reach</div><div class="b">add from Ads Manager</div></div>
+      </div>
+    </div>
+
+    <div class="router">
+      <b>Reading this as a brief?</b>
+      <span class="rt">Prospecting → <a href="#ch2">02</a></span>
+      <span class="rt">Awareness &amp; placement → <a href="#ch3">03</a></span>
+      <span class="rt">Messaging &amp; creative → <a href="#ch4">04</a></span>
+      <span class="rt">Content &amp; participation → <a href="#ch5">05</a></span>
+      <span class="rt">Partnerships → <a href="#ch6">06</a></span>
+    </div>
+
+    <div class="block">
+      <div class="blockhead"><span class="blocknum">01</span><span class="blocktitle">Who are they</span><a class="blocklink" href="#ch1">full chapter →</a></div>
+      <div class="who">
+        <div class="whobase">
+          <div class="lbl">The audience</div>
+          People who dabble in crafting without overcommitting — creativity as an outlet, <b>not an identity or a side hustle</b>. They discover through viral video, enter through kits and trends, shop on price, drift between crafts, and <b>follow recommendations rather than make them</b>.
+        </div>
+        <div class="whocore">
+          <div class="lbl">The influential core · who moves them</div>
+          <div class="nm">The Friend Who Crafts</div>
+          <div class="tg">The one you text before buying yarn — who sometimes tells you not to.</div>
+          <div class="df">Earns authority through <b>candor and zero commercial stake</b>: confessed stashes, unfinished projects, refusal to monetize. The base copies this group's recommendations — <b>reach them and the audience follows</b>.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="blockhead"><span class="blocknum">02</span><span class="blocktitle">How to find them in media</span><a class="blocklink" href="#ch2">full chapter →</a></div>
+      <div class="chiprow">
+        <span class="chip core"><b>Searches:</b> stash-busting · no-buy year · beginner crochet</span>
+        <span class="chip core"><b>Ravelry</b> — the pre-purchase verification layer</span>
+        <span class="chip core"><b>Small candid newsletters</b> &amp; knitting-podcast channels</span>
+        <span class="chip"><b>Interest targeting:</b> knitting · crochet · fiber arts</span>
+        <span class="chip"><b>Craft-adjacent YouTube</b> &amp; big subreddits</span>
+        <span class="chip"><b>Big-box craft retail</b> media &amp; kit marketplaces</span>
+      </div>
+      <div class="legend"><span class="sw" style="background:var(--accent-soft);border:1px solid var(--accent)"></span>core signals — precise, trusted, cheap <span class="sw" style="background:var(--paper);border:1px solid var(--line)"></span>reach signals — broad, scaled</div>
+    </div>
+
+    <div class="block">
+      <div class="blockhead"><span class="blocknum">03</span><span class="blocktitle">Where to find them</span><a class="blocklink" href="#ch3">full chapter →</a></div>
+      <div class="cols2">
+        <div class="card">
+          <h5>In the world</h5>
+          <ul>
+            <li class="hot"><b>Local yarn stores &amp; knit nights</b> — recommendations convert at the counter</li>
+            <li class="hot"><b>Fiber festivals</b> — the Rhinebeck sweater is the community's status ritual</li>
+            <li><b>Library craft groups</b> — the free, low-pressure entry point</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h5>Online</h5>
+          <ul>
+            <li class="hot"><b>Don't-buy content</b> — restraint is the highest-trust format here</li>
+            <li><b>Ravelry project logs</b> — strangers' notes decide purchases</li>
+            <li><b>r/craftsnark (83K)</b> — the accountability layer; what it rejects stays rejected</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="blockhead"><span class="blocknum">04</span><span class="blocktitle">How to move them</span><a class="blocklink" href="#ch4">full chapter →</a></div>
+      <div class="cols2">
+        <div class="card">
+          <h5>What works</h5>
+          <ul>
+            <li class="hot"><b>Permission</b> — release from productivity pressure is the strongest lever</li>
+            <li><b>Belonging</b> — craft is the excuse to gather; sell the circle, not the object</li>
+            <li><b>Shared accountability</b> — stash guilt resolved communally, not through more buying</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h5>What backfires</h5>
+          <ul>
+            <li><b>Hustle framing</b> — "turn your hobby into income" is the enemy</li>
+            <li><b>Polish &amp; aspiration</b> — perfection reads as advertising</li>
+            <li><b>Detected sponsorship</b> — the core spots it instantly and says so publicly</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="blockhead"><span class="blocknum">05</span><span class="blocktitle">How to engage them</span><a class="blocklink" href="#ch5">full chapter →</a></div>
+      <div class="chiprow">
+        <span class="chip"><b>Candor formats</b> — show unfinished work, failures, real stashes</span>
+        <span class="chip"><b>LYS partnerships</b> — exclusive colorways, knit-night sponsorship</span>
+        <span class="chip"><b>Stash-first campaigns</b> — help them buy less, better</span>
+        <span class="chip"><b>Pattern collabs</b> with trusted independent designers</span>
+        <span class="chip"><b>Festival presence</b> — be photographed, not advertised</span>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="blockhead"><span class="blocknum">06</span><span class="blocktitle">Who they're next to</span><a class="blocklink" href="#ch6">full chapter →</a></div>
+      <div class="chiprow">
+        <span class="chip"><b>Home baking / sourdough</b> — structurally identical community</span>
+        <span class="chip"><b>Slow fashion &amp; visible mending</b> — shared anti-consumption ethos</span>
+        <span class="chip"><b>Book clubs</b> — merging into the same social format</span>
+        <span class="chip"><b>Cozy gaming</b> — same psychology, same cohort</span>
+        <span class="chip"><b>Thrifting</b> — supply sourcing overlaps values</span>
+      </div>
+    </div>
+
+    <div class="verdict">The lever is <em>permission, not aspiration</em> — show up in the small, trusted places with zero sales pressure, celebrate imperfection, and let the core's own language do the transmission.</div>
+
+    </section>
+
+    <section class="page" id="pg-ch1">
+    <!-- ============ 01 WHO ARE THEY ============ -->
+    <div id="ch1">
+      <div class="kicker">Chapter 01</div>
+      <h1 class="ch">Who are they</h1>
+      <div class="tagline">A human description of who they are, what they care about, and what makes them influential.</div>
+    </div>
+    <div class="wasnote">absorbs: Influential Core tab · Snapshot core summary</div>
+    <p class="usenote"><em>Use this chapter to</em> brief anyone — creative, client, or planner — on who this audience actually is.</p>
+
+    <div class="featured" style="display:flex;gap:8px">
+      <div class="corering"><div class="dot"></div><div class="rlabel">5–10% of ~12M</div></div>
+      <div style="flex:1">
+        <div class="eyebrow">The influential core</div>
+        <h3>The Friend Who Crafts</h3>
+        <div class="why">The one you text before buying yarn — and who sometimes tells you not to.</div>
+        <div class="factgrid">
+          <div><b>Earns authority by</b> — candor: confessed stashes, unfinished projects, refusal to monetize</div>
+          <div><b>Trusted because</b> — zero commercial stake; recommendations specific enough to verify</div>
+          <div><b>Hard to reach with</b> — ads, influencers, polish; sponsorship is detected instantly</div>
+          <div><b>Easy to reach through</b> — yarn shops, knit nights, Ravelry, small candid newsletters</div>
+        </div>
+        <details class="evd"><summary>How we sized the core</summary>
+          <div class="receipts">Ravelry active-contributor layer vs. registered accounts; LYS regulars vs. occasional walk-ins per retail coverage; pattern-designer follower distributions. Triangulated, not measured. <span class="src">derivation · 4 sources · verified</span></div>
+        </details>
+      </div>
+    </div>
+
+    <div class="cols2" style="margin-top:16px">
+      <div class="card">
+        <h5>The base — how they behave</h5>
+        <ul>
+          <li>Enter through <b>kits, trends and viral video</b>; drift between crafts seasonally</li>
+          <li>Shop on <b>price and access</b> — big-box first, specialty later if ever</li>
+          <li><b>Follow recommendations</b> — the core's picks arrive secondhand, stripped of source</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h5>How the core differs</h5>
+        <ul>
+          <li>Never mentions kits; <b>rejects craft-as-identity</b> and hustle culture outright</li>
+          <li>Buys from <b>independent dyers and LYS</b> — provenance over price</li>
+          <li><b>Produces</b> the recommendations the base copies; initiates, never follows</li>
+        </ul>
+      </div>
+    </div>
+
+    </section>
+
+    <section class="page" id="pg-ch2">
+    <!-- ============ 02 HOW TO FIND THEM IN MEDIA ============ -->
+    <div id="ch2">
+      <div class="kicker">Chapter 02</div>
+      <h1 class="ch">How to find them in media</h1>
+      <div class="tagline">Targetable signals: interests, behaviors, affinities, and platform signals.</div>
+    </div>
+    <div class="wasnote">absorbs: Behavioral tab (Search · Consume · Buy + inventory layer) · targetable signals</div>
+    <p class="usenote"><em>Use this chapter to</em> build targeting stacks — core lines for precision, reach lines for scale.</p>
+
+    <div class="featured">
+      <div class="eyebrow">Core signal · search</div>
+      <h3>They search for restraint, not products</h3>
+      <div class="why">"Stash-busting," "no-buy year," "use what you have" — purchase-adjacent queries about not purchasing.</div>
+      <div class="fbody">The core's search behavior inverts normal intent targeting: their highest-signal queries are about working through what they own. A brand bidding on restraint vocabulary reaches the exact layer that moves the audience — at near-zero competition.</div>
+      <div class="strip"><span>Bucket <b>Search</b></span><span>Signal <b>Strong</b></span><span>Google demand: <b>— add from Keyword Planner</b></span></div>
+      <details class="evd"><summary>Show evidence</summary>
+        <div class="receipts">Trends validation on stash-busting/no-buy query family; Ravelry stash-down group activity; deinfluencing content engagement ratios. <span class="src">trends lookup · 3 sources · verified</span></div>
+      </details>
+    </div>
+
+    <div class="rows">
+      <div class="rowhead">The full inventory — what the research surfaced, by bucket</div>
+      <div class="inv">
+        <div class="invrow"><span class="iw">Search</span><span class="in">stash-busting · no-buy year · beginner crochet · yarn substitution · [pattern name] + "notes"</span></div>
+        <div class="invrow"><span class="iw">Consume</span><span class="in">Ravelry (verification layer, ~2-decade database) · knitting-podcast YouTube (small channels, dense comments) · candid Substacks · r/craftsnark (83K, accountability) · big craft subreddits <i style="color:var(--ink3)">(reach)</i></span></div>
+        <div class="invrow"><span class="iw">Buy</span><span class="in">independent dyers · LYS exclusives · pattern purchases as gratitude · secondhand/destash markets · big-box entry kits <i style="color:var(--ink3)">(reach)</i></span></div>
+        <div class="invrow"><span class="iw">Go</span><span class="in">→ lives in Chapter 03 — physical world is placement, not targeting</span></div>
+      </div>
+    </div>
+
+    <div class="rows" style="margin-top:30px">
+      <div class="rowhead">Plan preview — how these become media lines <span style="font-weight:400;text-transform:none;letter-spacing:0">(the 11B deliverable)</span></div>
+      <div class="planline"><span class="pl-ch">Newsletter sponsorships (candid tier)</span><span class="pl-role core-r">CORE SEED</span><span class="pl-reach">~40K <span class="pl-basis">publisher-reported</span></span></div>
+      <div class="planline"><span class="pl-ch">Google Search — restraint vocabulary</span><span class="pl-role core-r">CORE SEED</span><span class="pl-reach">— <span class="pl-basis">search demand/mo, add from Keyword Planner</span></span></div>
+      <div class="planline"><span class="pl-ch">Meta — knitting/crochet/fiber interest stack</span><span class="pl-role reach-r">REACH</span><span class="pl-reach">— <span class="pl-basis">platform estimate, add from Ads Manager</span></span></div>
+      <div class="planline"><span class="pl-ch">TikTok — craft interest + hashtag behavior</span><span class="pl-role reach-r">REACH</span><span class="pl-reach">— <span class="pl-basis">platform estimate, add from Ads Manager</span></span></div>
+    </div>
+
+    </section>
+
+    <section class="page" id="pg-ch3">
+    <!-- ============ 03 WHERE TO FIND THEM ============ -->
+    <div id="ch3">
+      <div class="kicker">Chapter 03</div>
+      <h1 class="ch">Where to find them</h1>
+      <div class="tagline">The communities, platforms and spaces where influence actually moves.</div>
+    </div>
+    <div class="wasnote">absorbs: Social tab (signals + signal map) · Behavioral "Go" bucket · real-world habitat</div>
+    <p class="usenote"><em>Use this chapter to</em> pick the right voices, communities and environments to show up in.</p>
+
+    <div class="plate">
+      <div class="plabel">SIGNAL MAP</div>
+      <div class="pbody">[ dark chart plate — strength × scale scatter, kept on its own canvas ]</div>
+    </div>
+
+    <div class="featured">
+      <div class="eyebrow">Distinctive · only this audience</div>
+      <h3>The Rhinebeck sweater ritual</h3>
+      <div class="why">A garment genre named for one festival — knit all year, debuted in one field in October, legible only to insiders.</div>
+      <div class="fbody">The fiber festival circuit is where the core's status economy becomes visible: a handmade sweater worn at Rhinebeck is a résumé, a conversation opener, and an invitation to be photographed for the community's own channels. Influence here moves through recognition, not reach.</div>
+      <div class="strip"><span>Strength <b>Strong</b></span><span>Reach <b>Niche</b></span><span>Physical</span></div>
+      <details class="evd"><summary>Show evidence</summary>
+        <div class="receipts">"The Rhinebeck sweater" documented as a named genre across Ravelry threads and independent newsletters; festival attendance evidence from event coverage. <span class="src">3 sources · lens-attributed · verified</span></div>
+      </details>
+    </div>
+
+    <div class="featured">
+      <div class="eyebrow">Distinctive · only this audience</div>
+      <h3>Don't-buy content as the highest-trust format</h3>
+      <div class="why">Only in fiber craft does a yarn seller telling customers not to buy yarn — including her own — build the deepest credibility.</div>
+      <div class="fbody">Restraint content (deinfluencing, no-buy years, stash-first pledges) out-performs enthusiasm across every channel the core inhabits. For brands the implication is inverted marketing: credibility is earned by helping people buy less, better.</div>
+      <div class="strip"><span>Strength <b>Strong</b></span><span>Reach <b>Significant</b></span><span>Content</span></div>
+      <details class="evd"><summary>Show evidence</summary>
+        <div class="receipts">Deinfluencing engagement ratios several times tutorial norms; seller-deinfluencing examples documented across YouTube and Substack. <span class="src">YouTube lookup · 2 lens sources · verified</span></div>
+      </details>
+    </div>
+
+    <div class="rows">
+      <div class="rowhead">Also in this audience's social fabric — expand any row</div>
+      <details class="row">
+        <summary><span class="rtitle">Ravelry project notes</span><span class="rline">a two-decade community database where strangers' notes decide purchases</span><span class="rstr">Strong</span></summary>
+        <div class="rbody">Peer-review trust infrastructure: needle-size notes, yarn substitutions, and honest failure records function as the audience's verification layer before any purchase.</div>
+      </details>
+      <details class="row">
+        <summary><span class="rtitle">LYS knit nights</span><span class="rline">the offline trust engine — staff recommendations convert at the counter</span><span class="rstr">Strong</span></summary>
+        <div class="rbody">Local yarn stores operate as community infrastructure; LYS Day functions as an annual retail holiday with brand-exclusive colorways.</div>
+      </details>
+      <details class="row">
+        <summary><span class="rtitle">Craft snark communities</span><span class="rline">83K members holding craft businesses accountable</span><span class="rstr">Strong</span></summary>
+        <div class="rbody">Coordinated rejection as an influence mechanism — what this community turns on, stays turned on.</div>
+      </details>
+      <details class="row">
+        <summary><span class="rtitle">The "knitting podcast" format</span><span class="rline">video diaries where credibility comes from showing unfinished work</span><span class="rstr">Moderate</span></summary>
+        <div class="rbody">Small channels with outsized comment density; viewers respond as fellow makers, not fans.</div>
+      </details>
+      <details class="row">
+        <summary><span class="rtitle">Insider lexicon</span><span class="rline">SABLE, frogging, WIP/FO — vocabulary as membership gating</span><span class="rstr">Moderate</span></summary>
+        <div class="rbody">Fluency signals belonging; misuse by brands is detected instantly and read as intrusion.</div>
+      </details>
+      <details class="row">
+        <summary><span class="rtitle">Protest knitting</span><span class="rline">political expression through a downloadable hat pattern</span><span class="rstr">Emerging</span></summary>
+        <div class="rbody">Fiber art as dissent — a reminder that this audience's craft is identity-adjacent, and brands entering carelessly step into values territory.</div>
+      </details>
+    </div>
+
+    </section>
+
+    <section class="page" id="pg-ch4">
+    <!-- ============ 04 HOW TO MOVE THEM ============ -->
+    <div id="ch4">
+      <div class="kicker">Chapter 04</div>
+      <h1 class="ch">How to move them</h1>
+      <div class="tagline">The emotional drivers, motivations, tensions and triggers most likely to change behavior.</div>
+    </div>
+    <div class="wasnote">absorbs: Motivational tab (drivers · tensions · triggers)</div>
+    <p class="usenote"><em>Use this chapter to</em> brief creative and messaging — what to lean on, and what will get you rejected.</p>
+
+    <div class="featured">
+      <div class="eyebrow">Primary driver</div>
+      <h3>Permission</h3>
+      <div class="why">Release from productivity pressure — the craft that doesn't have to become anything.</div>
+      <div class="fbody">The strongest motivational lever in the research. This audience is surrounded by messaging that says every hobby should become content, income, or self-improvement; the brands that win here explicitly grant the opposite. "It doesn't have to be good, it just has to be yours" is the emotional register.</div>
+      <div class="strip"><span>Confidence <b>Converged — all three lenses</b></span></div>
+      <details class="evd"><summary>Show evidence</summary>
+        <div class="receipts">Anti-hustle sentiment across community discussions; "process knitter vs. product knitter" self-identification; rejection patterns around monetization prompts. <span class="src">3 lenses · verified</span></div>
+      </details>
+    </div>
+
+    <div class="rows">
+      <div class="rowhead">The full driver set — expand any row</div>
+      <details class="row">
+        <summary><span class="rtitle">Belonging</span><span class="rline">craft is the excuse; the circle is the product</span><span class="rstr">Strong</span></summary>
+        <div class="rbody">Knit nights, library groups, festival meetups — the social container motivates continuation more than the output does. Sell the gathering, not the object.</div>
+      </details>
+      <details class="row">
+        <summary><span class="rtitle">Shared accountability</span><span class="rline">stash guilt resolved communally — never through more buying</span><span class="rstr">Strong</span></summary>
+        <div class="rbody">No-buy pledges and stash-down challenges are performed publicly. The tension between acquisition and restraint is the audience's central emotional drama — and the trigger moment brands can respectfully join.</div>
+      </details>
+      <details class="row">
+        <summary><span class="rtitle">Tactile decompression</span><span class="rline">craft as the antidote to screens and deadlines</span><span class="rstr">Moderate</span></summary>
+        <div class="rbody">Repetitive handwork as regulation; the "knitting in meetings helps me focus" discourse. Positions craft against digital exhaustion, not against other hobbies.</div>
+      </details>
+      <details class="row">
+        <summary><span class="rtitle">Human provenance</span><span class="rline">made-by-hand as identity — sharpened by anti-AI sentiment</span><span class="rstr">Emerging</span></summary>
+        <div class="rbody">The value of the handmade is rising as generated content floods every feed; "a human made this" is becoming this audience's premium claim.</div>
+      </details>
+    </div>
+
+    </section>
+
+    <section class="page" id="pg-ch5">
+    <!-- ============ 05 HOW TO ENGAGE THEM ============ -->
+    <div id="ch5">
+      <div class="kicker">Chapter 05</div>
+      <h1 class="ch">How to engage them</h1>
+      <div class="tagline">The content, experiences, partnerships and participation mechanics most likely to get them to act.</div>
+    </div>
+    <div class="wasnote">absorbs: Activation section · entry points — currently our thinnest layer; depth is a Maria-checkpoint question</div>
+    <p class="usenote"><em>Use this chapter to</em> choose formats and mechanics — the ways in that this audience actually accepts.</p>
+
+    <div class="cols2">
+      <div class="card">
+        <h5>Content &amp; formats</h5>
+        <ul>
+          <li class="hot"><b>Candor formats</b> — unfinished work, failures, real stashes; polish is disqualifying</li>
+          <li><b>Stash-first campaigns</b> — help them use what they own; earn the next purchase</li>
+          <li><b>Process over product</b> — the making is the story, not the finished object</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h5>Partnerships &amp; participation</h5>
+        <ul>
+          <li class="hot"><b>LYS partnerships</b> — exclusive colorways, knit-night sponsorship, LYS Day presence</li>
+          <li><b>Pattern collabs</b> with trusted independent designers — pay the core, don't rent it</li>
+          <li><b>Festival presence</b> — be photographed, not advertised; sponsor the ritual, never interrupt it</li>
+        </ul>
+      </div>
+    </div>
+
+    </section>
+
+    <section class="page" id="pg-ch6">
+    <!-- ============ 06 WHO THEY'RE NEXT TO ============ -->
+    <div id="ch6">
+      <div class="kicker">Chapter 06</div>
+      <h1 class="ch">Who they're next to</h1>
+      <div class="tagline">The adjacent audiences and cultural territories they already overlap with.</div>
+    </div>
+    <div class="wasnote">absorbs: Periphery / adjacencies · affinity adjacencies</div>
+    <p class="usenote"><em>Use this chapter to</em> find expansion audiences and partnership territory — where someone else's audience is already half yours.</p>
+
+    <div class="plate">
+      <div class="plabel">PERIPHERY MAP</div>
+      <div class="pbody">[ dark chart plate — adjacency graph, this audience at center ]</div>
+    </div>
+
+    <div class="rows">
+      <div class="rowhead">Adjacent territories — expand any row</div>
+      <details class="row">
+        <summary><span class="rtitle">Home baking / sourdough</span><span class="rline">structurally identical community — process pride, starter-sharing, anti-shortcut values</span><span class="rstr">Strong</span></summary>
+        <div class="rbody">Same psychology of slow process and generous expertise. Partnership angle: co-programming around "made from scratch" identity; shared audience already visible in crossover content.</div>
+      </details>
+      <details class="row">
+        <summary><span class="rtitle">Slow fashion &amp; visible mending</span><span class="rline">shared anti-consumption ethos — repair as a values statement</span><span class="rstr">Strong</span></summary>
+        <div class="rbody">The stash-down and no-buy vocabulary is the same movement in different material. Angle: sustainability claims land here only when they cost the brand something visible.</div>
+      </details>
+      <details class="row">
+        <summary><span class="rtitle">Book clubs</span><span class="rline">merging into the same social format — hands busy, conversation on</span><span class="rstr">Moderate</span></summary>
+        <div class="rbody">Knit-and-lit hybrids growing in libraries and shops; the same "gathering with an alibi" structure. Angle: co-located programming, publisher partnerships.</div>
+      </details>
+      <details class="row">
+        <summary><span class="rtitle">Cozy gaming</span><span class="rline">same cohort, same decompression psychology, screen-based sibling</span><span class="rstr">Moderate</span></summary>
+        <div class="rbody">Stardew-and-stitching is a documented pairing; the aesthetic and emotional registers are interchangeable. Angle: crossover content and licensed patterns.</div>
+      </details>
+      <details class="row">
+        <summary><span class="rtitle">Thrifting &amp; secondhand</span><span class="rline">supply sourcing already overlaps values — destash markets prove it</span><span class="rstr">Moderate</span></summary>
+        <div class="rbody">Sweater-unraveling and destash trading make secondhand part of the craft supply chain. Angle: resale and re-use mechanics as brand programs.</div>
+      </details>
+    </div>
+
+    </section>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var map = {
+    '': 'pg-summary', '#top': 'pg-summary', '#pg-summary': 'pg-summary',
+    '#ch1':'pg-ch1', '#ch2':'pg-ch2', '#ch3':'pg-ch3',
+    '#ch4':'pg-ch4', '#ch5':'pg-ch5', '#ch6':'pg-ch6'
+  };
+  var navFor = {
+    'pg-summary':'#top','pg-ch1':'#ch1','pg-ch2':'#ch2','pg-ch3':'#ch3',
+    'pg-ch4':'#ch4','pg-ch5':'#ch5','pg-ch6':'#ch6'
+  };
+  function show(hash){
+    var id = map[hash] || 'pg-summary';
+    document.querySelectorAll('.page').forEach(function(p){ p.classList.toggle('show', p.id === id); });
+    document.querySelectorAll('.spine .chapters a').forEach(function(a){
+      a.classList.toggle('on', a.getAttribute('href') === navFor[id]);
+    });
+    window.scrollTo(0,0);
+  }
+  window.addEventListener('hashchange', function(){ show(location.hash); });
+  show(location.hash);
+})();
+</script>
+</body>
+</html>
