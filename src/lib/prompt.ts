@@ -903,9 +903,30 @@ Produce two fields inside influentialCore:
 - coreTagline: one short sentence that completes the picture ("The one others text before buying a bottle.")
 The existing coreLabel field continues to be produced for compatibility. The Signals Snapshot center circle now uses coreName.
 
+THE PLAN — MEDIA-PLAN SCAFFOLD (Round 11B, the "walk" tier):
+Produce a "plan" object: a scaffold a media buyer can take to their platforms — plan lines, roles, sequencing, and a split hypothesis with evidence-backed rationale. It is NOT a finished media plan: NEVER assign budget dollars, flighting dates, or creative copy — that is a human's layer.
+
+HARD RULES FOR THE PLAN:
+- TRACEABILITY CONTRACT: every line derives from signals already in this report. sourceSignalIds is REQUIRED and non-empty on every line, using ids exactly as they appear in the reconciled data (sig*, bb*, ds*). A line that cannot name its sources does not exist. No new research, no invented channels.
+- NO REACH NUMBERS: never estimate an audience size, member count, subscriber count, or impression figure for a plan line — anywhere in the plan object. reachBasis labels what KIND of number belongs on the line; the value itself arrives later by manual entry. An invented reach figure in the plan is a FAIL-grade integrity offense. (Numbers quoted inside a rationale must already exist in the reconciled data with their attribution — the plan invents nothing.)
+- LINE CLASSES: role "core-seed" lines come from the distinctive/core signals — the whyOnlyThisAudience and strength winners — precise, cheap-to-saturate placements where the core actually lives. role "reach" lines come from the broad inventory (the swap-test table-stakes platforms the report already carries). Expect FEW reach lines and say so honestly inside the plan — the reach side thickens in a later round; never pad it.
+- targetingStack is platform-enterable language assembled from the targetable signals and platform concentrations already in the data — interests, placements, keyword clusters, seed descriptions — not narrative prose.
+- Anti-padding + spice license, as everywhere: fewer honest lines beat a padded grid; a vivid, evidence-dense niche line (a festival, a small newsletter) is exactly the point of the core-seed class.
+
+splitHypothesis: propose a coreSharePct band — default reasoning starts at 10–25 — with a rationale arguing WHY for THIS audience, grounded in channel costs and access (a core reachable through cheap sponsorships costs little to saturate; the split is an output of channel economics, not a magic ratio). status is always the literal string "hypothesis".
+sequencing: ordered phases, with "win the core first" as the structural default where the evidence supports it — if this audience's evidence argues otherwise, say so (structure follows evidence, not dogma).
+messagingInputs: assembled from the emotional drivers and barriers already in this report — explicitly INPUTS for creative, never copy.
+measurementSignals: what a buyer watches per line class (core-seed: engagement quality, community echo, branded-search lift in insider vocabulary; reach: standard platform metrics), plus a UTM naming suggestion per line so future tests join cleanly.
+soWhat: one sentence naming what this plan does that a generic plan can't.
+
+AUDIENCE TAGLINE:
+Produce a top-level "audienceTagline": the audience in ONE plain sentence, written for a human reading the report's hero position. No statistics, no jargon, no sentence fragments — a clean declarative sentence a stranger would understand on first read.
+
 OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with {):
 {
   "summary": "2-3 sharp sentences on what moves this audience — the core behavioral truth and the lever, written for a strategist",
+
+  "audienceTagline": "the audience in one plain declarative sentence — no statistics, no jargon, no fragments",
 
   "influentialCore": {
     "coreName": "a memorable NAME for the core, 4 words maximum — a title, not a description; interesting and actionable beats exhaustively correct ('The Pre-Whole-Foods Adopter', not 'the experienced multi-craft peer who refuses to monetize'). Capitalize as a title.",
@@ -1085,6 +1106,30 @@ OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with
     "behavioral": [{ "label": "short behavior phrase", "rating": "HIGH" }],
     "trust": [{ "label": "channel", "detail": "the one-step-deeper specific", "score": number }],
     "social": [{ "label": "the specific space", "score": number }]
+  },
+
+  "plan": {
+    "soWhat": "one sentence: what this plan does that a generic plan can't",
+    "splitHypothesis": {
+      "coreSharePct": { "low": number, "high": number },
+      "rationale": "WHY this band for THIS audience, grounded in channel costs/access from the reconciled data",
+      "status": "hypothesis"
+    },
+    "lines": [
+      {
+        "id": "line1" (sequential — line2, line3, …),
+        "channel": "specific placement, e.g. 'Newsletter sponsorships (candid operator tier)' — from the report's own signals, never invented",
+        "role": "core-seed" | "reach",
+        "targetingStack": "platform-enterable language assembled from targetable signals/platform concentrations",
+        "rationale": "one sentence, evidence-grounded",
+        "sourceSignalIds": ["sig…" | "bb…" | "ds…"] (REQUIRED, non-empty — ids exactly as they appear in the reconciled data),
+        "doAvoid": "channel-specific do/avoid from existing evidence (omit if none)",
+        "reachBasis": "platform estimate (Meta)" | "platform estimate (TikTok)" | "search demand/mo (Google)" | "reach plan (YouTube)" | "publisher-reported" | "membership-reported" | "unestimated"
+      }
+    ],
+    "sequencing": ["ordered phases — 'win the core first' as default where evidence supports it"],
+    "messagingInputs": ["from drivers/backfires — inputs for creative, never copy"],
+    "measurementSignals": ["what to watch per line class + a UTM naming suggestion per line"]
   },
 
   "researchDepth": {
