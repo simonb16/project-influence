@@ -31,7 +31,10 @@ describe("punchlist 2 — block 05 chips are entry-point titles", () => {
     const chips = deriveEngagementChips(smb);
     expect(chips.length).toBeGreaterThan(0);
     const categories = new Set(["ritual", "community", "voice", "moment", "context", "channel"]);
-    for (const c of chips) expect(categories.has(c.label.toLowerCase())).toBe(false);
+    for (const c of chips) {
+      expect(categories.has(c.label.toLowerCase())).toBe(false);
+      expect(c.label.split(/\s+/).length).toBeLessThanOrEqual(12);
+    }
     console.log("SMB engage chips:", chips.map((c) => c.label));
   });
   it("crafters: no crash, no category labels", () => {

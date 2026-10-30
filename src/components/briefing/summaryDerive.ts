@@ -178,24 +178,8 @@ export function deriveBackfires(report: ArchetypeReport): SummaryLine[] {
 
 const CONFIDENCE_RANK: Record<string, number> = { high: 3, medium: 2, directional: 1, flagged: 0 };
 
-/** Punchlist 2: the chip is the entry point's short title — the clause of its
- * description before the first em-dash, parenthetical stripped (e.type is a
- * category label, not content). Top items by confidence, array order within. */
-export function deriveEngagementChips(report: ArchetypeReport): SummaryChip[] {
-  return [...(report.entryPoints ?? [])]
-    .sort((a, b) => (CONFIDENCE_RANK[b.confidence ?? "medium"] ?? 2) - (CONFIDENCE_RANK[a.confidence ?? "medium"] ?? 2))
-    .map((e) => {
-      let title = e.description.split(/\s+—\s+/)[0].replace(/\s*\([^)]*\)/g, "").trim();
-      if (title.length > 70) title = title.split(/(?<=[.!?])\s+/)[0].trim();
-      return { label: title, core: false };
-    })
-    .filter((c) => c.label.length > 0)
-    .slice(0, 5);
-}
-
-/** ≤ ~8-word bridge reason (punchlist 6): the first clause when it ends
- * cleanly (a couple words of slack beats a chopped phrase), else a trimmed
- * phrase — never a dangling ellipsis or a cut-off infinitive/adverb tail. */
+/** Clean word-cap (punchlist 6 rules): never a dangling ellipsis, cut-off
+ * infinitive/adverb tail, chopped noun phrase, or trailing separator token. */
 const DANGLING_TAIL = new Set(["and", "or", "to", "of", "the", "a", "an", "with", "for", "in", "on", "at", "by", "their", "its", "is", "are", "as", "that", "who"]);
 
 function dangles(word: string): boolean {
@@ -203,25 +187,24 @@ function dangles(word: string): boolean {
   return DANGLING_TAIL.has(w) || /ly$/.test(w);
 }
 
-function shortReason(text: string): string {
-  const commaClause = text.split(/[,—;.]/)[0].trim();
-  if (commaClause.split(/\s+/).length <= 8) return commaClause;
-  const clause = text.split(/[—;.]/)[0].trim();
-  const words = clause.split(/\s+/);
-  if (words.length <= 10) return clause;
-  let out = words.slice(0, 8);
+function cleanTrim(text: string, cap: number): string {
+  const words = text.split(/\s+/);
+  if (words.length <= cap) return text;
+  let out = words.slice(0, cap);
   let trimmed = true;
   while (trimmed && out.length > 3) {
     trimmed = false;
-    if (dangles(out[out.length - 1]) || out[out.length - 2]?.toLowerCase() === "to") {
+    // letterless tokens ("/", "·") and dangling tails never end a phrase
+    if (!/[a-z]/i.test(out[out.length - 1]) || dangles(out[out.length - 1]) || out[out.length - 2]?.toLowerCase() === "to") {
       out.pop();
       trimmed = true;
       continue;
     }
-    // an article in the cut's last 3 words marks a chopped noun phrase
-    // ("…function as a shared media[ diet]") — back up to before it
+    // an article or separator in the cut's last 3 words marks a chopped
+    // phrase ("…function as a shared media[ diet]", "…Index / Hampton[ AI]")
+    // — back up to before it
     for (let k = out.length - 1; k >= out.length - 3 && k >= 3; k--) {
-      if (/^(a|an|the)$/i.test(out[k])) {
+      if (/^(a|an|the)$/i.test(out[k]) || !/[a-z]/i.test(out[k])) {
         out = out.slice(0, k);
         trimmed = true;
         break;
@@ -229,6 +212,32 @@ function shortReason(text: string): string {
     }
   }
   return out.join(" ");
+}
+
+/** Punchlist 2: the chip is the entry point's short title — the clause of its
+ * description before the first em-dash, parenthetical stripped (e.type is a
+ * category label, not content). Top items by confidence, array order within;
+ * capped at ~12 words with the clean-trim rules. */
+export function deriveEngagementChips(report: ArchetypeReport): SummaryChip[] {
+  return [...(report.entryPoints ?? [])]
+    .sort((a, b) => (CONFIDENCE_RANK[b.confidence ?? "medium"] ?? 2) - (CONFIDENCE_RANK[a.confidence ?? "medium"] ?? 2))
+    .map((e) => {
+      let title = e.description.split(/\s+—\s+/)[0].replace(/\s*\([^)]*\)/g, "").trim();
+      if (title.length > 70) title = title.split(/(?<=[.!?])\s+/)[0].trim();
+      return { label: cleanTrim(title, 12), core: false };
+    })
+    .filter((c) => c.label.length > 0)
+    .slice(0, 5);
+}
+
+/** ≤ ~8-word bridge reason (punchlist 6): the first clause when it ends
+ * cleanly (a couple words of slack beats a chopped phrase), else clean-trimmed. */
+function shortReason(text: string): string {
+  const commaClause = text.split(/[,—;.]/)[0].trim();
+  if (commaClause.split(/\s+/).length <= 8) return commaClause;
+  const clause = text.split(/[—;.]/)[0].trim();
+  if (clause.split(/\s+/).length <= 10) return clause;
+  return cleanTrim(clause, 8);
 }
 
 export function deriveAdjacencyChips(report: ArchetypeReport): SummaryChip[] {
