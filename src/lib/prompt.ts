@@ -53,6 +53,15 @@ export const EXEMPLAR_NGRAMS: Array<{ ngram: string; sourceKeywords: string[] }>
   { ngram: "community-trust secondary market", sourceKeywords: ESPRESSO },
 ];
 
+// Round 11A follow-up: two leaks in two consecutive SMB runs, from two
+// DIFFERENT exemplar sites ("~3% posting layer" from the targetables
+// exemplar, "counter-current inside its own audience" from the profile
+// exemplar) — a floor problem, not bad luck and not one bad exemplar. This
+// hard line renders adjacent to every embedded exemplar below. The leakage
+// list above and the Verifier check severity are unchanged.
+const ANTI_BORROWING =
+  "HARD RULE — exemplars demonstrate register, structure, and specificity-level only; any distinctive phrase, metaphor, or number from them is banned output — express it in this audience's own material.";
+
 export interface AgentInputs {
   audience: string;
   brand?: string;
@@ -638,6 +647,8 @@ DISTINCTIVE EXEMPLARS (register reference from real reports — match the specif
 - "Parameter-specific proof format — numbers, mods, and long-term follow-ups as the price of being believed"
 - "Community-trust secondary market — buying used gear from known forum participants with care records"
 
+${ANTI_BORROWING}
+
 LICENSE FOR SPICE: A signal with no platform quant but vivid qualitative evidence MAY outrank a measurable one. Measurability is a property of the evidence, not of the signal's importance — do not let "can I score this precisely" leak into "should I select this." Score unquantifiable signals from evidence density and mark the basis evidence-classified, as the rules already allow.
 
 Single-lens signals are admissible when the evidence is specific and vivid — label them with their convergence status honestly (the existing confidence machinery). A distinctive single-lens signal with real evidence beats a converged platitude.
@@ -663,6 +674,8 @@ PARTICIPATION LAYERS: when community data supports it, distinguish the participa
 
 EXEMPLAR (verbatim from a real report — match its structure, not its content): "The contribution layer (~13K weekly contributions against 411K weekly visitors on r/crochet alone) is where the core operates; the visitor layer is the base receiving its judgment." — with the derivation shown transparently in the validation data (members from web search + visitor/contribution figures from lens evidence → "~3% contribution rate").
 
+${ANTI_BORROWING}
+
 Evidence-gated: layer analysis only where numbers exist. Never estimate a ratio without inputs.
 
 BEHAVIORAL BUCKETS — YOU OWN SELECTION, BUCKETING, AND EVIDENCE:
@@ -684,6 +697,8 @@ FORMAT EXEMPLAR (from Maria's spec — match the structure, not the content):
 Signal: Beginner craft kits (the exact observable purchase)
 Targetable Signal: searching for beginner craft kits on Google, watching beginner crafting tutorials on YT
 What it signals: [one sentence on what the behavior reveals about the Influential Core]
+
+${ANTI_BORROWING}
 
 Aim for 3-6 signals per bucket, evidence permitting. A thin bucket (especially buy) shows fewer items — NEVER pad a bucket to hit a count. Anti-padding applies in full: every item traces to lens evidence or tool data.
 
@@ -813,6 +828,8 @@ THE STORY (the "summary" field) must accomplish four things, in roughly this ord
 EXEMPLAR of the register (from a real report — match its structure, not its content):
 "The home-crafting category is decided by a small (5–15%), stable core of multi-year hobbyists who make purchase verdicts inside communities — knit nights, Ravelry logs, subreddit advice threads, Substack comments — that retailers merely fulfill. Their trust grammar is fixed: granular specificity plus candid flaws plus zero commercial stake, and their defining identity position is refusal to monetize ('just for joy'), held against a monetization pull that is rising (+37% 'how to sell crochet') and dominates algorithmic video. The lever is not reach but proximity: no brand currently articulates the no-hustle position back to them, and the core's habitats — intimate text, micro-video, and physical circles — are cheap to be present in and impossible to buy your way into."
 
+${ANTI_BORROWING}
+
 Anti-padding: the four beats and the quantified markers only appear when the reconciled data supports them — never invent a marker or a lever to hit the count.
 
 CORE-VS-BASE CONTRASTS:
@@ -864,6 +881,8 @@ Produce an at-a-glance summary of the four Signals of Influence for the influent
 - trust: from your influence susceptibility analysis — take the high-scoring subsets. Name the trust MECHANISM, not just the archetype — with an evidenced exemplar in parentheses where one exists. EXEMPLAR: "Knit-night regulars & LYS staff — named-person, zero-stake in-person recommendation ('Sue') · 92" (match the structure — mechanism plus evidenced example — not the content). Named individuals only when the evidence produced them (anti-confabulation unchanged). label = channel, detail = the mechanism (plus exemplar when evidenced), score included
 - social: from your influence map, digital habitat, and real world habitat — take the top-scoring specific spaces, digital and offline together. label = the space, score included
 
+${ANTI_BORROWING}
+
 3-5 entries per signal, ordered by score descending. Every entry must trace to an item in the full report — same name, same score. If a signal has fewer than 3 high-scoring items, show fewer rather than padding with low scorers. Include at least one real-world context in social when the real world habitat has a well-evidenced entry.
 
 Also produce coreLabel: the name of the influential core archetype. This must be THE SAME archetype name used in your influential core definition/description (e.g., if the description says the core is "the multicraftual dabbler with established taste", coreLabel is exactly that). Do not write a new or alternative label — the snapshot and the Influential Core section must refer to the core by the same name.
@@ -873,6 +892,8 @@ The influentialCore "profile" field is an explicit, systematic contrast between 
 
 EXEMPLAR (verbatim from a real report — match its structure, not its content):
 "The knit-night regular differs from the base on nearly every axis. The base samples crafting through kits, craft-and-sip nights, and aesthetic trends (grandmacore, cottagecore); the core never mentions kits and explicitly rejects crafting-as-identity ('something I do, not something I am'). The base's monetization curiosity is rising (+37% on 'how to sell crochet'); the core is a counter-current inside its own audience, using refusal as a badge. The base consumes recommendations; the core produces them, in a format — specificity plus visible imperfection plus no commercial stake — that the base copies when learning how to evaluate products."
+
+${ANTI_BORROWING}
 
 Anti-padding: only the axes the reconciled data actually evidences — do not manufacture a fifth contrast to round out the list.
 
