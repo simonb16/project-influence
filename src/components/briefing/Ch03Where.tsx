@@ -2,12 +2,14 @@
 
 import { ArchetypeReport, SocialSignal } from "@/types";
 import { SignalMap, nativeCards } from "@/components/report/SocialSignals";
-import { ChapterHeader, EvidenceDisclosure, Featured, FeaturedStrip, MutedNote, Plate, Row, RowGroup } from "./primitives";
+import { ChapterHeader, EvidenceDisclosure, Featured, FeaturedStrip, MutedNote, Row, RowGroup } from "./primitives";
 import { selectFeaturedSignals } from "./featured";
 import { scoreWord, bucketStrengthWord, titleCase } from "./scoreWords";
+import { sameEntity } from "./dedupe";
 
 // Chapter 03: Where to find them — absorbs the Social tab in full (Signal Map
-// on a dark plate, social signals as featured/rows with validatedBy receipts),
+// in the light briefing theme, social signals as featured/rows with validatedBy
+// receipts),
 // the Behavioral "Go" bucket + Real World Habitat (physical world = placement),
 // digital habitat material, and the core's language codes (rendered on Social
 // since Round 9).
@@ -60,7 +62,13 @@ export function Ch03Where({ report }: { report: ArchetypeReport }) {
   const { featured, rows } = selectFeaturedSignals(report.socialSignals ?? []);
   const cards = nativeCards(report);
   const goItems = (report.behavioralBuckets ?? []).filter((b) => b.bucket === "go");
-  const habitat = report.realWorldHabitat ?? [];
+  // Punchlist 3: Go bucket and real-world habitat often describe the same
+  // venue from two pipeline paths — render it once. A matching habitat item
+  // folds its notes into the Go row (union of notes, inventory-note rule);
+  // only unmatched habitat items render as their own rows.
+  const habitatAll = report.realWorldHabitat ?? [];
+  const habitatFor = (signal: string) => habitatAll.find((h) => sameEntity(signal, h.context));
+  const habitat = habitatAll.filter((h) => !goItems.some((g) => sameEntity(g.signal, h.context)));
   const digital = report.digitalHabitat ?? [];
   const languageCodes = report.influentialCore?.languageCodes ?? [];
 
@@ -75,12 +83,16 @@ export function Ch03Where({ report }: { report: ArchetypeReport }) {
       />
 
       {cards && cards.length > 0 && (
-        <Plate label="SIGNAL MAP">
+        <section style={{ margin: "22px 0 26px" }}>
+          <div className="mono" style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.16em", color: "var(--b-ink3)", marginBottom: 10 }}>
+            SIGNAL MAP
+          </div>
           <SignalMap
             cards={cards}
+            variant="light"
             onSelect={(id) => document.getElementById(`b-${id}`)?.scrollIntoView({ behavior: "smooth", block: "center" })}
           />
-        </Plate>
+        </section>
       )}
 
       {featured.map((s) => (
@@ -118,26 +130,35 @@ export function Ch03Where({ report }: { report: ArchetypeReport }) {
 
       {(goItems.length > 0 || habitat.length > 0) && (
         <RowGroup head="In the world — placement, not targeting">
-          {goItems.map((item) => (
-            <Row key={item.id} title={item.signal} line={item.whatItSignals} strength={bucketStrengthWord(item.strength)}>
-              <p>{item.whatItSignals}</p>
-              {item.targetableSignal?.trim() && (
-                <p style={{ marginTop: 6, fontSize: 13 }}>
-                  <span className="mono" style={{ fontSize: 10, letterSpacing: "0.13em", color: "var(--b-ink3)" }}>TARGETABLE · </span>
-                  {item.targetableSignal}
-                </p>
-              )}
-              {item.reinforcingEvidence?.length > 0 && (
-                <EvidenceDisclosure srcLine="attributed per the three source tiers">
-                  {item.reinforcingEvidence.map((ev, i) => (
-                    <p key={i} style={{ margin: i ? "6px 0 0" : 0 }}>
-                      {ev.evidence} <span className="mono" style={{ fontSize: 10.5, color: "var(--b-ink3)" }}>— {ev.source}</span>
-                    </p>
-                  ))}
-                </EvidenceDisclosure>
-              )}
-            </Row>
-          ))}
+          {goItems.map((item) => {
+            const merged = habitatFor(item.signal);
+            return (
+              <Row key={item.id} title={item.signal} line={item.whatItSignals} strength={bucketStrengthWord(item.strength)}>
+                <p>{item.whatItSignals}</p>
+                {merged && (
+                  <p style={{ marginTop: 6 }}>
+                    {merged.description} <b>Influence type:</b> {merged.influenceType}
+                  </p>
+                )}
+                {item.targetableSignal?.trim() && (
+                  <p style={{ marginTop: 6, fontSize: 13 }}>
+                    <span className="mono" style={{ fontSize: 10, letterSpacing: "0.13em", color: "var(--b-ink3)" }}>TARGETABLE · </span>
+                    {item.targetableSignal}
+                  </p>
+                )}
+                {item.reinforcingEvidence?.length > 0 && (
+                  <EvidenceDisclosure srcLine="attributed per the three source tiers">
+                    {item.reinforcingEvidence.map((ev, i) => (
+                      <p key={i} style={{ margin: i ? "6px 0 0" : 0 }}>
+                        {ev.evidence} <span className="mono" style={{ fontSize: 10.5, color: "var(--b-ink3)" }}>— {ev.source}</span>
+                      </p>
+                    ))}
+                  </EvidenceDisclosure>
+                )}
+                {merged?.evidence && <EvidenceDisclosure srcLine="lens evidence">{merged.evidence}</EvidenceDisclosure>}
+              </Row>
+            );
+          })}
           {habitat.map((h, i) => (
             <Row key={`h${i}`} title={h.context} line={h.description} strength={scoreWord(h.strength)}>
               <p>{h.description}</p>

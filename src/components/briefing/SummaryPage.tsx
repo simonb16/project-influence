@@ -13,7 +13,6 @@ import {
   deriveInTheWorld,
   deriveOnline,
   deriveSignalChips,
-  deriveTagline,
   deriveWhatWorks,
   extractLever,
   strongestContrast,
@@ -46,7 +45,6 @@ export function SummaryPage({
   onNavigate: (p: BriefingPageId) => void;
 }) {
   const core = report.influentialCore;
-  const tagline = deriveTagline(report);
   const estReach = deriveEstReach(report);
   const corePercent = deriveCorePercent(report);
   const reach = report.manualInputs?.platformReach;
@@ -74,9 +72,8 @@ export function SummaryPage({
           <div className="serif" style={{ fontWeight: 500, fontSize: 36, lineHeight: 1.05, marginBottom: 4 }}>
             {report.archetype}
           </div>
-          {tagline && (
-            <div className="serif" style={{ fontStyle: "italic", color: "var(--b-ink2)", fontSize: 17 }}>{tagline}</div>
-          )}
+          {/* Subtitle deliberately omitted until the planned audienceTagline
+              synthesis field exists (punchlist 1 — Simon's call). */}
         </div>
         <div style={{ marginLeft: "auto", display: "flex", gap: 12, flexShrink: 0 }}>
           <StatBox n={estReach ?? "—"} label="Est. reach" basis={estReach ? "triangulated" : "no size evidence"} empty={!estReach} />
@@ -121,12 +118,15 @@ export function SummaryPage({
       <div style={{ marginBottom: 28 }}>
         <BlockHead num="01" title="Who are they" link="full chapter →" onNavigate={() => onNavigate("ch1")} />
         <div style={{ display: "flex", gap: 20 }}>
-          <div style={{ flex: 1, fontSize: 14.5, color: "var(--b-ink2)", lineHeight: 1.6 }}>
-            <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 6, color: "var(--b-ink3)" }}>
-              The audience
+          {/* Punchlist 4 (same rule as Ch01): never fall back to raw run input. */}
+          {baseSummary && (
+            <div style={{ flex: 1, fontSize: 14.5, color: "var(--b-ink2)", lineHeight: 1.6 }}>
+              <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 6, color: "var(--b-ink3)" }}>
+                The audience
+              </div>
+              {baseSummary}
             </div>
-            {baseSummary ?? report.audience ?? report.query ?? ""}
-          </div>
+          )}
           <div
             style={{ flex: 1.2, background: "var(--b-paper)", border: "1px solid var(--b-line)", borderLeft: "3px solid var(--b-accent)", borderRadius: "0 10px 10px 0", padding: "16px 20px" }}
           >

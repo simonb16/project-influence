@@ -37,6 +37,7 @@ export interface VerifierDisplay {
   noteCount: number;
   totalCount: number;
   footer: string; // sidebar/footer line
+  summaryLine: string; // arithmetic line consistent with the display tiers (punchlist 5)
 }
 
 export function verifierDisplay(report: VerifierReport | undefined): VerifierDisplay | null {
@@ -45,11 +46,20 @@ export function verifierDisplay(report: VerifierReport | undefined): VerifierDis
   const failCount = tiers.filter((t) => t === "fail").length;
   const warnCount = tiers.filter((t) => t === "warn").length;
   const noteCount = tiers.filter((t) => t === "note").length;
+  const passCount = tiers.filter((t) => t === "pass").length;
   const verified = failCount === 0 && warnCount === 0;
   const footer = verified
     ? `✓ Verified · ${report.totalCount} integrity checks`
     : failCount > 0
       ? `✕ ${failCount} failed check${failCount > 1 ? "s" : ""} — re-run before external use`
       : `⚠ ${warnCount} integrity warn${warnCount > 1 ? "s" : ""} · ${report.totalCount} checks`;
-  return { verified, failCount, warnCount, noteCount, totalCount: report.totalCount, footer };
+  // Punchlist 5: notes are not warns — the X/Y line counts only the
+  // pass/warn/fail tiers; notes are a separate suffix. Display only; the
+  // pipeline-written report.summary (which counts raw statuses) is not shown.
+  const counted = passCount + warnCount + failCount;
+  const noteSuffix = noteCount > 0 ? ` · ${noteCount} note${noteCount > 1 ? "s" : ""}` : "";
+  const summaryLine = verified
+    ? `All ${counted} integrity checks passed${noteSuffix}`
+    : `${passCount}/${counted} checks passed (${failCount} failed, ${warnCount} warned)${noteSuffix}`;
+  return { verified, failCount, warnCount, noteCount, totalCount: report.totalCount, footer, summaryLine };
 }

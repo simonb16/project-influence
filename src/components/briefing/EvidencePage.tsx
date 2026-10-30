@@ -93,7 +93,7 @@ export function EvidencePage({ report }: { report: ArchetypeReport }) {
               </div>
             )}
             <p className="mono" style={{ fontSize: 10.5, color: "var(--b-ink3)", marginTop: 10 }}>
-              {verifier.summary} · ran {new Date(verifier.ranAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}
+              {vd.summaryLine} · ran {new Date(verifier.ranAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}
             </p>
           </Card>
         </div>

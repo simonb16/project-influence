@@ -4,6 +4,15 @@ import { ReactNode } from "react";
 // approved mockup's visual language (sway-mockup-A-briefing.html). All light
 // theme — tokens live in globals.css under .briefing-root.
 
+/** Punchlist 6: "absorbs:" lines are internal mapping provenance, not reader
+ * content. Visible only with ?dev in the URL or NEXT_PUBLIC_DEV_ANNOTATIONS=1.
+ * (The briefing only renders client-side after the report fetch, so reading
+ * window here is safe.) */
+function devAnnotationsEnabled(): boolean {
+  if (process.env.NEXT_PUBLIC_DEV_ANNOTATIONS === "1") return true;
+  return typeof window !== "undefined" && new URLSearchParams(window.location.search).has("dev");
+}
+
 export function ChapterHeader({
   num,
   title,
@@ -26,7 +35,7 @@ export function ChapterHeader({
       <p className="serif" style={{ fontStyle: "italic", fontSize: 18, color: "var(--b-ink2)", marginBottom: 14 }}>
         {tagline}
       </p>
-      {absorbs && (
+      {absorbs && devAnnotationsEnabled() && (
         <p className="mono" style={{ fontSize: 11.5, color: "var(--b-ink3)", margin: "-6px 0 18px" }}>
           absorbs: {absorbs}
         </p>
@@ -57,27 +66,6 @@ export function ChipRow({ children }: { children: ReactNode }) {
 
 export function Chip({ core, children }: { core?: boolean; children: ReactNode }) {
   return <span className={`b-chip${core ? " core" : ""}`}>{children}</span>;
-}
-
-/** Dark chart plate — framed canvas inside the light page. The chart
- * components inside keep their existing dark styling untouched. */
-export function Plate({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div
-      style={{
-        background: "var(--b-plate)",
-        color: "var(--b-plate-ink)",
-        borderRadius: 12,
-        padding: 26,
-        margin: "22px 0 34px",
-      }}
-    >
-      <div className="mono" style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.16em", color: "#8B87A8", marginBottom: 10 }}>
-        {label}
-      </div>
-      {children}
-    </div>
-  );
 }
 
 /** Featured item — the two-class hierarchy's upper class. */

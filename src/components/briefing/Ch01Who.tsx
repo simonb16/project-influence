@@ -9,7 +9,8 @@ import { scoreWord } from "./scoreWords";
 // core hero (name, tagline, size ring + sizing derivation disclosure),
 // the four-beat Story as the chapter narrative, coreVsBase contrasts as
 // side-by-side base/core cards, susceptibility/initiator content, and the
-// base description (audience input + lens base material).
+// base description (lens base material; raw audience input renders on the
+// Report inputs page only — punchlist 4).
 
 function susceptibilityTier(score: number): string {
   if (score >= 70) return "Receptive";
@@ -90,11 +91,9 @@ export function Ch01Who({ report }: { report: ArchetypeReport }) {
       {/* ── Base vs core — side-by-side cards from the lens contrasts ── */}
       <Cols2>
         <Card title="The base — how they behave">
-          {report.audience && (
-            <p style={{ fontSize: 13, color: "var(--b-ink2)", lineHeight: 1.5, marginBottom: contrasts.length ? 8 : 0 }}>
-              {report.audience}
-            </p>
-          )}
+          {/* Punchlist 4: raw run input never renders as report prose — it
+              lives on Report inputs only. No lens base-description field
+              exists in report_json, so the lens contrast bullets stand alone. */}
           <ul style={{ margin: 0, padding: 0 }}>
             {contrasts.map((c, i) => (
               <li key={i}>{c.note.base}</li>
