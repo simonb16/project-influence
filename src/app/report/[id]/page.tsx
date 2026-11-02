@@ -4,10 +4,15 @@ import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArchetypeReport } from "@/types";
 import { ReportView } from "@/components/report/ReportView";
+import { BriefingView } from "@/components/briefing/BriefingView";
 
 // Direct-linkable report route (Round 7, Part 4) — what completion emails
 // point at. Fetches the report fresh from the server rather than relying on
 // any client-side state, so the link works from a cold browser.
+//
+// Round 11A: post-Round-9 reports (behavioralBuckets present) render in the
+// briefing view — the six-question light shell. Pre-Round-9 reports keep the
+// legacy dark layout untouched (the established transitional pattern).
 export default function ReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
@@ -34,6 +39,12 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
       cancelled = true;
     };
   }, [id]);
+
+  // The briefing view ships its own full shell (sidebar spine) — no dark
+  // chrome around it.
+  if (report && report.behavioralBuckets && report.behavioralBuckets.length > 0) {
+    return <BriefingView report={report} reportId={id} onReset={() => router.push("/")} />;
+  }
 
   return (
     <div className="min-h-screen bg-[#080B0F]">

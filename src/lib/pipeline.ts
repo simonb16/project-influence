@@ -36,6 +36,16 @@ function oneLiner(audience: string): string {
   return audience.split(/[.\n]/)[0].trim();
 }
 
+/** One retry, then the error propagates — Round 10 Rider A. */
+export async function withOneRetry<T>(fn: () => Promise<T>, onRetry: (err: unknown) => void): Promise<T> {
+  try {
+    return await fn();
+  } catch (err) {
+    onRetry(err);
+    return fn();
+  }
+}
+
 /**
  * Runs the full agent pipeline and drives a run row to completion or failure.
  * Called un-awaited from the POST /api/analyze handler — Railway runs a
@@ -103,10 +113,19 @@ export async function executeRun(
           progress("Adjacency mapping unavailable — finishing report without it");
           return undefined;
         }),
-      runEnrichmentAgent(inputs, reconciliation)
+      // Round 10 Rider A: one retry before accepting the degraded run — an
+      // enrichment failure now costs visible content (the bucket inventory
+      // layer), not just targetables.
+      withOneRetry(
+        () => runEnrichmentAgent(inputs, reconciliation),
+        (err) => {
+          console.error("[pipeline] Enrichment agent failed, retrying once:", err);
+          progress("Enrichment hit an error — retrying...");
+        }
+      )
         .then((r) => { onAgentComplete("Findability & Enrichment"); return r; })
         .catch((err) => {
-          console.error("[pipeline] Enrichment agent failed, continuing un-enriched:", err);
+          console.error("[pipeline] Enrichment retry failed, continuing un-enriched:", err);
           progress("Enrichment unavailable — finishing report with un-enriched signals");
           return undefined;
         }),

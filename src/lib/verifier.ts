@@ -20,7 +20,7 @@ import {
 // two can't drift apart. prompt.ts's own import from this module is
 // type-only (erased at compile time), so this does not create a runtime
 // circular dependency — verified by the build.
-import { EXEMPLAR_NGRAMS, EXEMPLAR_SOURCE_AUDIENCE_KEYWORDS } from "@/lib/prompt";
+import { EXEMPLAR_NGRAMS } from "@/lib/prompt";
 
 /** One executed tool call, captured in memory by the reconciliation loop.
  * resultJson is the untruncated JSON returned to the model. */
@@ -274,7 +274,17 @@ export function checkSnapshotTraceability(report: ArchetypeReport): VerifierChec
       // strings), the label trace stands and there is nothing to contradict.
       const scored = matches.filter((m) => typeof m.score === "number");
       if (typeof e.score === "number" && scored.length > 0 && !scored.some((m) => m.score === e.score)) {
-        failures.push(`${box}: "${e.label}" score ${e.score} does not match source (${scored.map((m) => m.score).join("/")})`);
+        // Short generic source labels ("peer", "creator") can out-match the
+        // true multi-word source of a distilled snapshot label. If the exact
+        // score exists anywhere in this box's source pool, the score itself
+        // traces — that's a label-match miss, not a fabricated number.
+        if (sources.some((s) => typeof s.score === "number" && s.score === e.score)) {
+          warns.push(
+            `${box}: "${e.label}" score ${e.score} traces to a source the label match missed (label-matched: ${scored.map((m) => m.score).join("/")})`
+          );
+        } else {
+          failures.push(`${box}: "${e.label}" score ${e.score} does not match source (${scored.map((m) => m.score).join("/")})`);
+        }
       }
     }
   };
@@ -464,27 +474,206 @@ export function checkNumberLogAudit(report: ArchetypeReport, toolAudit?: ToolAud
 
 export function checkExemplarLeakage(report: ArchetypeReport): VerifierCheck {
   const haystack = JSON.stringify(report).toLowerCase();
-  const hits = EXEMPLAR_NGRAMS.filter((ng) => haystack.includes(ng.toLowerCase()));
+  const hits = EXEMPLAR_NGRAMS.filter((e) => haystack.includes(e.ngram.toLowerCase()));
 
   if (hits.length === 0) {
     return { id: "exemplar-leakage", status: "pass", detail: "no in-prompt exemplar phrases found in report content" };
   }
 
+  // Round 10: source keywords are per-ngram — a hit only downgrades to warn
+  // when the report's audience matches THAT exemplar's source audience.
   const audience = (report.audience ?? "").toLowerCase();
-  const sameAudience = EXEMPLAR_SOURCE_AUDIENCE_KEYWORDS.some((k) => audience.includes(k));
+  const crossAudience = hits.filter((e) => !e.sourceKeywords.some((k) => audience.includes(k)));
 
-  if (sameAudience) {
+  if (crossAudience.length > 0) {
     return {
       id: "exemplar-leakage",
-      status: "warn",
-      detail: `same-audience re-run — possible legitimate re-discovery of: ${hits.join(", ")}`,
+      status: "fail",
+      detail: `exemplar phrase(s) leaked into a different-audience report: ${crossAudience.map((e) => e.ngram).join(", ")}`,
     };
   }
   return {
     id: "exemplar-leakage",
-    status: "fail",
-    detail: `exemplar phrase(s) leaked into a different-audience report: ${hits.join(", ")}`,
+    status: "warn",
+    detail: `same-audience re-run — possible legitimate re-discovery of: ${hits.map((e) => e.ngram).join(", ")}`,
   };
+}
+
+// ─── Round 11B: plan checks ───────────────────────────────────────────────────
+// The plan is synthesis-generated and FAIL-graded on two contracts: every line
+// traces to existing signals (plan-traceability), and the model never writes
+// reach numbers (no-invented-reach). Reports without a plan (pre-11B) skip
+// both. The plan's text rides the exemplar-leakage scan automatically (it
+// scans the whole report JSON) and is added to the genericity-audit excerpts
+// in the verifier prompt.
+
+/** The ids a plan line may cite — exactly the id namespaces synthesis sees. */
+function planSourceIds(report: ArchetypeReport): Set<string> {
+  return new Set<string>([
+    ...(report.socialSignals ?? []).map((s) => s.id),
+    ...(report.behavioralBuckets ?? []).map((b) => b.id),
+    ...((report.dataSignals?.signals ?? []).map((d) => d.id).filter(Boolean) as string[]),
+  ]);
+}
+
+/** Everything a cited source actually says, for the string-level sanity pass. */
+function planSourceCorpus(report: ArchetypeReport, ids: string[]): string {
+  const wanted = new Set(ids);
+  const parts: string[] = [];
+  for (const s of report.socialSignals ?? []) {
+    if (!wanted.has(s.id)) continue;
+    parts.push(s.signal, s.where ?? "", s.who ?? "", s.body, s.evidence ?? "");
+    for (const t of s.targetableSignals ?? []) parts.push(t.platform, t.detail);
+  }
+  for (const b of report.behavioralBuckets ?? []) {
+    if (!wanted.has(b.id)) continue;
+    parts.push(b.signal, b.whatItSignals, b.targetableSignal ?? "");
+    for (const ev of b.reinforcingEvidence ?? []) parts.push(ev.evidence, ev.source);
+  }
+  for (const d of report.dataSignals?.signals ?? []) {
+    if (!d.id || !wanted.has(d.id)) continue;
+    parts.push(d.subject ?? "", d.metric ?? "", d.finding ?? "");
+  }
+  return parts.join(" ");
+}
+
+export function checkPlanTraceability(report: ArchetypeReport): VerifierCheck {
+  const plan = report.plan;
+  if (!plan) {
+    return { id: "plan-traceability", status: "pass", detail: "skipped — report has no plan (pre-11B)" };
+  }
+  const valid = planSourceIds(report);
+  const failures: string[] = [];
+  const warns: string[] = [];
+  const lines = plan.lines ?? [];
+  if (lines.length === 0) warns.push("plan has zero lines — honest thinness or a synthesis miss; eyeball it");
+
+  for (const line of lines) {
+    const label = line.id || line.channel || "(unlabeled line)";
+    if (!line.sourceSignalIds || line.sourceSignalIds.length === 0) {
+      failures.push(`${label}: empty sourceSignalIds — a line that can't name its sources doesn't exist`);
+      continue;
+    }
+    const dangling = line.sourceSignalIds.filter((id) => !valid.has(id));
+    if (dangling.length > 0) {
+      failures.push(`${label}: dangling sourceSignalIds [${dangling.join(", ")}]`);
+    }
+    const resolved = line.sourceSignalIds.filter((id) => valid.has(id));
+    if (resolved.length > 0) {
+      // String-level sanity, not semantics: at least one significant token of
+      // the line's channel/targeting text appears in its cited sources' text.
+      const corpusTokens = new Set(significantTokens(planSourceCorpus(report, resolved)));
+      const lineTokens = significantTokens(`${line.channel} ${line.targetingStack}`);
+      if (!lineTokens.some((t) => corpusTokens.has(t))) {
+        warns.push(`${label}: no channel/targeting token appears in its cited sources — check the citation`);
+      }
+    }
+  }
+  return check(
+    "plan-traceability",
+    failures,
+    warns,
+    `${lines.length} plan line${lines.length === 1 ? "" : "s"} — all sourceSignalIds resolve, channel/targeting consistent with sources`
+  );
+}
+
+/** Reach-shaped numeric figures in a text: a number wearing a size unit
+ * (K/M/million/members/subscribers/…) or any bare figure ≥1000 that isn't a
+ * year. Percentages (the split band) and $-amounts (channel economics) are
+ * not audience sizes and are exempt. Returns each figure's candidate digit
+ * strings — the raw token plus unit-scaled variants ("40" worn with K →
+ * "40000") — so "40K" never passes just because "40" appears somewhere. */
+function reachLikeFigures(text: string): Array<{ display: string; candidates: string[] }> {
+  const out: Array<{ display: string; candidates: string[] }> = [];
+  const re = /\d[\d,]*(?:\.\d+)?/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text))) {
+    const tok = m[0].replace(/,/g, "");
+    if (tok.replace(/\./g, "").length < 2) continue;
+    const before = text.slice(Math.max(0, m.index - 2), m.index);
+    const after = text.slice(m.index + m[0].length, m.index + m[0].length + 32);
+    if (/\$\s?$/.test(before)) continue; // dollar figure — cost, not reach
+    if (/^\s*%/.test(after)) continue; // percentage — the hypothesis band, not reach
+    if (/^(19|20)\d{2}$/.test(tok)) continue; // year
+
+    const unitMatch = after.match(/^\s*(k|m|b|million|billion|thousand)\b/i) ?? after.match(/^(k|m|b)(?=[^a-z]|$)/i);
+    const sizeWord =
+      /^\s*\+?\s*(members?|subscribers?|subs|visitors?|followers?|listeners?|readers?|attendees?|downloads?|impressions?|users?|owners?|people)\b/i.test(after);
+    if (!unitMatch && !sizeWord && Number(tok) < 1000) continue;
+
+    const n = Number(tok);
+    const candidates = new Set<string>([tok]);
+    if (unitMatch && !Number.isNaN(n)) {
+      const unit = unitMatch[1].toLowerCase();
+      const mult = unit.startsWith("k") || unit === "thousand" ? 1e3 : unit.startsWith("b") ? 1e9 : 1e6;
+      const scaled = n * mult;
+      if (Number.isInteger(scaled)) candidates.add(String(scaled));
+      candidates.delete(tok); // a unit-worn figure must match at scale, not as its bare prefix
+      candidates.add(`${tok}${unitMatch[1].trim()}`); // and the literal "40K" form
+    } else if (tok.includes(".") && !Number.isNaN(n)) {
+      for (const mult of [1e3, 1e6, 1e9]) {
+        const scaled = n * mult;
+        if (Number.isInteger(scaled)) candidates.add(String(scaled));
+      }
+    }
+    out.push({ display: unitMatch ? `${tok}${unitMatch[1].trim()}` : tok, candidates: [...candidates] });
+  }
+  return out;
+}
+
+/** Digit-boundary containment — "40" never matches inside "2400". */
+function containsFigure(haystack: string, candidate: string): boolean {
+  const esc = candidate.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(?<![\\d.])${esc}(?![\\d])`, "i").test(haystack);
+}
+
+export function checkNoInventedReach(report: ArchetypeReport, toolAudit?: ToolAuditEntry[]): VerifierCheck {
+  const plan = report.plan;
+  if (!plan) {
+    return { id: "no-invented-reach", status: "pass", detail: "skipped — report has no plan (pre-11B)" };
+  }
+
+  const fields: Array<{ owner: string; text: string }> = [
+    { owner: "soWhat", text: plan.soWhat ?? "" },
+    { owner: "splitHypothesis.rationale", text: plan.splitHypothesis?.rationale ?? "" },
+    ...(plan.sequencing ?? []).map((t, i) => ({ owner: `sequencing[${i}]`, text: t })),
+    ...(plan.messagingInputs ?? []).map((t, i) => ({ owner: `messagingInputs[${i}]`, text: t })),
+    ...(plan.measurementSignals ?? []).map((t, i) => ({ owner: `measurementSignals[${i}]`, text: t })),
+    ...(plan.lines ?? []).flatMap((l) => [
+      { owner: `${l.id || l.channel}.channel`, text: l.channel ?? "" },
+      { owner: `${l.id || l.channel}.targetingStack`, text: l.targetingStack ?? "" },
+      { owner: `${l.id || l.channel}.rationale`, text: l.rationale ?? "" },
+      { owner: `${l.id || l.channel}.doAvoid`, text: l.doAvoid ?? "" },
+    ]),
+  ];
+
+  const logText = (toolAudit ?? []).map((e) => `${e.query} ${e.resultJson}`).join("\n").replace(/,/g, "");
+  // Figures carried from the reconciled data already live elsewhere in the
+  // report with their attribution — the existing number audits police those.
+  const { plan: _plan, manualInputs, ...rest } = report;
+  const restText = JSON.stringify(rest).replace(/,/g, "");
+  const manualText = JSON.stringify(manualInputs ?? {}).replace(/,/g, "");
+
+  const failures: string[] = [];
+  let audited = 0;
+  for (const { owner, text } of fields) {
+    for (const { display, candidates } of reachLikeFigures(text)) {
+      audited++;
+      const traced = candidates.some(
+        (cand) => containsFigure(logText, cand) || containsFigure(restText, cand) || containsFigure(manualText, cand)
+      );
+      if (traced) continue;
+      failures.push(`${owner}: "${display}" — reach-shaped figure with no tool, report-carried, or manual source`);
+    }
+  }
+  return check(
+    "no-invented-reach",
+    failures,
+    [],
+    audited === 0
+      ? "plan carries no reach-shaped figures — reach arrives by manual entry, as designed"
+      : `${audited} reach-shaped figure${audited === 1 ? "" : "s"} in plan text all trace to tool/report/manual sources`
+  );
 }
 
 // ─── Assembly ─────────────────────────────────────────────────────────────────
@@ -498,10 +687,12 @@ export function runCodeChecks(inputs: VerifierInputs): VerifierCheck[] {
     checkCoreNameCoherence(inputs.report),
     checkNumberLogAudit(inputs.report, inputs.toolAudit),
     checkExemplarLeakage(inputs.report),
+    checkPlanTraceability(inputs.report),
+    checkNoInventedReach(inputs.report, inputs.toolAudit),
   ];
 }
 
-const LLM_CHECK_IDS = ["paraphrase-number-audit", "basis-honesty", "targetable-groundedness"];
+const LLM_CHECK_IDS = ["paraphrase-number-audit", "basis-honesty", "targetable-groundedness", "genericity-audit"];
 
 export async function runVerifier(
   inputs: VerifierInputs,

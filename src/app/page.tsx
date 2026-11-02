@@ -1,22 +1,22 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { ArchetypeReport, ReportSummary, RunSummary } from "@/types";
+import { useRouter } from "next/navigation";
+import { ReportSummary, RunSummary } from "@/types";
 import { InputForm } from "@/components/InputForm";
 import { RunView } from "@/components/RunView";
-import { ReportView } from "@/components/report/ReportView";
 import { ReportsList } from "@/components/ReportsList";
 import { MigrationBanner } from "@/components/MigrationBanner";
 import { getEmail, setEmail as persistEmail, getUnimportedReports, markMigrated, SavedReport } from "@/lib/storage";
 
-type AppState = "input" | "run" | "report" | "error";
+type AppState = "input" | "run" | "error";
 
 const LIST_REFRESH_MS = 10000;
 
 export default function Home() {
+  const router = useRouter();
   const [appState, setAppState] = useState<AppState>("input");
   const [runId, setRunId] = useState<string | null>(null);
-  const [report, setReport] = useState<ArchetypeReport | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [email, setEmailState] = useState("");
   const [reports, setReports] = useState<ReportSummary[]>([]);
@@ -84,39 +84,25 @@ export default function Home() {
 
   const handleReset = useCallback(() => {
     setAppState("input");
-    setReport(null);
     setError(null);
     setRunId(null);
     fetchLists();
   }, [fetchLists]);
 
-  const handleRunComplete = useCallback(async (reportId: string) => {
-    try {
-      const res = await fetch(`/api/reports/${reportId}`);
-      if (res.ok) {
-        setReport(await res.json());
-        setAppState("report");
-      }
-    } finally {
-      fetchLists();
-    }
-  }, [fetchLists]);
+  // Reports render on their own route, which picks the briefing shell for
+  // post-Round-9 reports and the legacy layout for older ones.
+  const handleRunComplete = useCallback((reportId: string) => {
+    router.push(`/report/${reportId}`);
+  }, [router]);
 
   const handleWatchRun = useCallback((id: string) => {
     setRunId(id);
     setAppState("run");
   }, []);
 
-  const handleSelectReport = useCallback(async (id: string) => {
-    try {
-      const res = await fetch(`/api/reports/${id}`);
-      if (!res.ok) return;
-      setReport(await res.json());
-      setAppState("report");
-    } catch {
-      // leave the user on whatever screen they were on
-    }
-  }, []);
+  const handleSelectReport = useCallback((id: string) => {
+    router.push(`/report/${id}`);
+  }, [router]);
 
   const handleDeleteReport = useCallback(async (id: string) => {
     try {
@@ -174,10 +160,6 @@ export default function Home() {
 
         {appState === "run" && runId && (
           <RunView runId={runId} email={email} onComplete={handleRunComplete} onReset={handleReset} />
-        )}
-
-        {appState === "report" && report && (
-          <ReportView report={report} onReset={handleReset} />
         )}
 
         {appState === "error" && (

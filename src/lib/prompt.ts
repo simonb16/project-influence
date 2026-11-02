@@ -26,23 +26,41 @@ import type { ToolAuditEntry } from "@/lib/verifier";
 // different audience produces an equally good exemplar, swapping to it (or
 // alternating exemplar domains across specs) reduces content-anchoring risk
 // further than any single fixed exemplar can.
-export const EXEMPLAR_NGRAMS = [
-  "trust grammar", // Story exemplar (8b Part 1)
-  "impossible to buy your way into", // Story exemplar (8b Part 1)
-  "knit-night regular", // Profile/core-vs-base exemplar (8b Part 3)
-  "counter-current inside its own audience", // Profile/core-vs-base exemplar (8b Part 3)
-  "~3% posting layer", // Targetables exemplar (8b Part 2)
-  "411K weekly visitors", // Participation-layers exemplar (8b Part 4)
-  "'Sue'", // Snapshot trust exemplar (8b Part 5)
-  "beginner craft kit", // Behavioral-bucket format exemplar (R9 Part 6) — covers the plural via substring
-  "stash-busting pattern searches", // Bucket signal examples in the reconciliation prompt (R9)
-  "lys sit-and-stitch hours", // Bucket signal examples in the reconciliation prompt (R9)
+/** Keywords identifying an exemplar's source audience — a hit against a
+ * report whose audience matches its exemplar's keywords downgrades leakage
+ * from fail to warn (possible legitimate re-discovery rather than content
+ * anchoring). Round 10 made this per-ngram: the distinctive exemplars now
+ * come from two source audiences (crafting + home espresso). */
+const CRAFT = ["craft", "knit", "crochet", "yarn"];
+const ESPRESSO = ["espresso", "coffee", "barista"];
+
+export const EXEMPLAR_NGRAMS: Array<{ ngram: string; sourceKeywords: string[] }> = [
+  { ngram: "trust grammar", sourceKeywords: CRAFT }, // Story exemplar (8b Part 1)
+  { ngram: "impossible to buy your way into", sourceKeywords: CRAFT }, // Story exemplar (8b Part 1)
+  { ngram: "knit-night regular", sourceKeywords: CRAFT }, // Profile/core-vs-base exemplar (8b Part 3)
+  { ngram: "counter-current inside its own audience", sourceKeywords: CRAFT }, // Profile/core-vs-base exemplar (8b Part 3)
+  { ngram: "~3% posting layer", sourceKeywords: CRAFT }, // Targetables exemplar (8b Part 2)
+  { ngram: "411K weekly visitors", sourceKeywords: CRAFT }, // Participation-layers exemplar (8b Part 4)
+  { ngram: "'Sue'", sourceKeywords: CRAFT }, // Snapshot trust exemplar (8b Part 5)
+  { ngram: "beginner craft kit", sourceKeywords: CRAFT }, // Behavioral-bucket format exemplar (R9 Part 6) — covers the plural via substring
+  { ngram: "stash-busting pattern searches", sourceKeywords: CRAFT }, // Bucket signal examples in the reconciliation prompt (R9)
+  { ngram: "lys sit-and-stitch hours", sourceKeywords: CRAFT }, // Bucket signal examples in the reconciliation prompt (R9)
+  // Round 10 distinctive exemplars (swap-test register reference)
+  { ngram: "don't-buy restraint", sourceKeywords: CRAFT },
+  { ngram: "anti-hustle tonal code", sourceKeywords: CRAFT },
+  { ngram: "frogging stories as credibility", sourceKeywords: CRAFT },
+  { ngram: "parameter-specific proof format", sourceKeywords: ESPRESSO },
+  { ngram: "community-trust secondary market", sourceKeywords: ESPRESSO },
 ];
 
-/** Keywords identifying the exemplars' source audience (crafting) — a hit
- * against a report whose audience matches downgrades leakage from fail to
- * warn (possible legitimate re-discovery rather than content anchoring). */
-export const EXEMPLAR_SOURCE_AUDIENCE_KEYWORDS = ["craft", "knit", "crochet", "yarn"];
+// Round 11A follow-up: two leaks in two consecutive SMB runs, from two
+// DIFFERENT exemplar sites ("~3% posting layer" from the targetables
+// exemplar, "counter-current inside its own audience" from the profile
+// exemplar) — a floor problem, not bad luck and not one bad exemplar. This
+// hard line renders adjacent to every embedded exemplar below. The leakage
+// list above and the Verifier check severity are unchanged.
+const ANTI_BORROWING =
+  "HARD RULE — exemplars demonstrate register, structure, and specificity-level only; any distinctive phrase, metaphor, or number from them is banned output — express it in this audience's own material.";
 
 export interface AgentInputs {
   audience: string;
@@ -614,7 +632,26 @@ Each social signal is one of three types:
 - "digital" — a digital space or platform community where the core participates ("Substack newsletter ecosystem", "expert-peer Instagram accounts")
 - "physical" — a real-world space or gathering where influence moves ("independent bottle shops", "dinner parties", "fairs and salons")
 
-Produce 8-14 signals total with a mix of all three types. Consolidate from your influence map, digital habitat, and real world habitat analyses — one signal per distinct influence mechanism, not one per data source. The same community must not appear as multiple signals. WHERE and WHO are required on every signal: where it happens, and who the specific voices/actors are (named entities only with evidence; archetypes otherwise).
+Produce 8-14 signals total. Types follow the evidence — a typical list has all three, but do not manufacture a signal to fill a type. An audience whose influence is overwhelmingly physical may produce few content signals, and that is a finding. Consolidate from your influence map, digital habitat, and real world habitat analyses — one signal per distinct influence mechanism, not one per data source. The same community must not appear as multiple signals. WHERE and WHO are required on every signal: where it happens, and who the specific voices/actors are (named entities only with evidence; archetypes otherwise).
+
+THE SWAP TEST: Before finalizing your signal list, apply this test to each signal: "Could this exact signal, as written, appear in a report about a completely different audience?" A signal that survives the swap is inventory, not intelligence.
+
+Your list must contain AT LEAST 4 signals that FAIL the swap test — signals that would be nonsense for any other audience: this audience's tonal codes, proof formats, identity rituals, named institutions, peculiar behaviors. The obvious platforms (the big subreddits, YouTube niches, newsletter ecosystems) are table stakes — include them, but they are the floor of the list, not its point. The report's value concentrates in the signals only this audience could produce.
+
+For each swap-test-failing signal, populate whyOnlyThisAudience: one sentence naming what makes it peculiar to this audience. Leave the field out of signals that are honest inventory. Anti-padding applies in full: a distinctive signal still needs real evidence — if the research genuinely surfaced fewer than 4 peculiar signals, say so in the list you produce rather than inventing peculiarity.
+
+DISTINCTIVE EXEMPLARS (register reference from real reports — match the specificity, not the content):
+- "Deinfluencing / don't-buy restraint content" — a counter-commercial identity ranked as the audience's #1 influence signal
+- "The 'just for me' anti-hustle tonal code — permission-giving as influence"
+- "Honest WIP/UFO show-and-tell as proof format — frogging stories as credibility"
+- "Parameter-specific proof format — numbers, mods, and long-term follow-ups as the price of being believed"
+- "Community-trust secondary market — buying used gear from known forum participants with care records"
+
+${ANTI_BORROWING}
+
+LICENSE FOR SPICE: A signal with no platform quant but vivid qualitative evidence MAY outrank a measurable one. Measurability is a property of the evidence, not of the signal's importance — do not let "can I score this precisely" leak into "should I select this." Score unquantifiable signals from evidence density and mark the basis evidence-classified, as the rules already allow.
+
+Single-lens signals are admissible when the evidence is specific and vivid — label them with their convergence status honestly (the existing confidence machinery). A distinctive single-lens signal with real evidence beats a converged platitude.
 
 STRENGTH (0-100): how forcefully this signal shapes what the core believes, adopts, and shares.
 Two components, weighed together:
@@ -637,6 +674,8 @@ PARTICIPATION LAYERS: when community data supports it, distinguish the participa
 
 EXEMPLAR (verbatim from a real report — match its structure, not its content): "The contribution layer (~13K weekly contributions against 411K weekly visitors on r/crochet alone) is where the core operates; the visitor layer is the base receiving its judgment." — with the derivation shown transparently in the validation data (members from web search + visitor/contribution figures from lens evidence → "~3% contribution rate").
 
+${ANTI_BORROWING}
+
 Evidence-gated: layer analysis only where numbers exist. Never estimate a ratio without inputs.
 
 BEHAVIORAL BUCKETS — YOU OWN SELECTION, BUCKETING, AND EVIDENCE:
@@ -658,6 +697,8 @@ FORMAT EXEMPLAR (from Maria's spec — match the structure, not the content):
 Signal: Beginner craft kits (the exact observable purchase)
 Targetable Signal: searching for beginner craft kits on Google, watching beginner crafting tutorials on YT
 What it signals: [one sentence on what the behavior reveals about the Influential Core]
+
+${ANTI_BORROWING}
 
 Aim for 3-6 signals per bucket, evidence permitting. A thin bucket (especially buy) shows fewer items — NEVER pad a bucket to hit a count. Anti-padding applies in full: every item traces to lens evidence or tool data.
 
@@ -683,7 +724,8 @@ OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with
       "scaleBasis": "the quant that drove the classification, or explicit evidence-classified note",
       "targetableSignals": [],
       "validatedBy": ["ds1"] (dataSignal ids that ground this signal — omit or empty when none),
-      "evidence": "key supporting evidence"
+      "evidence": "key supporting evidence",
+      "whyOnlyThisAudience": "one sentence naming what makes this peculiar to this audience — ONLY on swap-test-failing signals; omit on inventory signals"
     }
   ],
   "coreSize": { "estimate": "8-15%", "basis": "what the evidence is", "confidence": "grounded" | "directional" | "speculative" },
@@ -786,6 +828,8 @@ THE STORY (the "summary" field) must accomplish four things, in roughly this ord
 EXEMPLAR of the register (from a real report — match its structure, not its content):
 "The home-crafting category is decided by a small (5–15%), stable core of multi-year hobbyists who make purchase verdicts inside communities — knit nights, Ravelry logs, subreddit advice threads, Substack comments — that retailers merely fulfill. Their trust grammar is fixed: granular specificity plus candid flaws plus zero commercial stake, and their defining identity position is refusal to monetize ('just for joy'), held against a monetization pull that is rising (+37% 'how to sell crochet') and dominates algorithmic video. The lever is not reach but proximity: no brand currently articulates the no-hustle position back to them, and the core's habitats — intimate text, micro-video, and physical circles — are cheap to be present in and impossible to buy your way into."
 
+${ANTI_BORROWING}
+
 Anti-padding: the four beats and the quantified markers only appear when the reconciled data supports them — never invent a marker or a lever to hit the count.
 
 CORE-VS-BASE CONTRASTS:
@@ -837,6 +881,8 @@ Produce an at-a-glance summary of the four Signals of Influence for the influent
 - trust: from your influence susceptibility analysis — take the high-scoring subsets. Name the trust MECHANISM, not just the archetype — with an evidenced exemplar in parentheses where one exists. EXEMPLAR: "Knit-night regulars & LYS staff — named-person, zero-stake in-person recommendation ('Sue') · 92" (match the structure — mechanism plus evidenced example — not the content). Named individuals only when the evidence produced them (anti-confabulation unchanged). label = channel, detail = the mechanism (plus exemplar when evidenced), score included
 - social: from your influence map, digital habitat, and real world habitat — take the top-scoring specific spaces, digital and offline together. label = the space, score included
 
+${ANTI_BORROWING}
+
 3-5 entries per signal, ordered by score descending. Every entry must trace to an item in the full report — same name, same score. If a signal has fewer than 3 high-scoring items, show fewer rather than padding with low scorers. Include at least one real-world context in social when the real world habitat has a well-evidenced entry.
 
 Also produce coreLabel: the name of the influential core archetype. This must be THE SAME archetype name used in your influential core definition/description (e.g., if the description says the core is "the multicraftual dabbler with established taste", coreLabel is exactly that). Do not write a new or alternative label — the snapshot and the Influential Core section must refer to the core by the same name.
@@ -847,6 +893,8 @@ The influentialCore "profile" field is an explicit, systematic contrast between 
 EXEMPLAR (verbatim from a real report — match its structure, not its content):
 "The knit-night regular differs from the base on nearly every axis. The base samples crafting through kits, craft-and-sip nights, and aesthetic trends (grandmacore, cottagecore); the core never mentions kits and explicitly rejects crafting-as-identity ('something I do, not something I am'). The base's monetization curiosity is rising (+37% on 'how to sell crochet'); the core is a counter-current inside its own audience, using refusal as a badge. The base consumes recommendations; the core produces them, in a format — specificity plus visible imperfection plus no commercial stake — that the base copies when learning how to evaluate products."
 
+${ANTI_BORROWING}
+
 Anti-padding: only the axes the reconciled data actually evidences — do not manufacture a fifth contrast to round out the list.
 
 CORE NAME:
@@ -855,9 +903,31 @@ Produce two fields inside influentialCore:
 - coreTagline: one short sentence that completes the picture ("The one others text before buying a bottle.")
 The existing coreLabel field continues to be produced for compatibility. The Signals Snapshot center circle now uses coreName.
 
+THE PLAN — MEDIA-PLAN SCAFFOLD (Round 11B, the "walk" tier):
+Produce a "plan" object: a scaffold a media buyer can take to their platforms — plan lines, roles, sequencing, and a split hypothesis with evidence-backed rationale. It is NOT a finished media plan: NEVER assign budget dollars, flighting dates, or creative copy — that is a human's layer.
+
+HARD RULES FOR THE PLAN:
+- TRACEABILITY CONTRACT: every line derives from signals already in this report. sourceSignalIds is REQUIRED and non-empty on every line, using ids exactly as they appear in the reconciled data (sig*, bb*, ds*). A line that cannot name its sources does not exist. No new research, no invented channels.
+- NO REACH NUMBERS: never estimate an audience size, member count, subscriber count, or impression figure for a plan line — anywhere in the plan object. reachBasis labels what KIND of number belongs on the line; the value itself arrives later by manual entry. An invented reach figure in the plan is a FAIL-grade integrity offense. (Numbers quoted inside a rationale must already exist in the reconciled data with their attribution — the plan invents nothing.)
+- LINE CLASSES: role "core-seed" lines come from the distinctive/core signals — the whyOnlyThisAudience and strength winners — precise, cheap-to-saturate placements where the core actually lives. role "reach" lines come from the broad inventory (the swap-test table-stakes platforms the report already carries). Expect FEW reach lines and say so honestly inside the plan — the reach side thickens in a later round; never pad it.
+- targetingStack is platform-enterable language assembled from the targetable signals and platform concentrations already in the data — interests, placements, keyword clusters, seed descriptions — not narrative prose.
+- Anti-padding + spice license, as everywhere: fewer honest lines beat a padded grid; a vivid, evidence-dense niche line (a festival, a small newsletter) is exactly the point of the core-seed class.
+- ${ANTI_BORROWING} This applies to the plan with full force: if the reconciled data itself carries a register phrase or ratio that reads like an exemplar's (e.g. a "~N% posting layer" construction), do not repeat the construction — state this audience's own observed figure with its own phrasing, or omit it.
+
+splitHypothesis: propose a coreSharePct band — default reasoning starts at 10–25 — with a rationale arguing WHY for THIS audience, grounded in channel costs and access (a core reachable through cheap sponsorships costs little to saturate; the split is an output of channel economics, not a magic ratio). status is always the literal string "hypothesis".
+sequencing: ordered phases, with "win the core first" as the structural default where the evidence supports it — if this audience's evidence argues otherwise, say so (structure follows evidence, not dogma).
+messagingInputs: assembled from the emotional drivers and barriers already in this report — explicitly INPUTS for creative, never copy.
+measurementSignals: what a buyer watches per line class (core-seed: engagement quality, community echo, branded-search lift in insider vocabulary; reach: standard platform metrics), plus a UTM naming suggestion per line so future tests join cleanly.
+soWhat: one sentence naming what this plan does that a generic plan can't.
+
+AUDIENCE TAGLINE:
+Produce a top-level "audienceTagline": the audience in ONE plain sentence, written for a human reading the report's hero position. No statistics, no jargon, no sentence fragments — a clean declarative sentence a stranger would understand on first read.
+
 OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with {):
 {
   "summary": "2-3 sharp sentences on what moves this audience — the core behavioral truth and the lever, written for a strategist",
+
+  "audienceTagline": "the audience in one plain declarative sentence — no statistics, no jargon, no fragments",
 
   "influentialCore": {
     "coreName": "a memorable NAME for the core, 4 words maximum — a title, not a description; interesting and actionable beats exhaustively correct ('The Pre-Whole-Foods Adopter', not 'the experienced multi-craft peer who refuses to monetize'). Capitalize as a title.",
@@ -1037,6 +1107,30 @@ OUTPUT FORMAT (respond with ONLY this valid JSON object — no prose, start with
     "behavioral": [{ "label": "short behavior phrase", "rating": "HIGH" }],
     "trust": [{ "label": "channel", "detail": "the one-step-deeper specific", "score": number }],
     "social": [{ "label": "the specific space", "score": number }]
+  },
+
+  "plan": {
+    "soWhat": "one sentence: what this plan does that a generic plan can't",
+    "splitHypothesis": {
+      "coreSharePct": { "low": number, "high": number },
+      "rationale": "WHY this band for THIS audience, grounded in channel costs/access from the reconciled data",
+      "status": "hypothesis"
+    },
+    "lines": [
+      {
+        "id": "line1" (sequential — line2, line3, …),
+        "channel": "specific placement, e.g. 'Newsletter sponsorships (candid operator tier)' — from the report's own signals, never invented",
+        "role": "core-seed" | "reach",
+        "targetingStack": "platform-enterable language assembled from targetable signals/platform concentrations",
+        "rationale": "one sentence, evidence-grounded",
+        "sourceSignalIds": ["sig…" | "bb…" | "ds…"] (REQUIRED, non-empty — ids exactly as they appear in the reconciled data),
+        "doAvoid": "channel-specific do/avoid from existing evidence (omit if none)",
+        "reachBasis": "platform estimate (Meta)" | "platform estimate (TikTok)" | "search demand/mo (Google)" | "reach plan (YouTube)" | "publisher-reported" | "membership-reported" | "unestimated"
+      }
+    ],
+    "sequencing": ["ordered phases — 'win the core first' as default where evidence supports it"],
+    "messagingInputs": ["from drivers/backfires — inputs for creative, never copy"],
+    "measurementSignals": ["what to watch per line class + a UTM naming suggestion per line"]
   },
 
   "researchDepth": {
@@ -1291,6 +1385,7 @@ export function buildVerifierPrompt(report: ArchetypeReport, toolAudit: ToolAudi
     scaleBasis: s.scaleBasis,
     targetableSignals: s.targetableSignals,
     evidence: s.evidence,
+    whyOnlyThisAudience: s.whyOnlyThisAudience,
   }));
 
   return `You are the Verifier. You audit a market-research report for integrity: do its numeric claims trace to real sources, are its basis statements honest, are its targetables grounded? You do NOT judge the quality of the analysis — only whether claims are properly sourced and honestly framed.
@@ -1324,7 +1419,28 @@ ${JSON.stringify(signals, null, 1)}
 BEHAVIORAL BUCKETS (signals, what-it-signals, targetables, reinforcing evidence):
 ${JSON.stringify(report.behavioralBuckets ?? [], null, 1)}
 
-RUN THESE THREE CHECKS (behavioral-bucket reinforcingEvidence entries are in scope for checks 1 and 2 — each entry's source field must name a tool result, be marked search-sourced, or name a lens source; treat targetableSignal fields as in scope for check 3):
+THE PLAN (Round 11B media-plan scaffold — absent on older reports):
+${
+  report.plan
+    ? JSON.stringify(
+        {
+          soWhat: report.plan.soWhat,
+          splitRationale: report.plan.splitHypothesis?.rationale,
+          lines: (report.plan.lines ?? []).map((l) => ({
+            id: l.id,
+            channel: l.channel,
+            role: l.role,
+            targetingStack: l.targetingStack,
+            rationale: l.rationale,
+          })),
+        },
+        null,
+        1
+      )
+    : "(no plan — pre-11B report)"
+}
+
+RUN THESE FOUR CHECKS (behavioral-bucket reinforcingEvidence entries are in scope for checks 1 and 2 — each entry's source field must name a tool result, be marked search-sourced, or name a lens source; treat targetableSignal fields as in scope for check 3):
 
 1. "paraphrase-number-audit" — Find every numeric claim in the PROSE (the Story, core definition/profile, coreSize basis, signal bodies) that references platform data or research findings. For each: does it trace to a logged tool result (paraphrase-tolerant — "2.4M" matches "2400000", "roughly 100K" matches "103450") or to clearly attributed lens evidence? Classify each number by the three source categories.
    - PASS a number outright when it traces to the tool log, OR when it carries a clear, named attribution ("per Mintel", "Ravelry's reported 1M MAU", "(search-sourced)", "per web search"). A named, checkable source IS the verification — do not warn on it just because you personally cannot re-run the lookup. Warn-on-every-attributed-number makes the footer permanently yellow and trains the team to ignore it; an honest, well-attributed report should read ✓ clean.
@@ -1335,12 +1451,19 @@ RUN THESE THREE CHECKS (behavioral-bucket reinforcingEvidence entries are in sco
 
 3. "targetable-groundedness" — Spot-check the targetableSignals: does each reference platforms/spaces that the signal's own evidence, body, or where-field actually mentions? Generic filler ("social media — engagement") → WARN. Targetables naming platforms with no connection to the signal's evidence → FAIL.
 
+4. "genericity-audit" — Read the socialSignals list. Assess: (a) do at least 4 signals fail the swap test (their signal/body, as written, would be nonsense for a completely different audience)? (b) could the list as a whole, with the audience name redacted, be attributed to the correct audience by a knowledgeable reader? (c) when THE PLAN is present: apply the swap test to spend — could the plan's core-seed lines (channels, targeting stacks, rationales), as written, serve any audience? A generic plan for a distinctive audience is the failure mode; core-seed lines should be recognizably this audience's distinctive signals turned into placements. Weigh (c) into the same verdict and name interchangeable plan lines explicitly.
+   - Fewer than 4 swap-test failures → WARN naming the interchangeable signals.
+   - List reads as fully interchangeable → FAIL.
+   - whyOnlyThisAudience populated on distinctive signals with real reasoning (not a restated title) → contributes to PASS.
+   This is the genericity counterpart of the leakage guard: leakage catches borrowed specificity; this catches missing specificity. It is NOT a fabrication license — a peculiarity claim unsupported by the signal's own evidence counts against, not toward, the audit.
+
 OUTPUT (respond with ONLY this valid JSON object — no prose, start with {):
 {
   "checks": [
     { "id": "paraphrase-number-audit", "status": "pass" | "warn" | "fail", "detail": "one line; on warn/fail name the specific number/signal and why" },
     { "id": "basis-honesty", "status": "pass" | "warn" | "fail", "detail": "one line; on warn/fail name the specific signal and its basis problem" },
-    { "id": "targetable-groundedness", "status": "pass" | "warn" | "fail", "detail": "one line; on warn/fail name the specific signal and targetable" }
+    { "id": "targetable-groundedness", "status": "pass" | "warn" | "fail", "detail": "one line; on warn/fail name the specific signal and targetable" },
+    { "id": "genericity-audit", "status": "pass" | "warn" | "fail", "detail": "one line; on warn name the interchangeable signals; on pass name the strongest distinctive signals" }
   ]
 }
 

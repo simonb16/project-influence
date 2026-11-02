@@ -212,6 +212,90 @@ export interface ArchetypeReport {
   // Round 9: four-bucket behavioral model (Search/Consume/Buy/Go). Absent on
   // older reports → the Behavioral tab renders its legacy layout.
   behavioralBuckets?: BucketedBehavioralSignal[];
+  // Round 11A: hand-entered values (the one small write path). Stored inside
+  // report_json; rendered with basis label + date, never validated beyond that.
+  manualInputs?: ManualInputs;
+  // Round 11B: media-plan scaffold + audience tagline, generated at synthesis
+  // time. Absent on older reports → the Plan page renders its re-run empty
+  // state and the Summary hero stays bare. Never backfilled.
+  plan?: MediaPlan;
+  audienceTagline?: string;
+}
+
+// ─── Round 11B: media-plan scaffold (the "walk" tier) ────────────────────────
+// A scaffold, not a finished plan: lines, roles, sequencing, and a split
+// hypothesis — no budget dollars, no flighting dates, no creative (authorship
+// boundary, Maria-checkpoint pending). Reach numbers NEVER come from the
+// model: reachBasis labels what kind of number belongs on a line; the value
+// arrives via manual entry (manualInputs.planReach) or a future round.
+
+export type PlanLineRole = "core-seed" | "reach";
+
+export type ReachBasis =
+  | "platform estimate (Meta)"
+  | "platform estimate (TikTok)"
+  | "search demand/mo (Google)"
+  | "reach plan (YouTube)"
+  | "publisher-reported"
+  | "membership-reported"
+  | "unestimated";
+
+export interface PlanLine {
+  id: string; // "line1"… — manualInputs.planReach keys on this
+  channel: string; // e.g. "Newsletter sponsorships (candid operator tier)"
+  role: PlanLineRole;
+  targetingStack: string; // platform-enterable language from targetable signals
+  rationale: string; // one sentence, evidence-grounded
+  sourceSignalIds: string[]; // REQUIRED non-empty — the traceability contract
+  doAvoid?: string;
+  reachBasis: ReachBasis;
+}
+
+export interface SplitHypothesis {
+  coreSharePct: { low: number; high: number };
+  rationale: string;
+  status: "hypothesis"; // literal — rendered as such; a live test resolves it
+}
+
+export interface MediaPlan {
+  soWhat: string; // one sentence: what this plan does that a generic plan can't
+  splitHypothesis: SplitHypothesis;
+  lines: PlanLine[];
+  sequencing: string[]; // ordered phases
+  messagingInputs: string[]; // inputs for creative, never copy
+  measurementSignals: string[];
+}
+
+// ─── Round 11A: manual inputs (slot-not-plumbing — 11C may automate) ─────────
+
+export interface ManualPlatformReach {
+  platform: string; // e.g. "Meta Ads Manager"
+  value: string; // stored as entered — "4.2M", "~3,800,000"
+  dateChecked: string; // ISO date the number was read off the platform
+  enteredBy?: string; // email attribution, same no-auth model as runs
+}
+
+// Round 11B Part 3: per-plan-line manual reach — keyed by PlanLine.id.
+// Numbers from different platforms never aggregate (overlapping humans).
+export interface ManualPlanReach {
+  value: string; // stored as entered
+  dateChecked: string; // ISO date the number was read off the platform
+  enteredBy?: string;
+}
+
+// Round 11B Part 4: human adjustment of the split hypothesis. The system's
+// proposal is never overwritten — this renders BESIDE it with attribution.
+export interface ManualSplitOverride {
+  value: string; // as entered, e.g. "20–30%"
+  note?: string;
+  dateChecked: string;
+  enteredBy?: string;
+}
+
+export interface ManualInputs {
+  platformReach?: ManualPlatformReach;
+  planReach?: Record<string, ManualPlanReach>;
+  splitOverride?: ManualSplitOverride;
 }
 
 // ─── Periphery types (Round 2 Periphery agent) ───────────────────────────────
@@ -365,6 +449,7 @@ export interface SocialSignal {
   targetableSignals: Array<{ platform: string; detail: string }>; // synthesis enrichment
   validatedBy?: string[]; // dataSignal ids that ground this signal
   evidence: string;
+  whyOnlyThisAudience?: string; // R10: present on swap-test-failing (distinctive) signals only
 }
 
 export interface CoreSize {

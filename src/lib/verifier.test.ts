@@ -59,7 +59,7 @@ describe("verifier on the last good report (Aug 11 Home Crafters)", () => {
       reconciliation: reconBaseline(fixture),
       toolAudit: syntheticAudit(fixture),
     });
-    expect(vr.totalCount).toBe(7); // code checks only — no LLM runner injected
+    expect(vr.totalCount).toBe(9); // code checks only (7 + 2 plan checks, 11B) — no LLM runner injected
     expect(vr.passCount).toBeGreaterThan(0);
     expect(vr.passCount).toBeLessThanOrEqual(vr.totalCount);
     expect(vr.summary.length).toBeGreaterThan(0);
@@ -134,6 +134,30 @@ describe("seeded-error detection", () => {
     expect(result.detail.toLowerCase()).toContain("trust");
   });
 
+  it("downgrades to warn when the exact score exists in the source pool but the label match caught a sibling", () => {
+    // Real production case (espresso run 31b57ef1): snapshot "Vetted creators"
+    // @84 traced exactly to trustedVoices "the evidence-based creator tier"
+    // @84, but the label matcher missed it (0.5 token overlap) and instead
+    // matched the one-token susceptibility channel "creator" (different score)
+    // via substring containment.
+    const corrupted = clone();
+    corrupted.trustedVoices = [
+      ...(corrupted.trustedVoices ?? []),
+      {
+        voice: "James Hoffmann and Lance Hedrick — the evidence-based tier",
+        trustWeight: 84,
+        whyTrusted: "methodology over sponsorship",
+        fragility: "low",
+        proofFormats: ["long-form review"],
+      },
+    ];
+    corrupted.signalsSnapshot!.trust.push({ label: "Vetted creators", score: 84, detail: "evidence-based methodology" });
+
+    const result = checkSnapshotTraceability(corrupted);
+    expect(result.status).not.toBe("fail");
+    expect(result.detail).toContain("label match missed");
+  });
+
   it("flags an incoherent coreName (warn, not fail)", () => {
     const corrupted = clone();
     corrupted.influentialCore!.coreName = "Quantum Yak Overlord";
@@ -175,11 +199,11 @@ describe("graceful degradation", () => {
         throw new Error("model unavailable");
       }
     );
-    expect(vr.totalCount).toBe(10);
+    expect(vr.totalCount).toBe(13); // 9 code (incl. 11B plan checks) + 4 LLM (genericity-audit added R10)
     const llmChecks = vr.checks.filter((c) =>
-      ["paraphrase-number-audit", "basis-honesty", "targetable-groundedness"].includes(c.id)
+      ["paraphrase-number-audit", "basis-honesty", "targetable-groundedness", "genericity-audit"].includes(c.id)
     );
-    expect(llmChecks).toHaveLength(3);
+    expect(llmChecks).toHaveLength(4);
     for (const c of llmChecks) {
       expect(c.status).toBe("warn");
       expect(c.detail).toContain("model unavailable");
@@ -337,6 +361,27 @@ describe("checkExemplarLeakage", () => {
     const result = checkExemplarLeakage(corrupted);
     expect(result.status).toBe("warn");
     expect(result.detail).toContain("trust grammar");
+  });
+
+  // Round 10: source keywords are per-ngram — an espresso-sourced exemplar
+  // leaking into the craft fixture must FAIL even though craft exemplars
+  // would only warn there.
+  it("FAILs an espresso-sourced exemplar phrase in a craft-audience report", () => {
+    const corrupted = clone();
+    corrupted.summary = `${corrupted.summary} Their parameter-specific proof format rules.`;
+
+    const result = checkExemplarLeakage(corrupted);
+    expect(result.status).toBe("fail");
+    expect(result.detail).toContain("parameter-specific proof format");
+  });
+
+  it("WARNs an espresso-sourced exemplar phrase in an espresso-audience report", () => {
+    const corrupted = clone();
+    corrupted.audience = "Home espresso enthusiasts with semi-automatic machines";
+    corrupted.summary = `${corrupted.summary} Their parameter-specific proof format rules.`;
+
+    const result = checkExemplarLeakage(corrupted);
+    expect(result.status).toBe("warn");
   });
 
   it("catches multiple leaked n-grams at once", () => {
