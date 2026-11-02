@@ -59,17 +59,35 @@ export function ensureDb(): Promise<void> {
         )
       `);
 
-      const orphaned = await pool.query(
-        `UPDATE runs SET status = 'failed', error = $1, updated_at = now()
-         WHERE status IN ('queued', 'running') RETURNING id`,
-        ["interrupted by server restart — please re-run"]
-      );
-      if (orphaned.rowCount) {
-        console.log(`[sway] Marked ${orphaned.rowCount} orphaned run(s) as failed on boot`);
+      // Orphan sweep — STALE runs only. In dev, Next re-initializes this
+      // module on every recompile, so "init" does NOT mean the server
+      // rebooted: a blanket sweep here falsely failed live runs three times
+      // (Oct 30 ×2, Nov 2 ×2) while their pipelines kept executing and even
+      // completed. A run is only dead when it stops writing progress —
+      // the longest healthy gap between progress events is ~7 minutes, so
+      // 15 minutes of silence marks a true orphan. sweepStaleRuns() also
+      // runs lazily on reads, covering crashes that happened mid-flight.
+      const orphaned = await sweepStaleRuns();
+      if (orphaned) {
+        console.log(`[sway] Marked ${orphaned} stale run(s) as failed on init`);
       }
     })();
   }
   return initialized;
+}
+
+const STALE_RUN_ERROR =
+  "interrupted — no progress for 15+ minutes (server restart or crash); please re-run";
+
+/** Fail runs that have stopped writing progress. Returns the count swept. */
+async function sweepStaleRuns(): Promise<number> {
+  const res = await pool!.query(
+    `UPDATE runs SET status = 'failed', error = $1, updated_at = now()
+     WHERE status IN ('queued', 'running') AND updated_at < now() - interval '15 minutes'
+     RETURNING id`,
+    [STALE_RUN_ERROR]
+  );
+  return res.rowCount ?? 0;
 }
 
 export function isDbConfigured(): boolean {
@@ -79,6 +97,8 @@ export function isDbConfigured(): boolean {
 // ── Runs ──
 
 export async function countActiveRuns(): Promise<number> {
+  // Sweep first so a stale ghost can't hold a concurrency slot forever.
+  await sweepStaleRuns();
   const res = await pool!.query(`SELECT count(*)::int AS n FROM runs WHERE status IN ('queued', 'running')`);
   return res.rows[0].n;
 }
@@ -108,8 +128,10 @@ export async function appendProgress(id: string, message: string): Promise<void>
 }
 
 export async function completeRun(id: string, reportId: string): Promise<void> {
+  // error = NULL: a run that completes was never truly orphaned — clear any
+  // stale interruption text a premature sweep may have written.
   await pool!.query(
-    `UPDATE runs SET status = 'complete', report_id = $2, updated_at = now() WHERE id = $1`,
+    `UPDATE runs SET status = 'complete', report_id = $2, error = NULL, updated_at = now() WHERE id = $1`,
     [id, reportId]
   );
 }
@@ -119,6 +141,7 @@ export async function failRun(id: string, error: string): Promise<void> {
 }
 
 export async function getRun(id: string): Promise<RunStatus | null> {
+  await sweepStaleRuns();
   const res = await pool!.query(
     `SELECT id, status, progress, report_id, error, run_by, created_at FROM runs WHERE id = $1`,
     [id]
@@ -139,6 +162,7 @@ export async function getRun(id: string): Promise<RunStatus | null> {
 
 /** Runs still in flight or that failed — for the homepage's live list. Completed runs live in `reports`. */
 export async function listActiveAndFailedRuns(limit = 50): Promise<RunSummary[]> {
+  await sweepStaleRuns();
   const res = await pool!.query(
     `SELECT id, status, title, audience, error, run_by, created_at FROM runs
      WHERE status IN ('queued', 'running', 'failed')
